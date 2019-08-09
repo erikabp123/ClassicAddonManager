@@ -2,28 +2,41 @@ import DataCollection.CurseForgeScraper;
 import HelperTools.DateConverter;
 import DataCollection.FileDownloader;
 import DataCollection.Scraper;
+import HelperTools.Log;
+import HelperTools.Zipping;
+
 import java.util.Date;
 
-public class Addon {
+public class Addon implements Comparable<Addon> {
     private String name;
     private String author;
-    private String version;
-    private Date lastUpdated;
     private String origin;
+    private Date lastUpdated;
+    private String lastFileName;
 
-    public Addon(String name, String author, String version, Date lastUpdated, String origin){
+    public Addon(String name, String author, String origin, Date lastUpdated){
         this.name = name;
         this.author = author;
-        this.version = version;
+        this.origin = origin;
         this.lastUpdated = lastUpdated;
+    }
+
+    public Addon(String name, String author, String origin){
+        this.name = name;
+        this.author = author;
         this.origin = origin;
     }
 
     public boolean fetchUpdate(Scraper scraper){
+        //TODO: Consider tracking folders installed so that deleting is easier
+        Log.log("Attempting to fetch update ...");
         String downloadLink = scraper.getDownloadLink();
         FileDownloader downloader = new FileDownloader("downloads");
-        downloader.downloadFile(downloadLink, name + "_" + author + ".zip");
+        String fileName = name + "_" + author + "_(" +scraper.getFileName() + ").zip";
+        downloader.downloadFile(downloadLink, fileName);
         lastUpdated = DateConverter.convertFromCurse(scraper.getLastUpdated());
+        lastFileName = fileName;
+        Log.log("Successfully fetched new update!");
         return true;
     }
 
@@ -47,7 +60,10 @@ public class Addon {
         return response;
     }
 
-
+    @Override
+    public int compareTo(Addon o) {
+        return name.compareTo(o.name);
+    }
 
 
     public String getName() {
@@ -58,20 +74,19 @@ public class Addon {
         return author;
     }
 
-    public String getVersion() {
-        return version;
+    public String getOrigin(){
+        return origin;
     }
 
     public Date getLastUpdated() {
         return lastUpdated;
     }
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
     public void setLastUpdated(Date lastUpdated) {
         this.lastUpdated = lastUpdated;
     }
 
+    public String getLastFileName() {
+        return lastFileName;
+    }
 }

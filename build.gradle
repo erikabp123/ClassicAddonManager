@@ -14,4 +14,5 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile 'net.sourceforge.htmlunit:htmlunit:2.13'
     compile group: 'com.google.code.gson', name: 'gson', version: '2.7'
+    compile group: 'net.lingala.zip4j', name: 'zip4j', version: '1.2.4'
 }

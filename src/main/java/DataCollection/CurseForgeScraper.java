@@ -1,5 +1,6 @@
 package DataCollection;
 
+import HelperTools.Log;
 import com.gargoylesoftware.htmlunit.html.*;
 
 import java.util.List;
@@ -25,7 +26,6 @@ public class CurseForgeScraper extends Scraper {
         HtmlAnchor downloadAnchor = findDownloadAnchor(row);
         String downloadSuffix = downloadAnchor.getAttribute("href");
 
-
         return websiteUrl + downloadSuffix + "/file";
     }
 
@@ -34,6 +34,34 @@ public class CurseForgeScraper extends Scraper {
         HtmlPage page = getScrapedPage();
         HtmlTableRow row = findFirstDownloadRow(page);
         return findDateAbbr(row).getAttribute("title");
+    }
+
+    @Override
+    public String getName(){
+        Log.log("Fetching author name!");
+        HtmlPage page = getScrapedPage();
+        HtmlHeading2 nameHeading = (HtmlHeading2) page.getByXPath("//h2").get(0);
+        String name = nameHeading.asText();
+        Log.log("Found author name: " + name);
+        return name;
+    }
+
+    @Override
+    public String getAuthor(){
+        Log.log("Fetching author name!");
+        HtmlPage page = getScrapedPage();
+        HtmlAnchor authorAnchor = (HtmlAnchor) page.getByXPath("//a[contains(@href, '/members/')]").get(1);
+        String author = authorAnchor.getChildren().iterator().next().asText();
+        Log.log("Found author: " + author);
+        return author;
+    }
+
+    @Override
+    public String getFileName(){
+        HtmlPage page = getScrapedPage();
+        HtmlTableRow row = findFirstDownloadRow(page);
+        System.out.println("File name: " + findFileAnchor(row).asText());
+        return findFileAnchor(row).asText();
     }
 
     //HELPER METHODS
@@ -71,6 +99,12 @@ public class CurseForgeScraper extends Scraper {
         HtmlDivision containerDiv = (HtmlDivision) downloadCell.getChildren().iterator().next();
         HtmlAnchor downloadAnchor = (HtmlAnchor) containerDiv.getChildren().iterator().next();
         return downloadAnchor;
+    }
+
+    private HtmlAnchor findFileAnchor(HtmlTableRow row){
+        HtmlTableCell fileCell = row.getCell(1);
+        HtmlAnchor fileAnchor = (HtmlAnchor) fileCell.getChildren().iterator().next();
+        return fileAnchor;
     }
 
     public int getVersions() {

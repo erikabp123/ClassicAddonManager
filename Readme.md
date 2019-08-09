@@ -44,4 +44,5 @@ Optionally you can also run the program manually by executing the following comm
 
 * [HTMLUnit](http://htmlunit.sourceforge.net/) - Webscraping
 * [GSON](https://github.com/google/gson) - JSON Saving
+* [Zip4j](https://github.com/srikanth-lingala/zip4j) - Zip File Handling
 * [Gradle](https://gradle.org/) - Dependency Management
