@@ -10,20 +10,31 @@ public class CurseForgeScraper extends Scraper {
     private final static String searchSuffix = "/files/all?filter-game-version=" + gameVersion;
     private final static String websiteUrl = "https://www.curseforge.com";
 
+    private int versions;
+
     public CurseForgeScraper(String url) {
         super(url + searchSuffix, false, false, true);
+        versions = 1;
     }
 
+    @Override
     public String getDownloadLink(){
-        HtmlPage page = scrape();
+        HtmlPage page = getScrapedPage();
 
         HtmlTableRow row = findFirstDownloadRow(page);
         HtmlAnchor downloadAnchor = findDownloadAnchor(row);
         String downloadSuffix = downloadAnchor.getAttribute("href");
 
-        return websiteUrl + downloadSuffix;
+
+        return websiteUrl + downloadSuffix + "/file";
     }
 
+    @Override
+    public String getLastUpdated(){
+        HtmlPage page = getScrapedPage();
+        HtmlTableRow row = findFirstDownloadRow(page);
+        return findDateAbbr(row).getAttribute("title");
+    }
 
     //HELPER METHODS
 
@@ -49,6 +60,12 @@ public class CurseForgeScraper extends Scraper {
         return null;
     }
 
+    private HtmlAbbreviated findDateAbbr(HtmlTableRow row){
+        HtmlTableCell dateCell = row.getCell(3);
+        HtmlAbbreviated abbreviated = (HtmlAbbreviated) dateCell.getChildren().iterator().next();
+        return abbreviated;
+    }
+
     private HtmlAnchor findDownloadAnchor(HtmlTableRow row){
         HtmlTableCell downloadCell = row.getCell(6);
         HtmlDivision containerDiv = (HtmlDivision) downloadCell.getChildren().iterator().next();
@@ -56,4 +73,7 @@ public class CurseForgeScraper extends Scraper {
         return downloadAnchor;
     }
 
+    public int getVersions() {
+        return versions;
+    }
 }

@@ -11,12 +11,14 @@ public class Scraper {
     private final boolean js;
     private final boolean css;
     private final boolean insecureSSL;
+    private HtmlPage scrapedPage;
 
     public Scraper(String url, boolean js, boolean css, boolean insecureSSL){
         this.url = url;
         this.js = js;
         this.css = css;
         this.insecureSSL = insecureSSL;
+        this.scrapedPage = scrape();
     }
 
     public HtmlPage scrape(){
@@ -40,6 +42,11 @@ public class Scraper {
         return null;
     }
 
+    public String getLastUpdated(){
+        // Child should implement concrete solution
+        return null;
+    }
+
 
 
 
@@ -47,4 +54,7 @@ public class Scraper {
         return url;
     }
 
+    public HtmlPage getScrapedPage() {
+        return scrapedPage;
+    }
 }

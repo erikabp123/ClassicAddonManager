@@ -43,4 +43,5 @@ Optionally you can also run the program manually by executing the following comm
 ## Built With
 
 * [HTMLUnit](http://htmlunit.sourceforge.net/) - Webscraping
+* [GSON](https://github.com/google/gson) - JSON Saving
 * [Gradle](https://gradle.org/) - Dependency Management
