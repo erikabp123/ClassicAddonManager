@@ -22,17 +22,7 @@ What you need for this to work
 
 ## Running the program
 
-Simply execute the included .bat file
 
-```
-    start.bat  
-```
-
-Optionally you can also run the program manually by executing the following command from the command line:
-
-```
-    java Start.class
-```
 
 ## How it works (technical)
 
