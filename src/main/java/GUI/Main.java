@@ -1,6 +1,7 @@
 package GUI;
 
 import AddonManagement.AddonManager;
+import HelperTools.UserInput;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -21,7 +22,9 @@ public class Main extends Application {
         stage.setTitle("WoW Classic Addon Manager");
         stage.setScene(new Scene(loader.load()));
 
-        AddonManager addonManager = AddonManager.initialize();
+        UserInput userInput = new ToastUserInput("Please provide path to WoW Classic Installation");
+
+        AddonManager addonManager = AddonManager.initialize(userInput);
         Controller controller = loader.getController();
         controller.setAddonManager(addonManager);
         controller.updateListView();

@@ -1,8 +1,9 @@
-package AddonManagement;
+package CLI;
 
 import AddonManagement.Addon;
 import AddonManagement.AddonManager;
 import HelperTools.Log;
+import HelperTools.UserInput;
 
 import java.util.List;
 import java.util.Scanner;
@@ -15,7 +16,8 @@ public class Start {
         //TODO: Remove this line when releasing, only here for debugging
         //Log.logging = true;
 
-        AddonManager manager = AddonManager.initialize();
+        UserInput userInput = new ScannerUserInput();
+        AddonManager manager = AddonManager.initialize(userInput);
         while(running){
             //TODO: Add a timer such that if no input is detected for X min it closes by itself
             readUserInput(manager);
