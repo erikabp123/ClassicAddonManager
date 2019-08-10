@@ -13,16 +13,24 @@ What you need for this to work
 ```
     Java 8 or higher installed
 ```
+Remember to setup your environment variables as well!
 
 ### Setup
 
+The first time you run the program it will ask for your wow classic installation path. Simply paste that in.
 ```
-    TODO
+    e.g. C:\Program Files (x86)\World of Warcraft\_classic_
 ```
 
 ## Running the program
 
+Simply double click the Start.bat file included in the .zip file.
 
+Optionally you can also start the jar file manually through the command line
+
+```
+    java --illegal-access=deny -jar ClassicAddonManager.jar
+```
 
 ## How it works (technical)
 
