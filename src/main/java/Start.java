@@ -1,5 +1,7 @@
+import HelperTools.FileOperations;
 import HelperTools.Log;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -10,13 +12,14 @@ public class Start {
 
     public static void main(String[] args){
         //TODO: Remove this line when releasing, only here for debugging
-        Log.logging = true;
+        //Log.logging = true;
 
         AddonManager manager = AddonManager.initialize();
         while(running){
             //TODO: Add a timer such that if no input is detected for X min it closes by itself
             readUserInput(manager);
         }
+
 
     }
 

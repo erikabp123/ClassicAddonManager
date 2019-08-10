@@ -1,7 +1,7 @@
 import DataCollection.CurseForgeScraper;
 import DataCollection.Scraper;
 import HelperTools.Log;
-import HelperTools.Zipping;
+import HelperTools.FileOperations;
 import com.google.gson.Gson;
 import net.lingala.zip4j.model.FileHeader;
 
@@ -20,19 +20,19 @@ public class AddonManager {
     }
 
     public void updateAddons(){
-        System.out.println("Updating addons ...");
+        Log.log("Updating addons ...");
         for(Addon addon : managedAddons){
             UpdateResponse response = addon.checkForUpdate();
             if(!response.isUpdateAvailable()){
-                System.out.println(addon.getName() + " by " + addon.getAuthor() + " is up to date!");
+                Log.verbose(addon.getName() + " by " + addon.getAuthor() + " is up to date!");
                 continue;
             }
-            System.out.println("update available for: " + addon.getName() + " by " + addon.getAuthor() + "!");
+            Log.log("update available for: " + addon.getName() + " by " + addon.getAuthor() + "!");
             addon.fetchUpdate(response.getScraper());
             install(addon);
             saveToFile();
         }
-        System.out.println("Finished updating!");
+        Log.log("Finished updating!");
     }
 
     public boolean addNewAddon(String origin){
@@ -68,7 +68,9 @@ public class AddonManager {
             return false;
         }
 
+        uninstall(managedAddons.get(addonNum - 1));
         managedAddons.remove(addonNum - 1);
+
         saveToFile();
 
         Log.log("Successfully removed addon!");
@@ -76,28 +78,29 @@ public class AddonManager {
     }
 
     public static AddonManager initialize(){
-        Log.log("Looking for managed.json file ...");
+        Log.verbose("Looking for managed.json file ...");
         if(!new File("data/managed.json").isFile()){
-            Log.log("No managed.json file found!");
+            Log.verbose("No managed.json file found!");
             String installLocation = requireSetup();
             AddonManager manager = new AddonManager(installLocation);
             manager.saveToFile();
-            System.out.println("Setup complete!");
+            Log.log("Setup complete!");
             return manager;
         }
         AddonManager addonManager = null;
 
-        Log.log("Loading managed.json ...");
+        Log.verbose("Loading managed.json ...");
 
         try {
             Reader reader = new FileReader("data/managed.json");
             Gson gson = new Gson();
             addonManager =  gson.fromJson(reader, AddonManager.class);
-        } catch (FileNotFoundException e) {
+            reader.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
-        Log.log("Successfully loaded managed.json!");
+        Log.verbose("Successfully loaded managed.json!");
 
         return addonManager;
     }
@@ -105,16 +108,21 @@ public class AddonManager {
     public static String requireSetup(){
         //TODO: Verify this is indeed the classic wow installation folder
         Scanner in = new Scanner(System.in);
-        System.out.println("|------------------------|");
-        System.out.println("|######## SETUP #########|");
-        System.out.println("Please provide path to WoW Classic installation:");
+        Log.log("|------------------------|");
+        Log.log("|######## SETUP #########|");
+        Log.log("Please provide path to WoW Classic installation:");
         System.out.print(">");
         String input = in.nextLine();
-        return input;
+        boolean validPath = verifyInstallLocation(input);
+        if(!validPath){
+            Log.log("It appears this path is incorrect! Please try again. If you believe this to be a bug, please report it.");
+            return requireSetup();
+        }
+        return input + "\\Interface\\AddOns";
     }
 
     public void saveToFile(){
-        Log.log("Attempting to save to managed.json ...");
+        Log.verbose("Attempting to save to managed.json ...");
         try {
             Gson gson = new Gson();
             File file = new File("data/managed.json");
@@ -126,37 +134,73 @@ public class AddonManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Log.log("Successfully saved to managed.json!");
+        Log.verbose("Successfully saved to managed.json!");
     }
 
     public void install(Addon addon){
-        //TODO: make this uninstall first, then install. Leads to clean updating
-        List<FileHeader> headers = Zipping.unzip("downloads/" + addon.getLastFileName(), installLocation);
+        // Uninstall old save for clean updating
+        Log.verbose("Attempting install of addon " + addon.getName() + " ...");
+        uninstall(addon);
+        List<FileHeader> headers = FileOperations.unzip("downloads/" + addon.getLastFileName(), installLocation);
         logInstallation(addon, headers);
+        Log.verbose("Successfully installed addon!");
     }
 
 
-
     private void logInstallation(Addon addon, List<FileHeader> headers){
-        Log.log("Attempting to log installation ...");
+        Log.verbose("Attempting to log installation ...");
 
         try {
             Gson gson = new Gson();
-            File file = new File("data/managed/" + addon.getName() + ".json");
+            File file = new File(getInstallationLogPath(addon));
             file.getParentFile().mkdirs();
             Writer writer = new FileWriter(file);
-            List<String> rootDirectories = getOnlyRootDirectories(headers);
+            Set<String> rootDirectories = getOnlyRootDirectories(headers);
             gson.toJson(rootDirectories, writer);
             writer.flush();
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Log.log("Successfully logged installation!");
+        Log.verbose("Successfully logged installation!");
     }
 
-    public void uninstall(Addon addon){
-        //TODO: Make this actually remove the directories mentioned in data/managed/ADDON_NAME.json
+    private void uninstall(Addon addon){
+        Log.verbose("Attempting uninstall of " + addon.getName() + " ...");
+        Set<String> directories = readInstallationLog(addon);
+        for(String directory : directories){
+            String fullPath = installLocation + "\\" + directory;
+            FileOperations.deleteDirectory(fullPath);
+        }
+        Log.verbose("Finished uninstall!");
+    }
+
+    public Set<String> readInstallationLog(Addon addon){
+        Log.verbose("Looking for addon installation log ...");
+
+        String filePath = getInstallationLogPath(addon);
+
+        if(!new File(filePath).isFile()){
+            Log.verbose("No installation log found!");
+            return new HashSet<>();
+        }
+        Set<String> directories = null;
+
+        Log.verbose("Loading installation log ...");
+
+        try {
+            Reader reader = new FileReader(filePath);
+            Gson gson = new Gson();
+            directories =  gson.fromJson(reader, HashSet.class);
+            reader.close();
+            Log.verbose("Directories: " + directories);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Log.verbose("Successfully loaded managed.json!");
+
+        return directories;
     }
 
 
@@ -168,17 +212,32 @@ public class AddonManager {
 
     //HELPER METHODS
 
-    private List<String> getOnlyRootDirectories(List<FileHeader> headers){
-        List<String> rootDirectories = new ArrayList<>();
+    public static boolean verifyInstallLocation(String path){
+        Log.verbose("Checking supplied path ...");
+        String exePath = path + "\\Wow.exe";
+        if(!(new File(exePath).exists())){
+            Log.verbose("Wow.exe not found!");
+            return false;
+        }
+        String version = FileOperations.getFileVersion(exePath);
+        if(!version.startsWith("1.")){
+            Log.verbose("Non-classic client!");
+            return false;
+        }
+        Log.verbose("Path valid!");
+        return true;
+    }
+
+    public String getInstallationLogPath(Addon addon){
+        return  "data/managed/"+ addon.getName() + ".json";
+    }
+
+    private Set<String> getOnlyRootDirectories(List<FileHeader> headers){
+        Set<String> rootDirectories = new HashSet<>();
+
         for(FileHeader header : headers){
-            if(!header.isDirectory()){
-                continue;
-            }
             String[] headerInfo = header.getFileName().split("/");
-            if(headerInfo.length > 1){
-                continue;
-            }
-            rootDirectories.add(header.getFileName());
+            rootDirectories.add(headerInfo[0]);
         }
         return rootDirectories;
     }

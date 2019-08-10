@@ -38,21 +38,21 @@ public class CurseForgeScraper extends Scraper {
 
     @Override
     public String getName(){
-        Log.log("Fetching author name!");
+        Log.verbose("Fetching author name!");
         HtmlPage page = getScrapedPage();
         HtmlHeading2 nameHeading = (HtmlHeading2) page.getByXPath("//h2").get(0);
         String name = nameHeading.asText();
-        Log.log("Found author name: " + name);
+        Log.verbose("Found author name: " + name);
         return name;
     }
 
     @Override
     public String getAuthor(){
-        Log.log("Fetching author name!");
+        Log.verbose("Fetching author name!");
         HtmlPage page = getScrapedPage();
         HtmlAnchor authorAnchor = (HtmlAnchor) page.getByXPath("//a[contains(@href, '/members/')]").get(1);
         String author = authorAnchor.getChildren().iterator().next().asText();
-        Log.log("Found author: " + author);
+        Log.verbose("Found author: " + author);
         return author;
     }
 

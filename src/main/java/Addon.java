@@ -3,7 +3,6 @@ import HelperTools.DateConverter;
 import DataCollection.FileDownloader;
 import DataCollection.Scraper;
 import HelperTools.Log;
-import HelperTools.Zipping;
 
 import java.util.Date;
 
@@ -29,14 +28,14 @@ public class Addon implements Comparable<Addon> {
 
     public boolean fetchUpdate(Scraper scraper){
         //TODO: Consider tracking folders installed so that deleting is easier
-        Log.log("Attempting to fetch update ...");
+        Log.verbose("Attempting to fetch update ...");
         String downloadLink = scraper.getDownloadLink();
         FileDownloader downloader = new FileDownloader("downloads");
         String fileName = name + "_" + author + "_(" +scraper.getFileName() + ").zip";
         downloader.downloadFile(downloadLink, fileName);
         lastUpdated = DateConverter.convertFromCurse(scraper.getLastUpdated());
         lastFileName = fileName;
-        Log.log("Successfully fetched new update!");
+        Log.verbose("Successfully fetched new update!");
         return true;
     }
 

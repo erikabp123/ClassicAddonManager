@@ -26,7 +26,7 @@ public class DateConverter {
     }
 
     public static boolean isNewerDate(Date date1, Date date2){
-        Log.log("Checking if " + date1.toString() + " is a newer date than " + date2.toString());
+        Log.verbose("Checking if " + date1.toString() + " is a newer date than " + date2.toString());
 
         if(date1.compareTo(date2) > 0){
             return true;
