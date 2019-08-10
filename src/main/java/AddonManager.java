@@ -172,6 +172,7 @@ public class AddonManager {
             String fullPath = installLocation + "\\" + directory;
             FileOperations.deleteDirectory(fullPath);
         }
+        FileOperations.deleteFile(getInstallationLogPath(addon));
         Log.verbose("Finished uninstall!");
     }
 
