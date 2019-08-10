@@ -27,6 +27,7 @@ public class Start {
         //TODO: Maybe use enum for commands?
         Scanner in = new Scanner(System.in);
         System.out.println("|------------------------|");
+        System.out.println("For a list of commands type help");
         System.out.print(">");
         String input = in.nextLine();
         String[] commands = input.split(" ");
