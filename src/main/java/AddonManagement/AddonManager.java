@@ -1,3 +1,5 @@
+package AddonManagement;
+
 import DataCollection.CurseForgeScraper;
 import DataCollection.Scraper;
 import HelperTools.Log;
@@ -42,7 +44,7 @@ public class AddonManager {
             if(!addon.getOrigin().equals(origin)){
                 continue;
             }
-            Log.log("Addon already being tracked!");
+            Log.log("AddonManagement.Addon already being tracked!");
             return false;
         }
 
@@ -64,12 +66,12 @@ public class AddonManager {
         Log.log("Attempting to remove addon ...");
 
         if(addonNum > managedAddons.size()){
-            Log.log("Addon #" + addonNum + " was not found!");
+            Log.log("AddonManagement.Addon #" + addonNum + " was not found!");
             return false;
         }
 
-        uninstall(managedAddons.get(addonNum - 1));
-        managedAddons.remove(addonNum - 1);
+        uninstall(managedAddons.get(addonNum));
+        managedAddons.remove(addonNum);
 
         saveToFile();
 

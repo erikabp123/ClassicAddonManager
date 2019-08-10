@@ -1,3 +1,5 @@
+package AddonManagement;
+
 import DataCollection.Scraper;
 
 public class UpdateResponse {

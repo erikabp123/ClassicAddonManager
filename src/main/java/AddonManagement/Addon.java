@@ -1,3 +1,5 @@
+package AddonManagement;
+
 import DataCollection.CurseForgeScraper;
 import HelperTools.DateConverter;
 import DataCollection.FileDownloader;
