@@ -15,13 +15,6 @@ public class Addon implements Comparable<Addon> {
     private Date lastUpdated;
     private String lastFileName;
 
-    public Addon(String name, String author, String origin, Date lastUpdated){
-        this.name = name;
-        this.author = author;
-        this.origin = origin;
-        this.lastUpdated = lastUpdated;
-    }
-
     public Addon(String name, String author, String origin){
         this.name = name;
         this.author = author;

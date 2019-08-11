@@ -128,8 +128,10 @@ public class AddonManager {
         // Uninstall old save for clean updating
         Log.verbose("Attempting install of addon " + addon.getName() + " ...");
         uninstall(addon);
-        List<FileHeader> headers = FileOperations.unzip("downloads/" + addon.getLastFileName(), installLocation);
+        String zipPath = "downloads/" + addon.getLastFileName();
+        List<FileHeader> headers = FileOperations.unzip(zipPath, installLocation);
         logInstallation(addon, headers);
+        FileOperations.deleteFile(zipPath);
         Log.verbose("Successfully installed addon!");
     }
 
