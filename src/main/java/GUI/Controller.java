@@ -2,6 +2,7 @@ package GUI;
 
 import AddonManagement.Addon;
 import AddonManagement.AddonManager;
+import HelperTools.UserInput;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -33,6 +34,12 @@ public class Controller implements Initializable {
     final ObservableList<String> listItems = FXCollections.observableArrayList();
 
     private AddonManager addonManager;
+
+    @FXML
+    private void setupAction(){
+        UserInput userInput = new ToastUserInput("Please provide path to WoW Classic Installation");
+        addonManager.setInstallLocation(AddonManager.specifyInstallLocation(userInput));
+    }
 
     @FXML
     private void removeAction(){

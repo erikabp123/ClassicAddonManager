@@ -17,37 +17,15 @@
       <menus>
         <Menu mnemonicParsing="false" text="File">
           <items>
-            <MenuItem mnemonicParsing="false" text="New" />
-            <MenuItem mnemonicParsing="false" text="Open…" />
-            <Menu mnemonicParsing="false" text="Open Recent" />
+            <MenuItem fx:id="menuSetup" mnemonicParsing="false" onAction="#setupAction" text="Setup" />
             <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Close" />
-            <MenuItem mnemonicParsing="false" text="Save" />
-            <MenuItem mnemonicParsing="false" text="Save As…" />
-            <MenuItem mnemonicParsing="false" text="Revert" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Preferences…" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Quit" />
-          </items>
-        </Menu>
-        <Menu mnemonicParsing="false" text="Edit">
-          <items>
-            <MenuItem mnemonicParsing="false" text="Undo" />
-            <MenuItem mnemonicParsing="false" text="Redo" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Cut" />
-            <MenuItem mnemonicParsing="false" text="Copy" />
-            <MenuItem mnemonicParsing="false" text="Paste" />
-            <MenuItem mnemonicParsing="false" text="Delete" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Select All" />
-            <MenuItem mnemonicParsing="false" text="Unselect All" />
+            <MenuItem fx:id="menuPreferences" mnemonicParsing="false" text="Preferences" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
           <items>
-            <MenuItem mnemonicParsing="false" text="About MyHelloApp" />
+            <MenuItem fx:id="menuGitHub" mnemonicParsing="false" text="GitHub" />
+                  <MenuItem fx:id="menuDiscord" mnemonicParsing="false" text="Discord" />
           </items>
         </Menu>
       </menus>
@@ -59,7 +37,7 @@
             <Button fx:id="buttonRemove" layoutX="59.0" layoutY="260.0" mnemonicParsing="false" onAction="#removeAction" prefHeight="62.0" prefWidth="104.0" text="Remove" />
             <TextField fx:id="textFieldURL" layoutX="38.0" layoutY="351.0" prefHeight="38.0" prefWidth="464.0" />
             <Button layoutX="512.0" layoutY="346.0" mnemonicParsing="false" onAction="#addAction" prefHeight="49.0" prefWidth="104.0" text="Add" />
-            <Button fx:id="buttonUpdate" layoutX="427.0" layoutY="84.0" mnemonicParsing="false" onAction="#updateAction" prefHeight="134.0" prefWidth="189.0" text="Update Addons" />
+            <Button fx:id="buttonUpdate" layoutX="408.0" layoutY="84.0" mnemonicParsing="false" onAction="#updateAction" prefHeight="134.0" prefWidth="189.0" text="Update Addons" />
          </children>
     </AnchorPane>
   </children>
