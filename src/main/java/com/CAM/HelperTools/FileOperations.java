@@ -1,4 +1,4 @@
-package HelperTools;
+package com.CAM.HelperTools;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;

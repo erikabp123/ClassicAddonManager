@@ -1,4 +1,4 @@
-package HelperTools;
+package com.CAM.HelperTools;
 
 public class Log {
 

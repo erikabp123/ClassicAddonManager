@@ -1,7 +1,7 @@
-package GUI;
+package com.CAM.GUI;
 
-import AddonManagement.AddonManager;
-import HelperTools.UserInput;
+import com.CAM.AddonManagement.AddonManager;
+import com.CAM.HelperTools.UserInput;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -17,7 +17,10 @@ public class Main extends Application {
 
         Stage stage = new Stage();
         stage.setTitle("WoW Classic Addon Manager");
-        stage.setScene(new Scene(loader.load()));
+        Scene scene = new Scene(loader.load());
+        scene.getStylesheets().add(getClass().getClassLoader().getResource("bootstrap3.css").toExternalForm());
+        stage.setScene(scene);
+
 
         UserInput userInput = new ToastUserInput("Please provide path to WoW Classic Installation");
 
@@ -31,7 +34,7 @@ public class Main extends Application {
 
 
 
-        //Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("GUI.fxml"));
+        //Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("com.CAM.GUI.fxml"));
 
 
         //primaryStage.setTitle("WoW Classic Addon Manager");
@@ -41,7 +44,7 @@ public class Main extends Application {
     }
 
 
-    public static void main(String[] args) {
+    public static void begin(String[] args) {
         launch(args);
     }
 }

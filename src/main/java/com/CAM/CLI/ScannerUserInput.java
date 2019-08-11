@@ -1,7 +1,6 @@
-package CLI;
+package com.CAM.CLI;
 
-import HelperTools.Log;
-import HelperTools.UserInput;
+import com.CAM.HelperTools.UserInput;
 import java.util.Scanner;
 
 public class ScannerUserInput implements UserInput {

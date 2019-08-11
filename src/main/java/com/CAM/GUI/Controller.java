@@ -1,8 +1,8 @@
-package GUI;
+package com.CAM.GUI;
 
-import AddonManagement.Addon;
-import AddonManagement.AddonManager;
-import HelperTools.UserInput;
+import com.CAM.AddonManagement.Addon;
+import com.CAM.AddonManagement.AddonManager;
+import com.CAM.HelperTools.UserInput;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;

@@ -1,9 +1,9 @@
-package CLI;
+package com.CAM.CLI;
 
-import AddonManagement.Addon;
-import AddonManagement.AddonManager;
-import HelperTools.Log;
-import HelperTools.UserInput;
+import com.CAM.AddonManagement.Addon;
+import com.CAM.AddonManagement.AddonManager;
+import com.CAM.HelperTools.Log;
+import com.CAM.HelperTools.UserInput;
 
 import java.util.List;
 import java.util.Scanner;

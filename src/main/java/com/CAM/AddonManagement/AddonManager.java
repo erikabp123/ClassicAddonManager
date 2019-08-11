@@ -1,10 +1,10 @@
-package AddonManagement;
+package com.CAM.AddonManagement;
 
-import DataCollection.CurseForgeScraper;
-import DataCollection.Scraper;
-import HelperTools.Log;
-import HelperTools.FileOperations;
-import HelperTools.UserInput;
+import com.CAM.DataCollection.CurseForgeScraper;
+import com.CAM.DataCollection.Scraper;
+import com.CAM.HelperTools.Log;
+import com.CAM.HelperTools.FileOperations;
+import com.CAM.HelperTools.UserInput;
 import com.google.gson.Gson;
 import net.lingala.zip4j.model.FileHeader;
 
@@ -45,7 +45,7 @@ public class AddonManager {
             if(!addon.getOrigin().equals(origin)){
                 continue;
             }
-            Log.log("AddonManagement.Addon already being tracked!");
+            Log.log("com.CAM.AddonManagement.Addon already being tracked!");
             return false;
         }
 
@@ -67,7 +67,7 @@ public class AddonManager {
         Log.log("Attempting to remove addon ...");
 
         if(addonNum > managedAddons.size()){
-            Log.log("AddonManagement.Addon #" + addonNum + " was not found!");
+            Log.log("com.CAM.AddonManagement.Addon #" + addonNum + " was not found!");
             return false;
         }
 

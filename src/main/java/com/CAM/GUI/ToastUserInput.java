@@ -1,6 +1,6 @@
-package GUI;
+package com.CAM.GUI;
 
-import HelperTools.UserInput;
+import com.CAM.HelperTools.UserInput;
 import javafx.scene.control.TextInputDialog;
 
 public class ToastUserInput implements UserInput {

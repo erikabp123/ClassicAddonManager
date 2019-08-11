@@ -1,6 +1,6 @@
-package DataCollection;
+package com.CAM.DataCollection;
 
-import HelperTools.Log;
+import com.CAM.HelperTools.Log;
 import com.gargoylesoftware.htmlunit.html.*;
 
 import java.util.List;

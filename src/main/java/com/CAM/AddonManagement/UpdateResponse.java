@@ -1,6 +1,6 @@
-package AddonManagement;
+package com.CAM.AddonManagement;
 
-import DataCollection.Scraper;
+import com.CAM.DataCollection.Scraper;
 
 public class UpdateResponse {
 

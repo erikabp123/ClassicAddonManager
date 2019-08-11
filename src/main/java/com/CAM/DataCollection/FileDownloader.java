@@ -1,4 +1,4 @@
-package DataCollection;
+package com.CAM.DataCollection;
 
 import org.apache.commons.io.FileUtils;
 

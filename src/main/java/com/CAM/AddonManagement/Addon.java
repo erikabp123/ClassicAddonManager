@@ -1,10 +1,10 @@
-package AddonManagement;
+package com.CAM.AddonManagement;
 
-import DataCollection.CurseForgeScraper;
-import HelperTools.DateConverter;
-import DataCollection.FileDownloader;
-import DataCollection.Scraper;
-import HelperTools.Log;
+import com.CAM.DataCollection.CurseForgeScraper;
+import com.CAM.HelperTools.DateConverter;
+import com.CAM.DataCollection.FileDownloader;
+import com.CAM.DataCollection.Scraper;
+import com.CAM.HelperTools.Log;
 
 import java.util.Date;
 
