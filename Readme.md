@@ -1,4 +1,4 @@
-# Classic Wow com.CAM.AddonManagement.Addon Manager
+# Classic Wow Addon Manager
 
 This is a WIP addon manager for classic wow which manages addons allowing  for easy updates from projects stored on Curseforge and Github.
 
