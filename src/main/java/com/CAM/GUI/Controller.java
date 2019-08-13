@@ -12,6 +12,10 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
 
+import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -61,6 +65,30 @@ public class Controller implements Initializable {
         String origin = textFieldURL.getText();
         addonManager.addNewAddon(origin);
         updateListView();
+    }
+
+    @FXML
+    private void githubRedirectAction(){
+        String github = "https://github.com/erikabp123/ClassicAddonManager";
+        openUrl(github);
+    }
+
+    @FXML
+    private void discordRedirectAction(){
+        String discord = "https://discord.gg/StX3gbw";
+        openUrl(discord);
+    }
+
+    private void openUrl(String url){
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            try {
+                Desktop.getDesktop().browse(new URI(url));
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void updateListView(){

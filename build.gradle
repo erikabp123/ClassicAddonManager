@@ -2,11 +2,12 @@ plugins {
     id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.8'
+    id 'org.beryx.jlink' version '2.14.0'
 }
 
 group 'ClassicAddonManager'
 version '0.2'
-sourceCompatibility = 11
+sourceCompatibility = 12
 
 repositories {
     mavenCentral()
@@ -30,5 +31,12 @@ jar {
     }
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+jlink {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    launcher {
+        name = 'ClassicAddonManager'
     }
 }

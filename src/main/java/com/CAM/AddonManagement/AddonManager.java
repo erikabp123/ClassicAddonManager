@@ -4,6 +4,7 @@ import com.CAM.DataCollection.CurseForgeScraper;
 import com.CAM.DataCollection.Scraper;
 import com.CAM.HelperTools.Log;
 import com.CAM.HelperTools.FileOperations;
+import com.CAM.HelperTools.UrlInfo;
 import com.CAM.HelperTools.UserInput;
 import com.google.gson.Gson;
 import net.lingala.zip4j.model.FileHeader;
@@ -41,18 +42,24 @@ public class AddonManager {
     public boolean addNewAddon(String origin){
         Log.log("Attempting to track new addon ...");
 
+        if(!UrlInfo.isValidAddonUrl(origin)){
+            Log.log("Could not track addon!");
+            return false;
+        }
+        String trimmedOrigin = UrlInfo.trimCurseForgeUrl(origin);
+
         for(Addon addon : managedAddons){
-            if(!addon.getOrigin().equals(origin)){
+            if(!addon.getOrigin().equals(trimmedOrigin)){
                 continue;
             }
             Log.log("com.CAM.AddonManagement.Addon already being tracked!");
             return false;
         }
 
-        Scraper scraper = new CurseForgeScraper(origin);
+        Scraper scraper = new CurseForgeScraper(trimmedOrigin);
         String name = scraper.getName();
         String author = scraper.getAuthor();
-        Addon newAddon = new Addon(name, author, origin);
+        Addon newAddon = new Addon(name, author, trimmedOrigin);
 
         managedAddons.add(newAddon);
         Collections.sort(managedAddons);

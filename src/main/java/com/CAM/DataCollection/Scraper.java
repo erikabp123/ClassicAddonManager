@@ -1,11 +1,13 @@
 package com.CAM.DataCollection;
 
+import com.CAM.HelperTools.Log;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import java.io.IOException;
 
-public class Scraper {
+public abstract class Scraper {
 
     private final String url;
     private final boolean js;
@@ -31,33 +33,24 @@ public class Scraper {
 
         try {
             page = client.getPage(url);
-        } catch (IOException e) {
+        } catch (FailingHttpStatusCodeException e){
+            Log.log("Scrape resulted in " + e.getStatusCode());
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
         return page;
     }
 
-    public String getDownloadLink(){
-        // Child should implement concrete solution
-        return null;
-    }
+    public abstract String getDownloadLink();
 
-    public String getLastUpdated(){
-        // Child should implement concrete solution
-        return null;
-    }
+    public abstract String getLastUpdated();
 
-    public String getName(){
-        return null;
-    }
+    public abstract String getName();
 
-    public String getAuthor(){
-        return null;
-    }
+    public abstract String getAuthor();
 
-    public String getFileName(){
-        return null;
-    }
+    public abstract String getFileName();
 
     public String getUrl(){
         return url;
