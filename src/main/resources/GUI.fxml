@@ -6,7 +6,9 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
@@ -19,7 +21,7 @@
           <items>
             <MenuItem fx:id="menuSetup" mnemonicParsing="false" onAction="#setupAction" text="Setup" />
             <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem fx:id="menuPreferences" disable="true" mnemonicParsing="false" text="Preferences" />
+            <MenuItem fx:id="menuDebug" mnemonicParsing="false" onAction="#toggleDebugAction" text="Toggle Debug" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
@@ -37,7 +39,11 @@
             <Button fx:id="buttonRemove" layoutX="59.0" layoutY="260.0" mnemonicParsing="false" onAction="#removeAction" prefHeight="62.0" prefWidth="104.0" text="Remove" />
             <TextField fx:id="textFieldURL" layoutX="38.0" layoutY="351.0" prefHeight="38.0" prefWidth="464.0" />
             <Button layoutX="512.0" layoutY="350.0" mnemonicParsing="false" onAction="#addAction" prefHeight="49.0" prefWidth="104.0" text="Add" />
-            <Button fx:id="buttonUpdate" layoutX="270.0" layoutY="119.0" mnemonicParsing="false" onAction="#updateAction" prefHeight="134.0" prefWidth="189.0" text="Update Addons" />
+            <Button fx:id="buttonUpdate" layoutX="332.0" layoutY="260.0" mnemonicParsing="false" onAction="#updateAction" prefHeight="134.0" prefWidth="189.0" text="Update Addons" />
+            <TextArea fx:id="textAreaOutputLog" editable="false" focusTraversable="false" layoutX="236.0" layoutY="51.0" prefHeight="200.0" prefWidth="380.0" />
+            <Text layoutX="396.0" layoutY="37.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Output Log" />
+            <ImageView fx:id="imageViewAdd" fitHeight="13.0" fitWidth="104.0" layoutX="512.0" layoutY="333.0" pickOnBounds="true" preserveRatio="true" />
+            <Text fx:id="textAdd" layoutX="532.0" layoutY="338.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Processing..." visible="false" />
          </children>
     </AnchorPane>
   </children>

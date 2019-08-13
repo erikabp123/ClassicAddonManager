@@ -52,7 +52,7 @@ public class AddonManager {
             if(!addon.getOrigin().equals(trimmedOrigin)){
                 continue;
             }
-            Log.log("com.CAM.AddonManagement.Addon already being tracked!");
+            Log.log(addon.getName() + " already being tracked!");
             return false;
         }
 

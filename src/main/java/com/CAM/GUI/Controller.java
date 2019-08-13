@@ -2,6 +2,7 @@ package com.CAM.GUI;
 
 import com.CAM.AddonManagement.Addon;
 import com.CAM.AddonManagement.AddonManager;
+import com.CAM.HelperTools.Log;
 import com.CAM.HelperTools.UserInput;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -9,7 +10,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
 
 import java.awt.*;
@@ -19,6 +23,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Controller implements Initializable {
 
@@ -35,14 +40,28 @@ public class Controller implements Initializable {
     @FXML
     private Text textManagedLabel;
 
+    @FXML
+    private TextArea textAreaOutputLog;
+
+    @FXML
+    private ImageView imageViewAdd;
+
+    @FXML
+    private Text textAdd;
+
     final ObservableList<String> listItems = FXCollections.observableArrayList();
 
-    private AddonManager addonManager;
+    private final AtomicReference<AddonManager> addonManager = new AtomicReference<AddonManager>();
 
     @FXML
     private void setupAction(){
         UserInput userInput = new ToastUserInput("Please provide path to WoW Classic Installation");
-        addonManager.setInstallLocation(AddonManager.specifyInstallLocation(userInput));
+        addonManager.get().setInstallLocation(AddonManager.specifyInstallLocation(userInput));
+    }
+
+    @FXML
+    private void toggleDebugAction(){
+        Log.logging = !Log.logging;
     }
 
     @FXML
@@ -51,20 +70,22 @@ public class Controller implements Initializable {
         if(selected.size() < 1){
             return;
         }
-        addonManager.removeAddon(selected.get(0));
+        addonManager.get().removeAddon(selected.get(0));
         updateListView();
     }
 
     @FXML
     private void updateAction(){
-        addonManager.updateAddons();
+        addonManager.get().updateAddons();
     }
 
     @FXML
     private void addAction(){
+        textAdd.setVisible(true);
         String origin = textFieldURL.getText();
-        addonManager.addNewAddon(origin);
+        addonManager.get().addNewAddon(origin);
         updateListView();
+        textAdd.setVisible(false);
     }
 
     @FXML
@@ -93,7 +114,7 @@ public class Controller implements Initializable {
 
     public void updateListView(){
         ArrayList<String> addonNames = new ArrayList<>();
-        for(Addon addon : addonManager.getManagedAddons()){
+        for(Addon addon : addonManager.get().getManagedAddons()){
             addonNames.add(addon.getName());
         }
         listItems.setAll(addonNames);
@@ -101,7 +122,7 @@ public class Controller implements Initializable {
     }
 
     private void updateListViewLabel(){
-        int managedCount = addonManager.getManagedAddons().size();
+        int managedCount = addonManager.get().getManagedAddons().size();
         String textSuffix = "addons";
         if(managedCount == 1){
             textSuffix = "addon";
@@ -112,14 +133,15 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         listViewAddons.setItems(listItems);
+        Log.listen(new GUILogListener(textAreaOutputLog));
     }
 
     public AddonManager getAddonManager(){
-        return addonManager;
+        return addonManager.get();
     }
 
     public void setAddonManager(AddonManager addonManager){
-        this.addonManager = addonManager;
+        this.addonManager.set(addonManager);
     }
 
 
