@@ -1,4 +1,4 @@
-# Classic Wow com.CAM.AddonManagement.Addon Manager
+# Classic Wow Addon Manager
 
 This is a WIP addon manager for classic wow which manages addons allowing  for easy updates from projects stored on Curseforge and Github.
 
@@ -24,7 +24,7 @@ The first time you run the program it will ask for your wow classic installation
 
 ## Running the program
 
-Simply double click the com.CAM.CLI.Start.bat file included in the .zip file.
+Simply double click the Start.bat file included in the .zip file.
 
 Optionally you can also start the jar file manually through the command line
 
