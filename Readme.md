@@ -6,6 +6,10 @@ This is a WIP addon manager for classic wow which manages addons allowing  for e
 
 This section will explain how to setup the program.
 
+For a video explaining everything:
+
+https://www.youtube.com/watch?v=06WbVES4ZuU
+
 ### Prerequisites
 
 With the new standalone version, Java comes bundled with it. You therefore don't need to have anything else installed!
