@@ -2,14 +2,15 @@ package com.CAM.GUI;
 
 import com.CAM.AddonManagement.Addon;
 import com.CAM.AddonManagement.AddonManager;
+import com.CAM.AddonManagement.AddonRequest;
 import com.CAM.HelperTools.Log;
 import com.CAM.HelperTools.UserInput;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -49,14 +50,25 @@ public class Controller implements Initializable {
     @FXML
     private Text textAdd;
 
+    @FXML
+    private TextField textFieldBranch;
+
+    @FXML
+    private CheckBox checkboxReleases;
+
     final ObservableList<String> listItems = FXCollections.observableArrayList();
 
-    private final AtomicReference<AddonManager> addonManager = new AtomicReference<AddonManager>();
+    private AddonManager addonManager;
+
+    @FXML
+    private void releasesAction(){
+        textFieldBranch.setDisable(checkboxReleases.isSelected());
+    }
 
     @FXML
     private void setupAction(){
         UserInput userInput = new ToastUserInput("Please provide path to WoW Classic Installation");
-        addonManager.get().setInstallLocation(AddonManager.specifyInstallLocation(userInput));
+        addonManager.setInstallLocation(AddonManager.specifyInstallLocation(userInput));
     }
 
     @FXML
@@ -70,22 +82,46 @@ public class Controller implements Initializable {
         if(selected.size() < 1){
             return;
         }
-        addonManager.get().removeAddon(selected.get(0));
+        addonManager.removeAddon(selected.get(0));
         updateListView();
     }
 
     @FXML
     private void updateAction(){
-        addonManager.get().updateAddons();
+        addonManager.updateAddons();
     }
 
     @FXML
     private void addAction(){
         textAdd.setVisible(true);
         String origin = textFieldURL.getText();
-        addonManager.get().addNewAddon(origin);
+        String branch = textFieldBranch.getText();
+        boolean releases = checkboxReleases.isSelected();
+        AddonRequest request = new AddonRequest();
+        request.origin = origin;
+        request.branch = branch;
+        request.releases = releases;
+
+        if(!isValidRequest(request)){
+            return;
+        }
+
+        addonManager.addNewAddon(request);
         updateListView();
         textAdd.setVisible(false);
+    }
+
+    private boolean isValidRequest(AddonRequest request){
+        if(request.origin.contains("curseforge.com")){
+            return true;
+        }
+        if(request.releases){
+            return true;
+        }
+        if(!request.branch.equals("")){
+            return true;
+        }
+        return false;
     }
 
     @FXML
@@ -114,7 +150,7 @@ public class Controller implements Initializable {
 
     public void updateListView(){
         ArrayList<String> addonNames = new ArrayList<>();
-        for(Addon addon : addonManager.get().getManagedAddons()){
+        for(Addon addon : addonManager.getManagedAddons()){
             addonNames.add(addon.getName());
         }
         listItems.setAll(addonNames);
@@ -122,7 +158,7 @@ public class Controller implements Initializable {
     }
 
     private void updateListViewLabel(){
-        int managedCount = addonManager.get().getManagedAddons().size();
+        int managedCount = addonManager.getManagedAddons().size();
         String textSuffix = "addons";
         if(managedCount == 1){
             textSuffix = "addon";
@@ -137,11 +173,11 @@ public class Controller implements Initializable {
     }
 
     public AddonManager getAddonManager(){
-        return addonManager.get();
+        return addonManager;
     }
 
     public void setAddonManager(AddonManager addonManager){
-        this.addonManager.set(addonManager);
+        this.addonManager = addonManager;
     }
 
 

@@ -2,23 +2,39 @@ package com.CAM.HelperTools;
 
 import java.net.URL;
 
+import static com.CAM.HelperTools.UrlInfo.AddonSource.curseforge;
+import static com.CAM.HelperTools.UrlInfo.AddonSource.github;
+
 public class UrlInfo {
 
-    public static boolean isValidAddonUrl(String origin){
+    public boolean isValid;
+    public AddonSource addonSource;
+
+    public UrlInfo(Boolean isValid, AddonSource addonSource){
+        this.isValid = isValid;
+        this.addonSource = addonSource;
+    }
+
+    public static UrlInfo examineAddonUrl(String origin){
         Log.verbose("validating addon url ...");
+        UrlInfo urlInfo = new UrlInfo(false, null);
         if(!isValidURL(origin)){
             Log.verbose("Not valid url format!");
-            return false;
+            return urlInfo;
         }
         if(origin.contains("curseforge.com")){
             Log.verbose("curseforge link detected!");
-            return isValidCurseForgeUrl(origin);
+            urlInfo.addonSource = curseforge;
+            urlInfo.isValid = isValidCurseForgeUrl(origin);
+            return urlInfo;
         } if(origin.contains("github.com")){
             Log.verbose("github link detected!");
-            return isValidGithubUrl(origin);
+            urlInfo.addonSource = github;
+            urlInfo.isValid = isValidGithubUrl(origin);
+            return urlInfo;
         }
         Log.verbose("Invalid website choice!");
-        return false;
+        return urlInfo;
     }
 
     private static Boolean isValidCurseForgeUrl(String origin){
@@ -38,7 +54,18 @@ public class UrlInfo {
     }
 
     private static boolean isValidGithubUrl(String origin) {
-        return false;
+        String githubPrefix = "https://github.com/";
+        if(!isValidURL(origin)){
+            return false;
+        }
+        if(!origin.startsWith(githubPrefix)){
+            return false;
+        }
+        String[] parts = origin.split("/");
+        if(parts.length < 4){
+            return false;
+        }
+        return true;
     }
 
     private static boolean isValidURL(String url) {
@@ -52,7 +79,7 @@ public class UrlInfo {
 
     public static String trimCurseForgeUrl(String origin){
         String[] parts = origin.split("/");
-        if(parts.length < 5){
+        if(parts.length < 7){
             return origin;
         }
         String frankenstein = parts[0];
@@ -62,5 +89,21 @@ public class UrlInfo {
         return frankenstein;
     }
 
+    public static String trimGitHubUrl(String origin){
+        String[] parts = origin.split("/");
+        if(parts.length < 5){
+            return origin;
+        }
+        String frankenstein = parts[0];
+        for(int i=1; i<5; i++){
+            frankenstein =  frankenstein + "/" + parts[i];
+        }
+        return frankenstein;
+    }
+
+    public enum AddonSource {
+        curseforge,
+        github
+    }
 
 }

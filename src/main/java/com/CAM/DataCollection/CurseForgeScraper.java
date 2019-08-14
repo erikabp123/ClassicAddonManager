@@ -1,8 +1,10 @@
 package com.CAM.DataCollection;
 
+import com.CAM.HelperTools.DateConverter;
 import com.CAM.HelperTools.Log;
 import com.gargoylesoftware.htmlunit.html.*;
 
+import java.util.Date;
 import java.util.List;
 
 public class CurseForgeScraper extends Scraper {
@@ -11,11 +13,8 @@ public class CurseForgeScraper extends Scraper {
     private final static String searchSuffix = "/files/all?filter-game-version=" + gameVersion;
     private final static String websiteUrl = "https://www.curseforge.com";
 
-    private int versions;
-
     public CurseForgeScraper(String url) {
         super(url + searchSuffix, false, false, true);
-        versions = 1;
     }
 
     @Override
@@ -30,10 +29,11 @@ public class CurseForgeScraper extends Scraper {
     }
 
     @Override
-    public String getLastUpdated(){
+    public Date getLastUpdated(){
         HtmlPage page = getScrapedPage();
         HtmlTableRow row = findFirstDownloadRow(page);
-        return findDateAbbr(row).getAttribute("title");
+        Date date = DateConverter.convertFromCurse(findDateAbbr(row).getAttribute("title"));
+        return date;
     }
 
     @Override
@@ -60,7 +60,6 @@ public class CurseForgeScraper extends Scraper {
     public String getFileName(){
         HtmlPage page = getScrapedPage();
         HtmlTableRow row = findFirstDownloadRow(page);
-        System.out.println("File name: " + findFileAnchor(row).asText());
         return findFileAnchor(row).asText();
     }
 
@@ -105,9 +104,5 @@ public class CurseForgeScraper extends Scraper {
         HtmlTableCell fileCell = row.getCell(1);
         HtmlAnchor fileAnchor = (HtmlAnchor) fileCell.getChildren().iterator().next();
         return fileAnchor;
-    }
-
-    public int getVersions() {
-        return versions;
     }
 }

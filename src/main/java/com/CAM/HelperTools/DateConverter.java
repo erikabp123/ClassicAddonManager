@@ -7,12 +7,8 @@ import java.util.TimeZone;
 public class DateConverter {
 
     public static Date convertFromCurse(String curseFormat){
-        //TODO: Support if curseFormat is in hours elapsed instead of a fixed date
-        //TODO: Support if curseFormat is in days elapsed instead of a fixed date
-
         String cleaned = curseFormat.split(" \\(")[0];
 
-        //TODO: Clean this try up
         Date date = null;
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("MM dd yyyy hh:mm:ss");
@@ -32,6 +28,19 @@ public class DateConverter {
             return true;
         }
         return false;
+    }
+
+    public static Date convertFromGithub(String githubFormat){
+        String processed = githubFormat.replaceAll("\"", "");
+        Date date = null;
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+            date = dateFormat.parse(processed);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date;
     }
 
 }

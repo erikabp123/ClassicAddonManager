@@ -5,10 +5,7 @@ import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
 import org.apache.commons.io.FileUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,6 +84,24 @@ public class FileOperations {
         frankenstein = frankenstein + "\"";
 
         return frankenstein;
+    }
+
+    public static File[] fileFinder(String dirName){
+        File dir = new File(dirName);
+        return dir.listFiles((dir1, filename) -> filename.endsWith(".toc"));
+    }
+
+    public static String determineTOCName(String directory){
+        Log.verbose("Determining TOC file name ...");
+        String tocName = fileFinder(directory)[0].getName().replace(".toc", "");
+        Log.verbose("TOC with name " + tocName + "!");
+        return tocName;
+    }
+
+    public static void renameDirectory(String oldPath, String newName){
+        File dir = new File(oldPath);
+        File newDir = new File(dir.getParent() + "\\" + newName);
+        dir.renameTo(newDir);
     }
 
 

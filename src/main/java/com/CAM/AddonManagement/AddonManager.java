@@ -1,6 +1,7 @@
 package com.CAM.AddonManagement;
 
 import com.CAM.DataCollection.CurseForgeScraper;
+import com.CAM.DataCollection.GitHubScraper;
 import com.CAM.DataCollection.Scraper;
 import com.CAM.HelperTools.Log;
 import com.CAM.HelperTools.FileOperations;
@@ -39,14 +40,23 @@ public class AddonManager {
         Log.log("Finished updating!");
     }
 
-    public boolean addNewAddon(String origin){
+    public boolean addNewAddon(AddonRequest request){
         Log.log("Attempting to track new addon ...");
 
-        if(!UrlInfo.isValidAddonUrl(origin)){
+        UrlInfo urlInfo = UrlInfo.examineAddonUrl(request.origin);
+        if(!urlInfo.isValid){
             Log.log("Could not track addon!");
             return false;
         }
-        String trimmedOrigin = UrlInfo.trimCurseForgeUrl(origin);
+        String trimmedOrigin = "";
+        switch (urlInfo.addonSource){
+            case curseforge:
+                trimmedOrigin = UrlInfo.trimCurseForgeUrl(request.origin);
+                break;
+            case github:
+                trimmedOrigin = UrlInfo.trimGitHubUrl(request.origin);
+                break;
+        }
 
         for(Addon addon : managedAddons){
             if(!addon.getOrigin().equals(trimmedOrigin)){
@@ -56,10 +66,26 @@ public class AddonManager {
             return false;
         }
 
-        Scraper scraper = new CurseForgeScraper(trimmedOrigin);
+        Scraper scraper = null;
+
+        switch (urlInfo.addonSource){
+            case curseforge:
+                scraper = new CurseForgeScraper(trimmedOrigin);
+                break;
+            case github:
+                scraper = new GitHubScraper(trimmedOrigin, request.branch, request.releases);
+                break;
+        }
+
+        // Not relevant for github, so github is hardcoded to be 200
+        if(scraper.getStatuscode() != 200){
+            Log.verbose("Status code: " + scraper.getStatuscode());
+            Log.log("Failed to track addon!");
+            return false;
+        }
         String name = scraper.getName();
         String author = scraper.getAuthor();
-        Addon newAddon = new Addon(name, author, trimmedOrigin);
+        Addon newAddon = new Addon(name, author, trimmedOrigin, request.branch, request.releases);
 
         managedAddons.add(newAddon);
         Collections.sort(managedAddons);
@@ -139,7 +165,60 @@ public class AddonManager {
         List<FileHeader> headers = FileOperations.unzip(zipPath, installLocation);
         logInstallation(addon, headers);
         FileOperations.deleteFile(zipPath);
+        if(addon.getOrigin().contains("github")){
+            renameFolders(addon);
+        }
         Log.verbose("Successfully installed addon!");
+    }
+
+    private void renameFolders(Addon addon){
+        Set<String> directories = readInstallationLog(addon);
+        Set<String> renamedDirectories = new HashSet<>();
+        for(String directory : directories){
+            String fullPath = installLocation + "\\" + directory;
+            if(!determineIfFolderShouldBeRenamed(fullPath)){
+                renamedDirectories.add(directory);
+            }
+            String newName = renameFolderToTOCName(fullPath);
+            renamedDirectories.add(newName);
+        }
+        logRename(addon, renamedDirectories);
+    }
+
+    private void logRename(Addon addon, Set<String> directories){
+        Log.verbose("Attempting to log rename ...");
+
+        try {
+            Gson gson = new Gson();
+            File file = new File(getInstallationLogPath(addon));
+            file.getParentFile().mkdirs();
+            Writer writer = new FileWriter(file);
+            gson.toJson(directories, writer);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.verbose("Successfully logged rename!");
+    }
+
+    private boolean determineIfFolderShouldBeRenamed(String path){
+        Log.verbose("Determining if folder should be renamed ...");
+        String[] pathParts = path.split("/");
+        String folderName = pathParts[pathParts.length - 1];
+        String requiredName = FileOperations.determineTOCName(path);
+        if(folderName.equals(requiredName)){
+            Log.verbose("Folder name matches TOC file!");
+            return false;
+        }
+        Log.verbose("Folder name is incorrect!");
+        return true;
+    }
+
+    private String renameFolderToTOCName(String path){
+        String tocName = FileOperations.determineTOCName(path);
+        FileOperations.renameDirectory(path, tocName);
+        return tocName;
     }
 
 

@@ -2,6 +2,7 @@ package com.CAM.CLI;
 
 import com.CAM.AddonManagement.Addon;
 import com.CAM.AddonManagement.AddonManager;
+import com.CAM.AddonManagement.AddonRequest;
 import com.CAM.HelperTools.Log;
 import com.CAM.HelperTools.UserInput;
 
@@ -36,10 +37,13 @@ public class Start {
         String[] commands = input.split(" ");
         switch (commands[0]){
             case "add":
-                if(commands.length != 2){
+                if(commands.length < 2){
                     System.out.println("Incorrect amount of parameters!");
                 }
-                manager.addNewAddon(commands[1]);
+                AddonRequest request = new AddonRequest();
+                request.origin = commands[1];
+                request.branch = commands[2];
+                manager.addNewAddon(request);
                 break;
             case "remove":
                 manager.removeAddon(Integer.parseInt(commands[1]));

@@ -1,6 +1,7 @@
 package com.CAM.AddonManagement;
 
 import com.CAM.DataCollection.CurseForgeScraper;
+import com.CAM.DataCollection.GitHubScraper;
 import com.CAM.HelperTools.DateConverter;
 import com.CAM.DataCollection.FileDownloader;
 import com.CAM.DataCollection.Scraper;
@@ -14,11 +15,15 @@ public class Addon implements Comparable<Addon> {
     private String origin;
     private Date lastUpdated;
     private String lastFileName;
+    private String branch;
+    private boolean releases;
 
-    public Addon(String name, String author, String origin){
+    public Addon(String name, String author, String origin, String branch, boolean releases){
         this.name = name;
         this.author = author;
         this.origin = origin;
+        this.branch = branch;
+        this.releases = releases;
     }
 
     public boolean fetchUpdate(Scraper scraper){
@@ -28,14 +33,14 @@ public class Addon implements Comparable<Addon> {
         FileDownloader downloader = new FileDownloader("downloads");
         String fileName = name + "_" + author + "_(" +scraper.getFileName() + ").zip";
         downloader.downloadFile(downloadLink, fileName);
-        lastUpdated = DateConverter.convertFromCurse(scraper.getLastUpdated());
+        lastUpdated = scraper.getLastUpdated();
         lastFileName = fileName;
         Log.verbose("Successfully fetched new update!");
         return true;
     }
 
     public UpdateResponse checkForUpdate(){
-        Scraper scraper = new CurseForgeScraper(origin);
+        Scraper scraper = getScraper();
         UpdateResponse response = new UpdateResponse(scraper, true);
 
         // Check if addon has ever been updated through this program
@@ -44,7 +49,7 @@ public class Addon implements Comparable<Addon> {
             return response;
         }
         // Get the date of the last update as seen by scrape
-        Date lastUpdateScrape = DateConverter.convertFromCurse(scraper.getLastUpdated());
+        Date lastUpdateScrape = scraper.getLastUpdated();
         // Check if scrape has seen a newer update
         if(DateConverter.isNewerDate(lastUpdateScrape, lastUpdated)){
             return response;
@@ -52,6 +57,16 @@ public class Addon implements Comparable<Addon> {
         // There are no new updates
         response.setUpdateAvailable(false);
         return response;
+    }
+
+    private Scraper getScraper(){
+        if(origin.contains("curseforge.com")){
+            return new CurseForgeScraper(origin);
+        }
+        if(origin.contains("github.com")){
+            return new GitHubScraper(origin, branch, releases);
+        }
+        return null;
     }
 
     @Override
@@ -82,5 +97,13 @@ public class Addon implements Comparable<Addon> {
 
     public String getLastFileName() {
         return lastFileName;
+    }
+
+    public boolean isReleases() {
+        return releases;
+    }
+
+    public void setReleases(boolean releases) {
+        this.releases = releases;
     }
 }
