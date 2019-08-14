@@ -2,8 +2,6 @@
 
 This is a WIP addon manager for classic wow which manages addons allowing  for easy updates from projects stored on Curseforge and Github.
 
-Currently it only support Curseforge but in the next update Github support will be added!
-
 ## Getting Started
 
 This section will explain how to setup the program.
