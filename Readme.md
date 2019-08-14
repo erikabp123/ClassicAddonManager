@@ -1,6 +1,6 @@
 # Classic Wow Addon Manager
 
-This is a WIP addon manager for classic wow which manages addons allowing  for easy updates from projects stored on Curseforge and Github.
+This is a WIP addon manager for classic wow which manages addons allowing  for easy updates from projects stored on Curseforge and Github. THIS IS ONLY FOR WINDOWS!
 
 ## Getting Started
 
