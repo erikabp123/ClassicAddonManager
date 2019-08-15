@@ -15,6 +15,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -75,6 +77,18 @@ public class Controller implements Initializable {
 
     @FXML
     private MenuItem menuAboutVersion;
+
+    @FXML
+    public ProgressBar progressBarUpdate;
+
+    @FXML
+    public MenuBar menuBar;
+
+    @FXML
+    public Text textOutputLogLabel;
+
+    @FXML
+    public Text updatingVersionLabel;
 
     final ObservableList<String> listItems = FXCollections.observableArrayList();
 
@@ -163,6 +177,31 @@ public class Controller implements Initializable {
     private void progressBarListen(){
         DownloadListener downloadListener = new GUIDownloadListener(progressBarDownload);
         FileDownloader.listen(downloadListener);
+
+        DownloadListener downloadListener1 = new GUIDownloadListener(progressBarUpdate);
+        FileDownloader.listen(downloadListener1);
+    }
+
+    public void hideForUpdate(){
+        buttonUpdate.setDisable(true);
+        buttonRemove.setDisable(true);
+        buttonAdd.setDisable(true);
+        textFieldBranch.setDisable(true);
+        textAreaOutputLog.setDisable(true);
+        textFieldURL.setDisable(true);
+        checkboxReleases.setDisable(true);
+        menuBar.setDisable(true);
+        listViewAddons.setDisable(true);
+        textManagedLabel.setDisable(true);
+        textManagedLabel.setVisible(false);
+        textOutputLogLabel.setDisable(true);
+        textOutputLogLabel.setVisible(false);
+        updatingVersionLabel.setDisable(false);
+        updatingVersionLabel.setVisible(true);
+
+        imageViewUpdate.setImage(new Image(this.getClass().getClassLoader().getResource("gears_load.gif").toExternalForm()));
+        imageViewUpdate.setDisable(false);
+        progressBarUpdate.setVisible(true);
     }
 
     private boolean isValidRequest(AddonRequest request){

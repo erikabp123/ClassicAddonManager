@@ -13,11 +13,12 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
 <VBox fx:id="vboxMainUI" prefHeight="433.0" prefWidth="646.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.CAM.GUI.Controller">
   <children>
-    <MenuBar prefHeight="29.0" prefWidth="719.0" VBox.vgrow="NEVER">
+    <MenuBar fx:id="menuBar" prefHeight="29.0" prefWidth="719.0" VBox.vgrow="NEVER">
       <menus>
         <Menu mnemonicParsing="false" text="File">
           <items>
@@ -48,12 +49,18 @@
             <Button fx:id="buttonAdd" layoutX="512.0" layoutY="347.0" mnemonicParsing="false" onAction="#addAction" prefHeight="32.0" prefWidth="104.0" text="Add" />
             <Button fx:id="buttonUpdate" layoutX="329.0" layoutY="260.0" mnemonicParsing="false" onAction="#updateAction" prefHeight="134.0" prefWidth="189.0" text="Update Addons" />
             <TextArea fx:id="textAreaOutputLog" editable="false" focusTraversable="false" layoutX="236.0" layoutY="51.0" prefHeight="200.0" prefWidth="380.0" />
-            <Text layoutX="396.0" layoutY="37.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Output Log" />
+            <Text fx:id="textOutputLogLabel" layoutX="396.0" layoutY="37.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Output Log" />
             <ImageView fx:id="imageViewAdd" fitHeight="13.0" fitWidth="104.0" layoutX="512.0" layoutY="327.0" pickOnBounds="true" preserveRatio="true" visible="false" />
             <TextField fx:id="textFieldBranch" layoutX="14.0" layoutY="313.0" prefHeight="95.0" prefWidth="176.0" promptText="Github Branch" />
             <CheckBox fx:id="checkboxReleases" layoutX="198.0" layoutY="315.0" mnemonicParsing="false" onAction="#releasesAction" text="Use Releases" />
-            <ImageView fx:id="imageViewUpdate" disable="true" fitHeight="150.0" fitWidth="200.0" layoutX="223.0" layoutY="76.0" pickOnBounds="true" preserveRatio="true" />
+            <ImageView fx:id="imageViewUpdate" disable="true" fitHeight="150.0" fitWidth="200.0" layoutX="223.0" layoutY="127.0" pickOnBounds="true" preserveRatio="true" />
             <ProgressBar fx:id="progressBarDownload" disable="true" layoutX="236.0" layoutY="260.0" prefHeight="18.0" prefWidth="380.0" progress="0.0" visible="false" />
+            <ProgressBar fx:id="progressBarUpdate" layoutX="14.0" layoutY="303.0" prefHeight="18.0" prefWidth="603.0" progress="0.0" visible="false" />
+            <Text fx:id="updatingVersionLabel" disable="true" layoutX="178.0" layoutY="118.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Updating addon manager..." visible="false">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Text>
          </children>
     </AnchorPane>
   </children>

@@ -6,7 +6,6 @@ import com.CAM.GUI.Controller;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
-import javafx.scene.image.Image;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -33,9 +32,7 @@ public class SelfUpdater {
             Optional<ButtonType> result = alert.showAndWait();
             if (result.get() == ButtonType.OK){
                 Platform.runLater(() -> {
-                        controller.vboxMainUI.setDisable(true);
-                        controller.imageViewUpdate.setImage(new Image(controller.getClass().getClassLoader().getResource("gears_load.gif").toExternalForm()));
-                        controller.imageViewUpdate.setDisable(false);
+                    controller.hideForUpdate();
                 });
                 Thread downloadThread = new Thread(() -> {
                     String path = fetchNewVersion(downloadLink);
