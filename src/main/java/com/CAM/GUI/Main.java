@@ -22,12 +22,17 @@ public class Main extends Application {
         stage.setScene(scene);
 
 
-        UserInput userInput = new ToastUserInput("Please provide path to WoW Classic Installation");
+        UserInput userInput = new GUIUserInput("Please provide path to WoW Classic Installation");
 
         AddonManager addonManager = AddonManager.initialize(userInput);
+        if(addonManager == null){
+            return;
+        }
         Controller controller = loader.getController();
         controller.setAddonManager(addonManager);
         controller.updateListView();
+        Thread updateThread = new Thread(() -> controller.checkForUpdate());
+        updateThread.start();
 
         stage.show();
 

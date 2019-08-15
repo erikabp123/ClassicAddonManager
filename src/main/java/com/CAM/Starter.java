@@ -1,12 +1,13 @@
 package com.CAM;
 
-import com.CAM.DataCollection.GitHubScraper;
-import com.CAM.DataCollection.Scraper;
+import com.CAM.HelperTools.Log;
 
 public class Starter {
 
     public static void main(String[] args) {
+        Log.toggleLogging();
         com.CAM.GUI.Main.begin(args);
     }
+
 
 }

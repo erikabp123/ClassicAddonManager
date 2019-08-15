@@ -3,10 +3,7 @@ package com.CAM.AddonManagement;
 import com.CAM.DataCollection.CurseForgeScraper;
 import com.CAM.DataCollection.GitHubScraper;
 import com.CAM.DataCollection.Scraper;
-import com.CAM.HelperTools.Log;
-import com.CAM.HelperTools.FileOperations;
-import com.CAM.HelperTools.UrlInfo;
-import com.CAM.HelperTools.UserInput;
+import com.CAM.HelperTools.*;
 import com.google.gson.Gson;
 import net.lingala.zip4j.model.FileHeader;
 
@@ -118,6 +115,9 @@ public class AddonManager {
         if(!new File("data/managed.json").isFile()){
             Log.verbose("No managed.json file found!");
             String installLocation = specifyInstallLocation(userInput);
+            if(installLocation == null){
+                return null;
+            }
             AddonManager manager = new AddonManager(installLocation);
             manager.saveToFile();
             Log.log("Setup complete!");
@@ -327,11 +327,11 @@ public class AddonManager {
         boolean validPath = false;
         String input = null;
         while (!validPath){
-            Log.log("|------------------------|");
-            Log.log("|######## SETUP #########|");
-            Log.log("Please provide path to WoW Classic installation:");
-            input = userInput.getUserInput();
-            validPath = verifyInstallLocation(input);
+            UserInputResponse response = userInput.getUserInput();
+            if(response.isAbort()){
+                return null;
+            }
+            validPath = verifyInstallLocation(response.getInput());
         }
         return input + "\\Interface\\AddOns";
     }

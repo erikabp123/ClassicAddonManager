@@ -6,6 +6,7 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
@@ -14,7 +15,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<VBox prefHeight="433.0" prefWidth="646.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.CAM.GUI.Controller">
+<VBox fx:id="vboxMainUI" prefHeight="433.0" prefWidth="646.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.CAM.GUI.Controller">
   <children>
     <MenuBar prefHeight="29.0" prefWidth="719.0" VBox.vgrow="NEVER">
       <menus>
@@ -31,6 +32,11 @@
                   <MenuItem fx:id="menuDiscord" mnemonicParsing="false" onAction="#discordRedirectAction" text="Discord" />
           </items>
         </Menu>
+            <Menu mnemonicParsing="false" text="About">
+              <items>
+                <MenuItem fx:id="menuAboutVersion" disable="true" mnemonicParsing="false" text="Version" />
+              </items>
+            </Menu>
       </menus>
     </MenuBar>
     <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="406.0" prefWidth="677.0" VBox.vgrow="ALWAYS">
@@ -39,14 +45,15 @@
             <Text fx:id="textManagedLabel" layoutX="52.0" layoutY="37.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Managing (0) addons" wrappingWidth="118.0" />
             <Button fx:id="buttonRemove" layoutX="59.0" layoutY="260.0" mnemonicParsing="false" onAction="#removeAction" prefHeight="62.0" prefWidth="104.0" text="Remove" />
             <TextField fx:id="textFieldURL" layoutX="14.0" layoutY="349.0" prefHeight="32.0" prefWidth="487.0" promptText="Addon Url" />
-            <Button layoutX="512.0" layoutY="347.0" mnemonicParsing="false" onAction="#addAction" prefHeight="32.0" prefWidth="104.0" text="Add" />
-            <Button fx:id="buttonUpdate" layoutX="332.0" layoutY="260.0" mnemonicParsing="false" onAction="#updateAction" prefHeight="134.0" prefWidth="189.0" text="Update Addons" />
+            <Button fx:id="buttonAdd" layoutX="512.0" layoutY="347.0" mnemonicParsing="false" onAction="#addAction" prefHeight="32.0" prefWidth="104.0" text="Add" />
+            <Button fx:id="buttonUpdate" layoutX="329.0" layoutY="260.0" mnemonicParsing="false" onAction="#updateAction" prefHeight="134.0" prefWidth="189.0" text="Update Addons" />
             <TextArea fx:id="textAreaOutputLog" editable="false" focusTraversable="false" layoutX="236.0" layoutY="51.0" prefHeight="200.0" prefWidth="380.0" />
             <Text layoutX="396.0" layoutY="37.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Output Log" />
-            <ImageView fx:id="imageViewAdd" fitHeight="13.0" fitWidth="104.0" layoutX="512.0" layoutY="333.0" pickOnBounds="true" preserveRatio="true" />
-            <Text fx:id="textAdd" layoutX="532.0" layoutY="338.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Processing..." visible="false" />
+            <ImageView fx:id="imageViewAdd" fitHeight="13.0" fitWidth="104.0" layoutX="512.0" layoutY="327.0" pickOnBounds="true" preserveRatio="true" visible="false" />
             <TextField fx:id="textFieldBranch" layoutX="14.0" layoutY="313.0" prefHeight="95.0" prefWidth="176.0" promptText="Github Branch" />
             <CheckBox fx:id="checkboxReleases" layoutX="198.0" layoutY="315.0" mnemonicParsing="false" onAction="#releasesAction" text="Use Releases" />
+            <ImageView fx:id="imageViewUpdate" disable="true" fitHeight="150.0" fitWidth="200.0" layoutX="223.0" layoutY="76.0" pickOnBounds="true" preserveRatio="true" />
+            <ProgressBar fx:id="progressBarDownload" disable="true" layoutX="236.0" layoutY="260.0" prefHeight="18.0" prefWidth="380.0" progress="0.0" visible="false" />
          </children>
     </AnchorPane>
   </children>

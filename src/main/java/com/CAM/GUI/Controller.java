@@ -3,18 +3,24 @@ package com.CAM.GUI;
 import com.CAM.AddonManagement.Addon;
 import com.CAM.AddonManagement.AddonManager;
 import com.CAM.AddonManagement.AddonRequest;
+import com.CAM.DataCollection.FileDownloader;
+import com.CAM.HelperTools.DownloadListener;
 import com.CAM.HelperTools.Log;
+import com.CAM.HelperTools.SelfUpdater;
 import com.CAM.HelperTools.UserInput;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
 import java.awt.*;
@@ -24,7 +30,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Controller implements Initializable {
 
@@ -48,13 +53,28 @@ public class Controller implements Initializable {
     private ImageView imageViewAdd;
 
     @FXML
-    private Text textAdd;
-
-    @FXML
     private TextField textFieldBranch;
 
     @FXML
     private CheckBox checkboxReleases;
+
+    @FXML
+    public VBox vboxMainUI;
+
+    @FXML
+    public ImageView imageViewUpdate;
+
+    @FXML
+    public ProgressBar progressBarDownload;
+
+    @FXML
+    private Button buttonUpdate;
+
+    @FXML
+    private Button buttonAdd;
+
+    @FXML
+    private MenuItem menuAboutVersion;
 
     final ObservableList<String> listItems = FXCollections.observableArrayList();
 
@@ -67,7 +87,7 @@ public class Controller implements Initializable {
 
     @FXML
     private void setupAction(){
-        UserInput userInput = new ToastUserInput("Please provide path to WoW Classic Installation");
+        UserInput userInput = new GUIUserInput("Please provide path to WoW Classic Installation");
         addonManager.setInstallLocation(AddonManager.specifyInstallLocation(userInput));
     }
 
@@ -78,37 +98,71 @@ public class Controller implements Initializable {
 
     @FXML
     private void removeAction(){
-        ObservableList<Integer> selected = listViewAddons.getSelectionModel().getSelectedIndices();
-        if(selected.size() < 1){
-            return;
-        }
-        addonManager.removeAddon(selected.get(0));
-        updateListView();
+        Thread removeThread = new Thread(() -> {
+            Platform.runLater(() -> disableAll());
+            ObservableList<Integer> selected = listViewAddons.getSelectionModel().getSelectedIndices();
+            if(selected.size() < 1){
+                return;
+            }
+            addonManager.removeAddon(selected.get(0));
+            Platform.runLater(() -> {
+                updateListView();
+                enableAll();
+            });
+        });
+        removeThread.start();
     }
 
     @FXML
     private void updateAction(){
-        addonManager.updateAddons();
+        Thread updateThread = new Thread(() -> {
+            Platform.runLater(() -> {
+                disableAll();
+                buttonUpdate.setVisible(false);
+                progressBarDownload.setVisible(true);
+            });
+            addonManager.updateAddons();
+            Platform.runLater(() -> {
+                enableAll();
+                buttonUpdate.setVisible(true);
+                progressBarDownload.setVisible(false);
+            });
+        });
+        updateThread.start();
     }
 
     @FXML
     private void addAction(){
-        textAdd.setVisible(true);
-        String origin = textFieldURL.getText();
-        String branch = textFieldBranch.getText();
-        boolean releases = checkboxReleases.isSelected();
-        AddonRequest request = new AddonRequest();
-        request.origin = origin;
-        request.branch = branch;
-        request.releases = releases;
+        Thread addAddonThread = new Thread(() -> {
+            Platform.runLater(() -> {
+                disableAll();
+                imageViewAdd.setVisible(true);
+            });
+            String origin = textFieldURL.getText();
+            String branch = textFieldBranch.getText();
+            boolean releases = checkboxReleases.isSelected();
+            AddonRequest request = new AddonRequest();
+            request.origin = origin;
+            request.branch = branch;
+            request.releases = releases;
 
-        if(!isValidRequest(request)){
-            return;
-        }
+            if(!isValidRequest(request)){
+                return;
+            }
 
-        addonManager.addNewAddon(request);
-        updateListView();
-        textAdd.setVisible(false);
+            addonManager.addNewAddon(request);
+            Platform.runLater(() -> {
+                updateListView();
+                enableAll();
+                imageViewAdd.setVisible(false);
+            });
+        });
+        addAddonThread.start();
+    }
+
+    private void progressBarListen(){
+        DownloadListener downloadListener = new GUIDownloadListener(progressBarDownload);
+        FileDownloader.listen(downloadListener);
     }
 
     private boolean isValidRequest(AddonRequest request){
@@ -168,8 +222,15 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        menuAboutVersion.setText("Version " + SelfUpdater.VERSION);
+        imageViewAdd.setImage(new Image(this.getClass().getClassLoader().getResource("adding.gif").toExternalForm()));
         listViewAddons.setItems(listItems);
         Log.listen(new GUILogListener(textAreaOutputLog));
+        progressBarListen();
+    }
+
+    public void checkForUpdate(){
+        SelfUpdater.selfUpdate(this);
     }
 
     public AddonManager getAddonManager(){
@@ -178,6 +239,18 @@ public class Controller implements Initializable {
 
     public void setAddonManager(AddonManager addonManager){
         this.addonManager = addonManager;
+    }
+
+    private void disableAll(){
+        buttonRemove.setDisable(true);
+        buttonAdd.setDisable(true);
+        buttonUpdate.setDisable(true);
+    }
+
+    private void enableAll(){
+        buttonRemove.setDisable(false);
+        buttonAdd.setDisable(false);
+        buttonUpdate.setDisable(false);
     }
 
 

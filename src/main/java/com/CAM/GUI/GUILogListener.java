@@ -1,6 +1,7 @@
 package com.CAM.GUI;
 
 import com.CAM.HelperTools.LogListener;
+import javafx.application.Platform;
 import javafx.scene.control.TextArea;
 
 public class GUILogListener implements LogListener {
@@ -13,6 +14,10 @@ public class GUILogListener implements LogListener {
 
     @Override
     public void notify(String text) {
-        textArea.setText(textArea.getText() + text + "\n");
+        Platform.runLater(() -> {
+            textArea.appendText(text + "\n");
+            textArea.setScrollTop(Double.MAX_VALUE);
+        });
+
     }
 }

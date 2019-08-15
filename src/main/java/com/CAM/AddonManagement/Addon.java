@@ -32,7 +32,7 @@ public class Addon implements Comparable<Addon> {
         String downloadLink = scraper.getDownloadLink();
         FileDownloader downloader = new FileDownloader("downloads");
         String fileName = name + "_" + author + "_(" +scraper.getFileName() + ").zip";
-        downloader.downloadFile(downloadLink, fileName);
+        downloader.downloadFileMonitored(downloadLink, fileName);
         lastUpdated = scraper.getLastUpdated();
         lastFileName = fileName;
         Log.verbose("Successfully fetched new update!");

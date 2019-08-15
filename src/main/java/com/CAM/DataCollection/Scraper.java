@@ -51,6 +51,33 @@ public abstract class Scraper {
         } catch (FailingHttpStatusCodeException e){
             Log.verbose("Scrape resulted in " + e.getStatusCode());
             statuscode = e.getStatusCode();
+            if(statuscode == 503){
+                return scrapeJS();
+            }
+            return null;
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        statuscode = 200;
+        return page;
+    }
+
+    private HtmlPage scrapeJS(){
+        Log.verbose("Attempting JS scrape ...");
+        WebClient client = new WebClient();
+        client.getOptions().setJavaScriptEnabled(true);
+        client.getOptions().setCssEnabled(css);
+        client.getOptions().setUseInsecureSSL(insecureSSL);
+
+        HtmlPage page = null;
+
+        try {
+            page = client.getPage(url);
+            client.waitForBackgroundJavaScript(10_000);
+        } catch (FailingHttpStatusCodeException e){
+            Log.verbose("Scrape resulted in " + e.getStatusCode());
+            statuscode = e.getStatusCode();
             return null;
         }
         catch (IOException e) {

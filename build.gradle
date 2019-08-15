@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'ClassicAddonManager'
-version '0.3'
+version '0.35'
 sourceCompatibility = 12
 
 repositories {

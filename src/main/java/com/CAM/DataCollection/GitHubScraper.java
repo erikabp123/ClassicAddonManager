@@ -37,11 +37,7 @@ public class GitHubScraper extends Scraper {
     }
 
     private String getReleasesDownload(){
-        String[] repoInfo = getUrl().split("/");
-        String prefix = "https://api.github.com/repos/";
-        String suffix = "/releases";
-        String url = prefix + repoInfo[3] + "/" + repoInfo[4] + suffix;
-        JsonArray jsonArray = getJsonArray(jsonScrape(url));
+        JsonArray jsonArray = getRepoArray();
         String downloadLink = ((JsonObject) ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets")).get(0)).get("browser_download_url").getAsString();
         return downloadLink;
     }
@@ -81,11 +77,7 @@ public class GitHubScraper extends Scraper {
     }
 
     private Date getReleasesUpdated(){
-        String[] repoInfo = getUrl().split("/");
-        String prefix = "https://api.github.com/repos/";
-        String suffix = "/releases";
-        String url = prefix + repoInfo[3] + "/" + repoInfo[4] + suffix;
-        JsonArray jsonArray = getJsonArray(jsonScrape(url));
+        JsonArray jsonArray = getRepoArray();
         String githubDate = ((JsonObject) jsonArray.get(0)).get("published_at").getAsString();
         Date date = DateConverter.convertFromGithub(githubDate);
         return date;
@@ -112,6 +104,36 @@ public class GitHubScraper extends Scraper {
         WebResponse webResponse = page.getWebResponse();
         String json = webResponse.getContentAsString();
         return new Gson().fromJson(json, JsonObject.class);
+    }
+
+    public String getTag(){
+        JsonArray jsonArray = getRepoArray();
+        String tag = ((JsonObject) jsonArray.get(0)).get("tag_name").getAsString();
+        return tag;
+    }
+
+    public String getReleaseJarDownload(){
+        JsonArray jsonArray = getRepoArray();
+        JsonArray assets = ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets"));
+        int assetIndex = 0;
+        for(int i=0; i<assets.size(); i++){
+            String fileName = ((JsonObject) assets.get(i)).get("name").getAsString();
+            if(fileName.contains(".jar")){
+                continue;
+            }
+            assetIndex = i;
+            break;
+        }
+        String downloadLink = ((JsonObject) ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets")).get(assetIndex)).get("browser_download_url").getAsString();
+        return downloadLink;
+    }
+
+    private JsonArray getRepoArray(){
+        String[] repoInfo = getUrl().split("/");
+        String prefix = "https://api.github.com/repos/";
+        String suffix = "/releases";
+        String url = prefix + repoInfo[3] + "/" + repoInfo[4] + suffix;
+        return getJsonArray(jsonScrape(url));
     }
 
     @Override
