@@ -7,6 +7,11 @@ public class Log {
     public static boolean logging = false;
     public static ArrayList<LogListener> listeners = new ArrayList<>();
 
+    public static void toggleLogging(){
+        logging = !logging;
+        Log.log("Set debug to " + logging);
+    }
+
     public static void log(String text){
         System.out.println(text);
         notifyListeners(text);

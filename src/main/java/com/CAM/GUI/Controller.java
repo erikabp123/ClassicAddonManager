@@ -73,7 +73,7 @@ public class Controller implements Initializable {
 
     @FXML
     private void toggleDebugAction(){
-        Log.logging = !Log.logging;
+        Log.toggleLogging();
     }
 
     @FXML
