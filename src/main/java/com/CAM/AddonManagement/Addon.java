@@ -38,10 +38,11 @@ public class Addon implements Comparable<Addon> {
     }
 
     private String sanatizeInput(String input){
-        String sanatized = input.replace("?", "");
-        sanatized = sanatized.replace("!", "");
-        sanatized = sanatized.replace("\\", "");
-        sanatized = sanatized.replace("/", "");
+        String sanatized = input;
+        String[] illegals = {"?", "!", "\\", "/"};
+        for(int i=0; i<illegals.length; i++){
+            sanatized = sanatized.replace(illegals[i], "");
+        }
         return sanatized;
     }
 
