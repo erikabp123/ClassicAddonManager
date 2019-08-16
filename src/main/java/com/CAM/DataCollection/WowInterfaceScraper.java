@@ -54,7 +54,7 @@ public class WowInterfaceScraper extends Scraper {
         HtmlPage page = getScrapedPage();
         HtmlDivision authorDiv = (HtmlDivision) page.getByXPath("//div[@id='author']").get(0);
         HtmlAnchor authorAnchor = (HtmlAnchor) authorDiv.getByXPath(".//a").get(0);
-        String author = authorAnchor.getTextContent().replaceAll("<b>", "").replaceAll("<\\b>", "");
+        String author = authorAnchor.getTextContent().replace("<b>", "").replace("<\\b>", "");
         Log.verbose("Found author: " + author);
         return author;
     }

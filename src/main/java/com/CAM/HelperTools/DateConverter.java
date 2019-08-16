@@ -31,7 +31,7 @@ public class DateConverter {
     }
 
     public static Date convertFromGithub(String githubFormat){
-        String processed = githubFormat.replaceAll("\"", "");
+        String processed = githubFormat.replace("\"", "");
         Date date = null;
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");

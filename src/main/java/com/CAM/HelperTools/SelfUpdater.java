@@ -80,7 +80,7 @@ public class SelfUpdater {
         //check github for new release, same method as checking for releases of addon
         // if new version available, return download link as string, else return null
         GitHubScraper scraper = new GitHubScraper(REPO_LOCATION, null, true);
-        String cleaned = scraper.getTag().replaceAll("v", "");
+        String cleaned = scraper.getTag().replace("v", "");
         double tagAsNum = Double.parseDouble(cleaned);
         if(tagAsNum <= VERSION){
             Log.log("No new release available!");

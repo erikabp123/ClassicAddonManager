@@ -28,12 +28,21 @@ public class Addon implements Comparable<Addon> {
         Log.verbose("Attempting to fetch update ...");
         String downloadLink = scraper.getDownloadLink();
         FileDownloader downloader = new FileDownloader("downloads");
-        String fileName = name + "_" + author + "_(" +scraper.getFileName() + ").zip";
+        String sanatized = sanatizeInput(scraper.getFileName());
+        String fileName = name + "_" + author + "_(" + sanatized + ").zip";
         downloader.downloadFileMonitored(downloadLink, fileName);
         lastUpdated = scraper.getLastUpdated();
         lastFileName = fileName;
         Log.verbose("Successfully fetched new update!");
         return true;
+    }
+
+    private String sanatizeInput(String input){
+        String sanatized = input.replace("?", "");
+        sanatized = sanatized.replace("!", "");
+        sanatized = sanatized.replace("\\", "");
+        sanatized = sanatized.replace("/", "");
+        return sanatized;
     }
 
     public UpdateResponse checkForUpdate(){
