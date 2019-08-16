@@ -1,10 +1,7 @@
 package com.CAM.AddonManagement;
 
-import com.CAM.DataCollection.CurseForgeScraper;
-import com.CAM.DataCollection.GitHubScraper;
+import com.CAM.DataCollection.*;
 import com.CAM.HelperTools.DateConverter;
-import com.CAM.DataCollection.FileDownloader;
-import com.CAM.DataCollection.Scraper;
 import com.CAM.HelperTools.Log;
 
 import java.util.Date;
@@ -65,6 +62,8 @@ public class Addon implements Comparable<Addon> {
         }
         if(origin.contains("github.com")){
             return new GitHubScraper(origin, branch, releases);
+        } if(origin.contains("wowinterface.com")){
+            return new WowInterfaceScraper(origin);
         }
         return null;
     }

@@ -43,4 +43,15 @@ public class DateConverter {
         return date;
     }
 
+    public static Date convertFromWowInterface(String wowinterfaceFormat){
+        Date date = null;
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy hh:mm a");
+            date = dateFormat.parse(wowinterfaceFormat);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date;
+    }
+
 }

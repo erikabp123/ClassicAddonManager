@@ -205,7 +205,7 @@ public class Controller implements Initializable {
     }
 
     private boolean isValidRequest(AddonRequest request){
-        if(request.origin.contains("curseforge.com")){
+        if(request.origin.contains("curseforge.com") || request.origin.contains("wowinterface.com")){
             return true;
         }
         if(request.releases){

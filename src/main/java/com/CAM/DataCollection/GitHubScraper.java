@@ -118,7 +118,7 @@ public class GitHubScraper extends Scraper {
         int assetIndex = 0;
         for(int i=0; i<assets.size(); i++){
             String fileName = ((JsonObject) assets.get(i)).get("name").getAsString();
-            if(fileName.contains(".jar")){
+            if(!fileName.contains(".jar")){
                 continue;
             }
             assetIndex = i;

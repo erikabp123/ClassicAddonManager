@@ -2,8 +2,7 @@ package com.CAM.HelperTools;
 
 import java.net.URL;
 
-import static com.CAM.HelperTools.UrlInfo.AddonSource.curseforge;
-import static com.CAM.HelperTools.UrlInfo.AddonSource.github;
+import static com.CAM.HelperTools.UrlInfo.AddonSource.*;
 
 public class UrlInfo {
 
@@ -31,6 +30,11 @@ public class UrlInfo {
             Log.verbose("github link detected!");
             urlInfo.addonSource = github;
             urlInfo.isValid = isValidGithubUrl(origin);
+            return urlInfo;
+        } if(origin.contains("wowinterface.com")){
+            Log.verbose("WowInterface link detected!");
+            urlInfo.addonSource = wowinterface;
+            urlInfo.isValid = isValidWowInterfaceUrl(origin);
             return urlInfo;
         }
         Log.verbose("Invalid website choice!");
@@ -63,6 +67,17 @@ public class UrlInfo {
         }
         String[] parts = origin.split("/");
         if(parts.length < 4){
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean isValidWowInterfaceUrl(String origin) {
+        String wowinterfacePrefix = "https://www.wowinterface.com/";
+        if(!isValidURL(origin)){
+            return false;
+        }
+        if(!origin.startsWith(wowinterfacePrefix)){
             return false;
         }
         return true;
@@ -101,9 +116,15 @@ public class UrlInfo {
         return frankenstein;
     }
 
+    public static String trimWowInterfaceUrl(String origin){
+        String[] parts = origin.split("#");
+        return parts[0];
+    }
+
     public enum AddonSource {
         curseforge,
-        github
+        github,
+        wowinterface
     }
 
 }

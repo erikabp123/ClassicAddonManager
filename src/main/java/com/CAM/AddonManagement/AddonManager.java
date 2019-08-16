@@ -3,6 +3,7 @@ package com.CAM.AddonManagement;
 import com.CAM.DataCollection.CurseForgeScraper;
 import com.CAM.DataCollection.GitHubScraper;
 import com.CAM.DataCollection.Scraper;
+import com.CAM.DataCollection.WowInterfaceScraper;
 import com.CAM.HelperTools.*;
 import com.google.gson.Gson;
 import net.lingala.zip4j.model.FileHeader;
@@ -16,16 +17,16 @@ public class AddonManager {
     private List<Addon> managedAddons;
     private String installLocation;
 
-    public AddonManager(String installLocation){
+    public AddonManager(String installLocation) {
         this.managedAddons = new ArrayList<>();
         this.installLocation = installLocation;
     }
 
-    public void updateAddons(){
+    public void updateAddons() {
         Log.log("Updating addons ...");
-        for(Addon addon : managedAddons){
+        for (Addon addon : managedAddons) {
             UpdateResponse response = addon.checkForUpdate();
-            if(!response.isUpdateAvailable()){
+            if (!response.isUpdateAvailable()) {
                 Log.verbose(addon.getName() + " by " + addon.getAuthor() + " is up to date!");
                 continue;
             }
@@ -37,26 +38,29 @@ public class AddonManager {
         Log.log("Finished updating!");
     }
 
-    public boolean addNewAddon(AddonRequest request){
+    public boolean addNewAddon(AddonRequest request) {
         Log.log("Attempting to track new addon ...");
 
         UrlInfo urlInfo = UrlInfo.examineAddonUrl(request.origin);
-        if(!urlInfo.isValid){
+        if (!urlInfo.isValid) {
             Log.log("Could not track addon!");
             return false;
         }
         String trimmedOrigin = "";
-        switch (urlInfo.addonSource){
+        switch (urlInfo.addonSource) {
             case curseforge:
                 trimmedOrigin = UrlInfo.trimCurseForgeUrl(request.origin);
                 break;
             case github:
                 trimmedOrigin = UrlInfo.trimGitHubUrl(request.origin);
                 break;
+            case wowinterface:
+                trimmedOrigin = UrlInfo.trimCurseForgeUrl(request.origin);
+                break;
         }
 
-        for(Addon addon : managedAddons){
-            if(!addon.getOrigin().equals(trimmedOrigin)){
+        for (Addon addon : managedAddons) {
+            if (!addon.getOrigin().equals(trimmedOrigin)) {
                 continue;
             }
             Log.log(addon.getName() + " already being tracked!");
@@ -65,17 +69,19 @@ public class AddonManager {
 
         Scraper scraper = null;
 
-        switch (urlInfo.addonSource){
+        switch (urlInfo.addonSource) {
             case curseforge:
                 scraper = new CurseForgeScraper(trimmedOrigin);
                 break;
             case github:
                 scraper = new GitHubScraper(trimmedOrigin, request.branch, request.releases);
                 break;
+            case wowinterface:
+                scraper = new WowInterfaceScraper(trimmedOrigin);
         }
 
         // Not relevant for github, so github is hardcoded to be 200
-        if(scraper.getStatuscode() != 200){
+        if (scraper.getStatuscode() != 200) {
             Log.verbose("Status code: " + scraper.getStatuscode());
             Log.log("Failed to track addon!");
             return false;
@@ -92,11 +98,11 @@ public class AddonManager {
         return true;
     }
 
-    public boolean removeAddon(int addonNum){
+    public boolean removeAddon(int addonNum) {
         //TODO: Make it actually delete the folders
         Log.log("Attempting to remove addon ...");
 
-        if(addonNum > managedAddons.size()){
+        if (addonNum > managedAddons.size()) {
             Log.log("com.CAM.AddonManagement.Addon #" + addonNum + " was not found!");
             return false;
         }
@@ -110,12 +116,12 @@ public class AddonManager {
         return true;
     }
 
-    public static AddonManager initialize(UserInput userInput){
+    public static AddonManager initialize(UserInput userInput) {
         Log.verbose("Looking for managed.json file ...");
-        if(!new File("data/managed.json").isFile()){
+        if (!new File("data/managed.json").isFile()) {
             Log.verbose("No managed.json file found!");
             String installLocation = specifyInstallLocation(userInput);
-            if(installLocation == null){
+            if (installLocation == null) {
                 return null;
             }
             AddonManager manager = new AddonManager(installLocation);
@@ -130,7 +136,7 @@ public class AddonManager {
         try {
             Reader reader = new FileReader("data/managed.json");
             Gson gson = new Gson();
-            addonManager =  gson.fromJson(reader, AddonManager.class);
+            addonManager = gson.fromJson(reader, AddonManager.class);
             reader.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -141,7 +147,7 @@ public class AddonManager {
         return addonManager;
     }
 
-    public void saveToFile(){
+    public void saveToFile() {
         Log.verbose("Attempting to save to managed.json ...");
         try {
             Gson gson = new Gson();
@@ -157,7 +163,7 @@ public class AddonManager {
         Log.verbose("Successfully saved to managed.json!");
     }
 
-    public void install(Addon addon){
+    public void install(Addon addon) {
         // Uninstall old save for clean updating
         Log.verbose("Attempting install of addon " + addon.getName() + " ...");
         uninstall(addon);
@@ -165,18 +171,18 @@ public class AddonManager {
         List<FileHeader> headers = FileOperations.unzip(zipPath, installLocation);
         logInstallation(addon, headers);
         FileOperations.deleteFile(zipPath);
-        if(addon.getOrigin().contains("github")){
+        if (addon.getOrigin().contains("github")) {
             renameFolders(addon);
         }
         Log.verbose("Successfully installed addon!");
     }
 
-    private void renameFolders(Addon addon){
+    private void renameFolders(Addon addon) {
         Set<String> directories = readInstallationLog(addon);
         Set<String> renamedDirectories = new HashSet<>();
-        for(String directory : directories){
+        for (String directory : directories) {
             String fullPath = installLocation + "\\" + directory;
-            if(!determineIfFolderShouldBeRenamed(fullPath)){
+            if (!determineIfFolderShouldBeRenamed(fullPath)) {
                 renamedDirectories.add(directory);
             }
             String newName = renameFolderToTOCName(fullPath);
@@ -185,7 +191,7 @@ public class AddonManager {
         logRename(addon, renamedDirectories);
     }
 
-    private void logRename(Addon addon, Set<String> directories){
+    private void logRename(Addon addon, Set<String> directories) {
         Log.verbose("Attempting to log rename ...");
 
         try {
@@ -202,12 +208,12 @@ public class AddonManager {
         Log.verbose("Successfully logged rename!");
     }
 
-    private boolean determineIfFolderShouldBeRenamed(String path){
+    private boolean determineIfFolderShouldBeRenamed(String path) {
         Log.verbose("Determining if folder should be renamed ...");
         String[] pathParts = path.split("/");
         String folderName = pathParts[pathParts.length - 1];
         String requiredName = FileOperations.determineTOCName(path);
-        if(folderName.equals(requiredName)){
+        if (folderName.equals(requiredName)) {
             Log.verbose("Folder name matches TOC file!");
             return false;
         }
@@ -215,14 +221,14 @@ public class AddonManager {
         return true;
     }
 
-    private String renameFolderToTOCName(String path){
+    private String renameFolderToTOCName(String path) {
         String tocName = FileOperations.determineTOCName(path);
         FileOperations.renameDirectory(path, tocName);
         return tocName;
     }
 
 
-    private void logInstallation(Addon addon, List<FileHeader> headers){
+    private void logInstallation(Addon addon, List<FileHeader> headers) {
         Log.verbose("Attempting to log installation ...");
 
         try {
@@ -240,10 +246,10 @@ public class AddonManager {
         Log.verbose("Successfully logged installation!");
     }
 
-    private void uninstall(Addon addon){
+    private void uninstall(Addon addon) {
         Log.verbose("Attempting uninstall of " + addon.getName() + " ...");
         Set<String> directories = readInstallationLog(addon);
-        for(String directory : directories){
+        for (String directory : directories) {
             String fullPath = installLocation + "\\" + directory;
             FileOperations.deleteDirectory(fullPath);
         }
@@ -251,12 +257,12 @@ public class AddonManager {
         Log.verbose("Finished uninstall!");
     }
 
-    public Set<String> readInstallationLog(Addon addon){
+    public Set<String> readInstallationLog(Addon addon) {
         Log.verbose("Looking for addon installation log ...");
 
         String filePath = getInstallationLogPath(addon);
 
-        if(!new File(filePath).isFile()){
+        if (!new File(filePath).isFile()) {
             Log.verbose("No installation log found!");
             return new HashSet<>();
         }
@@ -267,7 +273,7 @@ public class AddonManager {
         try {
             Reader reader = new FileReader(filePath);
             Gson gson = new Gson();
-            directories =  gson.fromJson(reader, HashSet.class);
+            directories = gson.fromJson(reader, HashSet.class);
             reader.close();
             Log.verbose("Directories: " + directories);
         } catch (IOException e) {
@@ -280,23 +286,22 @@ public class AddonManager {
     }
 
 
-
-    public List<Addon> getManagedAddons(){
+    public List<Addon> getManagedAddons() {
         return managedAddons;
     }
 
 
     //HELPER METHODS
 
-    public static boolean verifyInstallLocation(String path){
+    public static boolean verifyInstallLocation(String path) {
         Log.verbose("Checking supplied path ...");
         String exePath = path + "\\Wow.exe";
-        if(!(new File(exePath).exists())){
+        if (!(new File(exePath).exists())) {
             Log.verbose("Wow.exe not found!");
             return false;
         }
         String version = FileOperations.getFileVersion(exePath);
-        if(!version.startsWith("1.")){
+        if (!version.startsWith("1.")) {
             Log.verbose("Non-classic client!");
             return false;
         }
@@ -304,31 +309,32 @@ public class AddonManager {
         return true;
     }
 
-    public String getInstallationLogPath(Addon addon){
-        return  "data/managed/"+ addon.getName() + ".json";
+    public String getInstallationLogPath(Addon addon) {
+        return "data/managed/" + addon.getName() + ".json";
     }
 
-    private Set<String> getOnlyRootDirectories(List<FileHeader> headers){
+    private Set<String> getOnlyRootDirectories(List<FileHeader> headers) {
         Set<String> rootDirectories = new HashSet<>();
 
-        for(FileHeader header : headers){
+        for (FileHeader header : headers) {
             String[] headerInfo = header.getFileName().split("/");
             rootDirectories.add(headerInfo[0]);
         }
         return rootDirectories;
     }
 
-    public void setInstallLocation(String installLocation){
+    public void setInstallLocation(String installLocation) {
         this.installLocation = installLocation;
         saveToFile();
     }
 
-    public static String specifyInstallLocation(UserInput userInput){
+    public static String specifyInstallLocation(UserInput userInput) {
         boolean validPath = false;
         String input = null;
-        while (!validPath){
+        while (!validPath) {
             UserInputResponse response = userInput.getUserInput();
-            if(response.isAbort()){
+            input = response.getInput();
+            if (response.isAbort()) {
                 return null;
             }
             validPath = verifyInstallLocation(response.getInput());
