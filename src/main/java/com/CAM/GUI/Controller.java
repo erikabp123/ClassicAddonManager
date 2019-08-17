@@ -102,6 +102,10 @@ public class Controller implements Initializable {
     @FXML
     private void setupAction(){
         UserInput userInput = new GUIUserInput("Please provide path to WoW Classic Installation");
+        String installLocation = AddonManager.specifyInstallLocation(userInput);
+        if(installLocation == null){
+            return;
+        }
         addonManager.setInstallLocation(AddonManager.specifyInstallLocation(userInput));
     }
 
@@ -284,12 +288,18 @@ public class Controller implements Initializable {
         buttonRemove.setDisable(true);
         buttonAdd.setDisable(true);
         buttonUpdate.setDisable(true);
+        textFieldURL.setDisable(true);
+        textFieldBranch.setDisable(true);
+        checkboxReleases.setDisable(true);
     }
 
     private void enableAll(){
         buttonRemove.setDisable(false);
         buttonAdd.setDisable(false);
         buttonUpdate.setDisable(false);
+        textFieldURL.setDisable(false);
+        textFieldBranch.setDisable(false);
+        checkboxReleases.setDisable(false);
     }
 
 
