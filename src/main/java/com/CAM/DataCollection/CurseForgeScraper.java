@@ -38,12 +38,12 @@ public class CurseForgeScraper extends Scraper {
 
     @Override
     public String getName(){
-        Log.verbose("Fetching author name!");
+        Log.verbose("Fetching addon name!");
         HtmlPage page = getScrapedPage();
         HtmlHeading2 nameHeading = (HtmlHeading2) page.getByXPath("//h2").get(0);
         String name = nameHeading.asText();
-        Log.verbose("Found author name: " + name);
-        return name;
+        Log.verbose("Found addon name: " + name);
+        return sanatizeInput(name);
     }
 
     @Override
@@ -53,14 +53,15 @@ public class CurseForgeScraper extends Scraper {
         HtmlAnchor authorAnchor = (HtmlAnchor) page.getByXPath("//a[contains(@href, '/members/')]").get(1);
         String author = authorAnchor.getChildren().iterator().next().asText();
         Log.verbose("Found author: " + author);
-        return author;
+        return sanatizeInput(author);
     }
 
     @Override
     public String getFileName(){
         HtmlPage page = getScrapedPage();
         HtmlTableRow row = findFirstDownloadRow(page);
-        return findFileAnchor(row).asText();
+        String fileName = findFileAnchor(row).asText();
+        return sanatizeInput(fileName);
     }
 
     //HELPER METHODS

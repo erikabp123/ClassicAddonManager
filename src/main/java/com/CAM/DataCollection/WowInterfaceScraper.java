@@ -45,7 +45,7 @@ public class WowInterfaceScraper extends Scraper {
         String name = nameHeading.asText();
         String trimmed = name.replace("&nbsp; ", "");
         Log.verbose("Found author name: " + trimmed);
-        return trimmed;
+        return sanatizeInput(trimmed);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class WowInterfaceScraper extends Scraper {
         HtmlAnchor authorAnchor = (HtmlAnchor) authorDiv.getByXPath(".//a").get(0);
         String author = authorAnchor.getTextContent().replace("<b>", "").replace("<\\b>", "");
         Log.verbose("Found author: " + author);
-        return author;
+        return sanatizeInput(author);
     }
 
     @Override
@@ -64,6 +64,6 @@ public class WowInterfaceScraper extends Scraper {
         HtmlPage page = getScrapedPage();
         HtmlDivision fileNameDiv = (HtmlDivision) page.getByXPath("//div[@id='version']").get(0);
         String fileName = fileNameDiv.getTextContent().replace("Version: ", "");
-        return fileName;
+        return sanatizeInput(fileName);
     }
 }

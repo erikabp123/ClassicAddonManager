@@ -120,4 +120,13 @@ public abstract class Scraper {
     public void setBranch(String branch) {
         this.branch = branch;
     }
+
+    public static String sanatizeInput(String input){
+        String sanatized = input;
+        String[] illegals = {"?", "!", "\\", "/"};
+        for(int i=0; i<illegals.length; i++){
+            sanatized = sanatized.replace(illegals[i], "");
+        }
+        return sanatized;
+    }
 }
