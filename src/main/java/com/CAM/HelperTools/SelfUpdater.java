@@ -38,9 +38,9 @@ public class SelfUpdater {
                     String path = fetchNewVersion(downloadLink);
                     Platform.runLater(() -> {
                         Alert alert1 = new Alert(Alert.AlertType.WARNING);
-                        alert1.setTitle("Update Restart");
-                        alert1.setHeaderText("Updated requires restart");
-                        alert1.setContentText("To apply the new update, Classic Addon Manager will now restart!");
+                        alert1.setTitle("Update Shutdown");
+                        alert1.setHeaderText("Update requires restart");
+                        alert1.setContentText("To apply the new update, Classic Addon Manager will now shutdown!");
                         alert1.showAndWait();
                         Thread installerThread = new Thread(() -> launcherUpdateInstaller());
                         installerThread.start();
