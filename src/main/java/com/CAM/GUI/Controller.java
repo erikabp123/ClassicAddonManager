@@ -11,6 +11,8 @@ import com.CAM.HelperTools.UserInput;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -93,6 +95,8 @@ public class Controller implements Initializable {
     final ObservableList<String> listItems = FXCollections.observableArrayList();
 
     private AddonManager addonManager;
+
+    private ContextMenu contextMenuOutputLog;
 
     @FXML
     private void releasesAction(){
@@ -270,6 +274,15 @@ public class Controller implements Initializable {
         listViewAddons.setItems(listItems);
         Log.listen(new GUILogListener(textAreaOutputLog));
         progressBarListen();
+        setupOutputLogContextMenu();
+    }
+
+    private void setupOutputLogContextMenu(){
+        contextMenuOutputLog = new ContextMenu();
+        MenuItem clearLog = new MenuItem("Clear log");
+        clearLog.setOnAction(event -> textAreaOutputLog.clear());
+        contextMenuOutputLog.getItems().add(clearLog);
+        textAreaOutputLog.setContextMenu(contextMenuOutputLog);
     }
 
     public void checkForUpdate(){
