@@ -331,6 +331,10 @@ public class AddonManager {
     public static String specifyInstallLocation(UserInput userInput) {
         boolean validPath = false;
         String input = null;
+        boolean proceed = userInput.askToProceedPrompt();
+        if(!proceed){
+            return null;
+        }
         while (!validPath) {
             UserInputResponse response = userInput.getUserInput();
             input = response.getInput();

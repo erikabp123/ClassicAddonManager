@@ -6,6 +6,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
 import java.io.File;
@@ -31,40 +32,35 @@ public class GUIUserInput implements UserInput {
 
     @Override
     public UserInputResponse getUserInput() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Setup Install Path");
-        alert.setHeaderText("Please provide path to WoW installation!");
-        alert.setContentText("To proceed Classic Addon Manager needs to know where WoW classic is installed, do you wish to proceed?");
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() != ButtonType.OK){
-            return new UserInputResponse(null, true);
-        }
-
-
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setTitle("Select path to classic wow installation");
-        File selectedDirectory = directoryChooser.showDialog(ownerWindow);
-        if (selectedDirectory == null) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Please select the WoW Classic 'wow.exe' file");
+        FileChooser.ExtensionFilter exeFilter = new FileChooser.ExtensionFilter("Exectuable files", "*.exe");
+        fileChooser.getExtensionFilters().add(exeFilter);
+        File selectedFile = fileChooser.showOpenDialog(ownerWindow);
+        if (selectedFile == null) {
             return new UserInputResponse(null, true);
         }
         String path = null;
         try {
-            path = selectedDirectory.getCanonicalPath();
+            path = selectedFile.getCanonicalPath();
+            path = path.substring(0, path.lastIndexOf("\\"));
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        /*
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setHeaderText(promptText);
-        Optional<String> result = dialog.showAndWait();
-        if(result.isEmpty()){
-            return new UserInputResponse(null, true);
-        }
-        String input = dialog.getEditor().getText();
-        return new UserInputResponse(input, false);
-         */
         return new UserInputResponse(path, false);
+    }
+
+    @Override
+    public boolean askToProceedPrompt() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Setup Install Path");
+        alert.setHeaderText("Please provide the path to your WoW Classic 'wow.exe' installation!");
+        alert.setContentText("To proceed, Classic Addon Manager needs to know where WoW classic is installed. Do you wish to proceed?");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() != ButtonType.OK){
+            return false;
+        }
+        return true;
     }
 }

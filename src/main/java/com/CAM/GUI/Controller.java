@@ -28,6 +28,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -110,7 +112,7 @@ public class Controller implements Initializable {
         if(installLocation == null){
             return;
         }
-        addonManager.setInstallLocation(AddonManager.specifyInstallLocation(userInput));
+        addonManager.setInstallLocation(installLocation);
     }
 
     @FXML
@@ -169,6 +171,10 @@ public class Controller implements Initializable {
             request.releases = releases;
 
             if(!isValidRequest(request)){
+                Platform.runLater(() -> {
+                    enableAll();
+                    imageViewAdd.setVisible(false);
+                });
                 return;
             }
 
@@ -280,8 +286,23 @@ public class Controller implements Initializable {
     private void setupOutputLogContextMenu(){
         contextMenuOutputLog = new ContextMenu();
         MenuItem clearLog = new MenuItem("Clear log");
+        MenuItem selectAll = new MenuItem("Select all");
+        MenuItem copy = new MenuItem("Copy");
+        MenuItem separator1 = new SeparatorMenuItem();
+        MenuItem separator2 = new SeparatorMenuItem();
+
         clearLog.setOnAction(event -> textAreaOutputLog.clear());
-        contextMenuOutputLog.getItems().add(clearLog);
+        selectAll.setOnAction(event -> textAreaOutputLog.selectAll());
+        copy.setOnAction(event -> {
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            String selected = textAreaOutputLog.getSelectedText();
+            if(selected.equals("")){
+                return;
+            }
+            clipboard.setContents(new StringSelection(selected), null);
+        });
+
+        contextMenuOutputLog.getItems().addAll(selectAll, separator1, copy, separator2, clearLog);
         textAreaOutputLog.setContextMenu(contextMenuOutputLog);
     }
 

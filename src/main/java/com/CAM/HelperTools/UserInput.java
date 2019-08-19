@@ -4,4 +4,6 @@ public interface UserInput {
 
     UserInputResponse getUserInput();
 
+    boolean askToProceedPrompt();
+
 }
