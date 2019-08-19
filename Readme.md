@@ -22,7 +22,7 @@ To start, simply double click the 'Classic Addon Manager.exe' file included in t
     Classic Addon Manager.exe
 ```
 
-Optionally you can also start the jar file manually through the command line, but this is not recommended.
+Optionally you can also start the jar file manually through the command line, but this is HIGHLY discouraged.
 
 ```
     java --illegal-access=deny -jar ClassicAddonManager.jar
@@ -36,9 +36,12 @@ Simply navigate to the location of your wow.exe file. e.g.
 
 ### Updating to newer versions
 
-As of verson 0.35 the addon manager features and auto-update feature.
+As of version 0.35 the addon manager features an auto-update feature.
 Each time the manager is launched it will look for an update and inform
-you if a new one is available. 
+you if a new one is available. The auto-updater will download and install the update for you.
+
+
+You can also choose to update manually (less recommended)
 
 To update manually:
  
