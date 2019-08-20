@@ -6,6 +6,9 @@ import com.CAM.DataCollection.Scraper;
 import com.CAM.DataCollection.WowInterfaceScraper;
 import com.CAM.HelperTools.*;
 import com.google.gson.Gson;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import net.lingala.zip4j.model.FileHeader;
 
 import java.io.*;
@@ -71,7 +74,7 @@ public class AddonManager {
 
         switch (urlInfo.addonSource) {
             case curseforge:
-                scraper = new CurseForgeScraper(trimmedOrigin);
+                scraper = CurseForgeScraper.makeScraper(trimmedOrigin);
                 break;
             case github:
                 scraper = new GitHubScraper(trimmedOrigin, request.branch, request.releases);

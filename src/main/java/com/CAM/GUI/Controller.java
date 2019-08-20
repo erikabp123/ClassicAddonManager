@@ -3,11 +3,9 @@ package com.CAM.GUI;
 import com.CAM.AddonManagement.Addon;
 import com.CAM.AddonManagement.AddonManager;
 import com.CAM.AddonManagement.AddonRequest;
+import com.CAM.DataCollection.CurseForgeScraper;
 import com.CAM.DataCollection.FileDownloader;
-import com.CAM.HelperTools.DownloadListener;
-import com.CAM.HelperTools.Log;
-import com.CAM.HelperTools.SelfUpdater;
-import com.CAM.HelperTools.UserInput;
+import com.CAM.HelperTools.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -35,6 +33,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
@@ -157,24 +156,34 @@ public class Controller implements Initializable {
 
     @FXML
     private void addAction(){
-        Thread addAddonThread = new Thread(() -> {
+        Thread precheckThread = new Thread(() -> {
             Platform.runLater(() -> {
                 disableAll();
                 imageViewAdd.setVisible(true);
             });
+
+            String origin = textFieldURL.getText();
+            if(!origin.contains("curseforge.com")){
+                startAddonAddThread();
+            }
+            checkIfProceedClassic(origin);
+        });
+        precheckThread.start();
+    }
+
+    private void startAddonAddThread(){
+        Thread addAddonThread = new Thread(() -> {
             String origin = textFieldURL.getText();
             String branch = textFieldBranch.getText();
             boolean releases = checkboxReleases.isSelected();
+
             AddonRequest request = new AddonRequest();
             request.origin = origin;
             request.branch = branch;
             request.releases = releases;
 
             if(!isValidRequest(request)){
-                Platform.runLater(() -> {
-                    enableAll();
-                    imageViewAdd.setVisible(false);
-                });
+cleanUpAfterAddAction();
                 return;
             }
 
@@ -186,6 +195,43 @@ public class Controller implements Initializable {
             });
         });
         addAddonThread.start();
+    }
+
+    private void checkIfProceedClassic(String origin){
+        UrlInfo urlInfo = UrlInfo.examineAddonUrl(origin);
+        if (!urlInfo.isValid) {
+            cleanUpAfterAddAction();
+            return;
+        }
+        String trimmedOrigin = UrlInfo.trimCurseForgeUrl(origin);
+        CurseForgeScraper scraper = new CurseForgeScraper(trimmedOrigin);
+        if(scraper.isClassicSupported()){
+            cleanUpAfterAddAction();
+            return;
+        }
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Non-Classic addon");
+            alert.setHeaderText("This addon does not seem to have an official classic release!");
+            alert.setContentText(scraper.getName() + " does not seem to have an official classic release. " +
+                    "Do you wish to add it anyway? This will result in downloading non-classic updates until classic ones are released.\n" +
+                    "NOTE: There is no guarantee this addon will work with classic!");
+
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get() != ButtonType.OK){
+                cleanUpAfterAddAction();
+                return;
+            }
+            startAddonAddThread();
+        });
+
+    }
+
+    private void cleanUpAfterAddAction(){
+        Platform.runLater(() -> {
+            enableAll();
+            imageViewAdd.setVisible(false);
+        });
     }
 
     private void progressBarListen(){

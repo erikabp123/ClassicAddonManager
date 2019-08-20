@@ -58,7 +58,7 @@ public class Addon implements Comparable<Addon> {
 
     private Scraper getScraper(){
         if(origin.contains("curseforge.com")){
-            return new CurseForgeScraper(origin);
+            return CurseForgeScraper.makeScraper(origin);
         }
         if(origin.contains("github.com")){
             return new GitHubScraper(origin, branch, releases);

@@ -3,18 +3,37 @@ package com.CAM.DataCollection;
 import com.CAM.HelperTools.DateConverter;
 import com.CAM.HelperTools.Log;
 import com.gargoylesoftware.htmlunit.html.*;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 public class CurseForgeScraper extends Scraper {
 
     private final static String gameVersion = "1738749986%3A67408"; //TODO: change to non-final and support automatic scraping of gameVersion in case it changes
     private final static String searchSuffix = "/files/all?filter-game-version=" + gameVersion;
+    private final static String nonOfficialSuffix = "/files/all";
     private final static String websiteUrl = "https://www.curseforge.com";
 
+    private String url;
+
+    public static CurseForgeScraper makeScraper(String url){
+        CurseForgeScraper scraper = new CurseForgeScraper(url + searchSuffix);
+        if(scraper.isClassicSupported()){
+            return scraper;
+        }
+        return getNonOfficialScraper(url);
+    }
+
+    public static CurseForgeScraper getNonOfficialScraper(String url){
+        return new CurseForgeScraper(url + nonOfficialSuffix);
+    }
+
     public CurseForgeScraper(String url) {
-        super(url + searchSuffix, false, false, true);
+        super(url, false, false, true);
     }
 
     @Override
@@ -105,5 +124,13 @@ public class CurseForgeScraper extends Scraper {
         HtmlTableCell fileCell = row.getCell(1);
         HtmlAnchor fileAnchor = (HtmlAnchor) fileCell.getChildren().iterator().next();
         return fileAnchor;
+    }
+
+    public boolean isClassicSupported(){
+        HtmlTableRow row = findFirstDownloadRow(getScrapedPage());
+        if(row == null){
+            return false;
+        }
+        return true;
     }
 }
