@@ -204,9 +204,9 @@ cleanUpAfterAddAction();
             return;
         }
         String trimmedOrigin = UrlInfo.trimCurseForgeUrl(origin);
-        CurseForgeScraper scraper = new CurseForgeScraper(trimmedOrigin);
+        CurseForgeScraper scraper = CurseForgeScraper.getOfficialScraper(trimmedOrigin);
         if(scraper.isClassicSupported()){
-            cleanUpAfterAddAction();
+            startAddonAddThread();
             return;
         }
         Platform.runLater(() -> {

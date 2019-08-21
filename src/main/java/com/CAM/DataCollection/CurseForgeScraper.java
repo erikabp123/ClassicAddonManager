@@ -21,7 +21,7 @@ public class CurseForgeScraper extends Scraper {
     private String url;
 
     public static CurseForgeScraper makeScraper(String url){
-        CurseForgeScraper scraper = new CurseForgeScraper(url + searchSuffix);
+        CurseForgeScraper scraper = getOfficialScraper(url);
         if(scraper.isClassicSupported()){
             return scraper;
         }
@@ -30,6 +30,10 @@ public class CurseForgeScraper extends Scraper {
 
     public static CurseForgeScraper getNonOfficialScraper(String url){
         return new CurseForgeScraper(url + nonOfficialSuffix);
+    }
+
+    public static CurseForgeScraper getOfficialScraper(String url){
+        return new CurseForgeScraper(url + searchSuffix);
     }
 
     public CurseForgeScraper(String url) {
