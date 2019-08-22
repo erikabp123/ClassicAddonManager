@@ -51,7 +51,7 @@
             <TextArea fx:id="textAreaOutputLog" editable="false" focusTraversable="false" layoutX="236.0" layoutY="51.0" prefHeight="200.0" prefWidth="380.0" />
             <Text fx:id="textOutputLogLabel" layoutX="396.0" layoutY="37.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Output Log" />
             <ImageView fx:id="imageViewAdd" fitHeight="13.0" fitWidth="104.0" layoutX="512.0" layoutY="327.0" pickOnBounds="true" preserveRatio="true" visible="false" />
-            <CheckBox fx:id="checkboxReleases" layoutX="16.0" layoutY="321.0" mnemonicParsing="false" onAction="#releasesAction" text="Use Releases" />
+            <CheckBox fx:id="checkboxReleases" layoutX="16.0" layoutY="321.0" mnemonicParsing="false" text="Use Releases" />
             <ImageView fx:id="imageViewUpdate" disable="true" fitHeight="150.0" fitWidth="200.0" layoutX="223.0" layoutY="127.0" pickOnBounds="true" preserveRatio="true" />
             <ProgressBar fx:id="progressBarDownload" disable="true" layoutX="236.0" layoutY="260.0" prefHeight="18.0" prefWidth="380.0" progress="0.0" visible="false" />
             <ProgressBar fx:id="progressBarUpdate" layoutX="14.0" layoutY="303.0" prefHeight="18.0" prefWidth="603.0" progress="0.0" visible="false" />

@@ -98,11 +98,6 @@ public class Controller implements Initializable {
     private ContextMenu contextMenuOutputLog;
 
     @FXML
-    private void releasesAction(){
-        textFieldBranch.setDisable(checkboxReleases.isSelected());
-    }
-
-    @FXML
     private void setupAction(){
         UserInput userInput = new GUIUserInput("Please provide path to WoW Classic Installation");
         String installLocation = AddonManager.specifyInstallLocation(userInput);
@@ -276,7 +271,6 @@ public class Controller implements Initializable {
         buttonUpdate.setDisable(true);
         buttonRemove.setDisable(true);
         buttonAdd.setDisable(true);
-        textFieldBranch.setDisable(true);
         textAreaOutputLog.setDisable(true);
         textFieldURL.setDisable(true);
         checkboxReleases.setDisable(true);
@@ -399,7 +393,6 @@ public class Controller implements Initializable {
         buttonAdd.setDisable(true);
         buttonUpdate.setDisable(true);
         textFieldURL.setDisable(true);
-        textFieldBranch.setDisable(true);
         checkboxReleases.setDisable(true);
     }
 
@@ -408,7 +401,6 @@ public class Controller implements Initializable {
         buttonAdd.setDisable(false);
         buttonUpdate.setDisable(false);
         textFieldURL.setDisable(false);
-        textFieldBranch.setDisable(false);
         checkboxReleases.setDisable(false);
     }
 
