@@ -2,6 +2,7 @@ package com.CAM.HelperTools;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 public class DateConverter {
@@ -46,7 +47,7 @@ public class DateConverter {
     public static Date convertFromWowInterface(String wowinterfaceFormat){
         Date date = null;
         try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy hh:mm a");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yy hh:mm a", Locale.US);
             date = dateFormat.parse(wowinterfaceFormat);
         } catch (ParseException e) {
             e.printStackTrace();
