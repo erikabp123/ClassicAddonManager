@@ -5,6 +5,7 @@ import com.CAM.AddonManagement.AddonManager;
 import com.CAM.AddonManagement.AddonRequest;
 import com.CAM.DataCollection.CurseForgeScraper;
 import com.CAM.DataCollection.FileDownloader;
+import com.CAM.DataCollection.GitHubScraper;
 import com.CAM.HelperTools.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -154,6 +155,32 @@ public class Controller implements Initializable {
         updateThread.start();
     }
 
+    private void determineBranch(String origin){
+        String trimmedOrigin = UrlInfo.trimGitHubUrl(origin);
+        ArrayList<String> names = GitHubScraper.getBranches(origin);
+        Platform.runLater(() -> {
+            ChoiceDialog<String> dialog = new ChoiceDialog<>();
+            dialog.getItems().addAll(names);
+
+            dialog.setTitle("Github Branch");
+            dialog.setHeaderText("The addon you're adding has the following branches:");
+            dialog.setContentText("Branch:");
+            if(names.contains("master")){
+                dialog.setSelectedItem("master");
+            } else {
+                dialog.setSelectedItem(names.get(0));
+            }
+
+            Optional<String> result = dialog.showAndWait();
+
+            if(!result.isPresent()){
+                cleanUpAfterAddAction();
+                return;
+            }
+            startAddonAddThread(result.get());
+        });
+    }
+
     @FXML
     private void addAction(){
         Thread precheckThread = new Thread(() -> {
@@ -163,18 +190,30 @@ public class Controller implements Initializable {
             });
 
             String origin = textFieldURL.getText();
-            if(!origin.contains("curseforge.com")){
-                startAddonAddThread();
+
+            UrlInfo urlInfo = UrlInfo.examineAddonUrl(origin);
+            if (!urlInfo.isValid) {
+                cleanUpAfterAddAction();
+                return;
             }
-            checkIfProceedClassic(origin);
+
+            if(origin.contains("curseforge.com")){
+                checkIfProceedClassic(origin);
+                return;
+            }
+            if(origin.contains("github.com")){
+                determineBranch(origin);
+                return;
+            }
+            startAddonAddThread(null);
+            return;
         });
         precheckThread.start();
     }
 
-    private void startAddonAddThread(){
+    private void startAddonAddThread(String branch){
         Thread addAddonThread = new Thread(() -> {
             String origin = textFieldURL.getText();
-            String branch = textFieldBranch.getText();
             boolean releases = checkboxReleases.isSelected();
 
             AddonRequest request = new AddonRequest();
@@ -183,7 +222,7 @@ public class Controller implements Initializable {
             request.releases = releases;
 
             if(!isValidRequest(request)){
-cleanUpAfterAddAction();
+                cleanUpAfterAddAction();
                 return;
             }
 
@@ -198,15 +237,10 @@ cleanUpAfterAddAction();
     }
 
     private void checkIfProceedClassic(String origin){
-        UrlInfo urlInfo = UrlInfo.examineAddonUrl(origin);
-        if (!urlInfo.isValid) {
-            cleanUpAfterAddAction();
-            return;
-        }
         String trimmedOrigin = UrlInfo.trimCurseForgeUrl(origin);
         CurseForgeScraper scraper = CurseForgeScraper.getOfficialScraper(trimmedOrigin);
         if(scraper.isClassicSupported()){
-            startAddonAddThread();
+            startAddonAddThread(null);
             return;
         }
         Platform.runLater(() -> {
@@ -222,9 +256,8 @@ cleanUpAfterAddAction();
                 cleanUpAfterAddAction();
                 return;
             }
-            startAddonAddThread();
+            startAddonAddThread(null);
         });
-
     }
 
     private void cleanUpAfterAddAction(){

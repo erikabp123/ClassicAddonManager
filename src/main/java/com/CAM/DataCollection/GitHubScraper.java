@@ -8,11 +8,13 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import netscape.javascript.JSObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 
@@ -152,6 +154,19 @@ public class GitHubScraper extends Scraper {
     public String getFileName() {
         String fileName = getName() + "-" + getBranch();
         return fileName;
+    }
+
+    public static ArrayList<String> getBranches(String repo){
+        ArrayList<String> branches = new ArrayList<>();
+        GitHubScraper scraper = new GitHubScraper(repo, null, false);
+        String author = scraper.getAuthor();
+        String name = scraper.getName();
+        String branchesApi = "https://api.github.com/repos/" + author + "/" + name + "/branches";
+        JsonArray array = scraper.getJsonArray(scraper.jsonScrape(branchesApi));
+        for(JsonElement branch : array){
+            branches.add(((JsonObject) branch).get("name").getAsString());
+        }
+        return branches;
     }
 
     @Override

@@ -58,7 +58,7 @@ public class AddonManager {
                 trimmedOrigin = UrlInfo.trimGitHubUrl(request.origin);
                 break;
             case wowinterface:
-                trimmedOrigin = UrlInfo.trimCurseForgeUrl(request.origin);
+                trimmedOrigin = UrlInfo.trimWowInterfaceUrl(request.origin);
                 break;
         }
 
