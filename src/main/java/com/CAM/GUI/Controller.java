@@ -59,9 +59,6 @@ public class Controller implements Initializable {
     private ImageView imageViewAdd;
 
     @FXML
-    private TextField textFieldBranch;
-
-    @FXML
     private CheckBox checkboxReleases;
 
     @FXML
