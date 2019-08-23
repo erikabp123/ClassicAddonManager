@@ -109,9 +109,14 @@ public class FileOperations {
     }
 
     public static void renameDirectory(String oldPath, String newName){
-        //File dir = new File(oldPath);
-        //File newDir = new File(dir.getParent() + "\\" + newName);
-        deleteDirectory(newName);
+        File dir = new File(oldPath);
+        String newPath = null;
+        try {
+            newPath = new File(dir.getParent() + "\\" + newName).getCanonicalPath();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        deleteDirectory(newPath);
         Path source = Paths.get(oldPath);
         try {
             Files.move(source, source.resolveSibling(newName));
