@@ -129,4 +129,6 @@ public abstract class Scraper {
         }
         return sanatized;
     }
+
+    public abstract boolean isValidLink();
 }

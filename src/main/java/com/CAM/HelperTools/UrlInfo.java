@@ -73,7 +73,7 @@ public class UrlInfo {
     }
 
     private static boolean isValidWowInterfaceUrl(String origin) {
-        String wowinterfacePrefix = "https://www.wowinterface.com/";
+        String wowinterfacePrefix = "https://www.wowinterface.com/downloads/";
         if(!isValidURL(origin)){
             return false;
         }

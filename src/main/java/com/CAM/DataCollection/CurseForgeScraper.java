@@ -18,7 +18,7 @@ public class CurseForgeScraper extends Scraper {
     private final static String nonOfficialSuffix = "/files/all";
     private final static String websiteUrl = "https://www.curseforge.com";
 
-    private String url;
+    private String baseUrl;
 
     public static CurseForgeScraper makeScraper(String url){
         CurseForgeScraper scraper = getOfficialScraper(url);
@@ -29,11 +29,15 @@ public class CurseForgeScraper extends Scraper {
     }
 
     public static CurseForgeScraper getNonOfficialScraper(String url){
-        return new CurseForgeScraper(url + nonOfficialSuffix);
+        CurseForgeScraper scraper = new CurseForgeScraper(url + nonOfficialSuffix);
+        scraper.setBaseUrl(url);
+        return scraper;
     }
 
     public static CurseForgeScraper getOfficialScraper(String url){
-        return new CurseForgeScraper(url + searchSuffix);
+        CurseForgeScraper scraper = new CurseForgeScraper(url + searchSuffix);
+        scraper.setBaseUrl(url);
+        return scraper;
     }
 
     public CurseForgeScraper(String url) {
@@ -87,6 +91,23 @@ public class CurseForgeScraper extends Scraper {
         return sanatizeInput(fileName);
     }
 
+    @Override
+    public boolean isValidLink() {
+        CurseForgeScraper scraper = this;
+        if(getUrl().endsWith(searchSuffix)){
+            scraper = getNonOfficialScraper(baseUrl);
+        }
+        HtmlPage page = scraper.getScrapedPage();
+        if(page == null){
+            return false;
+        }
+        HtmlTableRow downloadRow = scraper.findFirstDownloadRow(page);
+        if(downloadRow == null){
+            return false;
+        }
+        return true;
+    }
+
     //HELPER METHODS
 
     private HtmlTableRow findFirstDownloadRow(HtmlPage page){
@@ -136,5 +157,13 @@ public class CurseForgeScraper extends Scraper {
             return false;
         }
         return true;
+    }
+
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
     }
 }

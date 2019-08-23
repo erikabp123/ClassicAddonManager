@@ -179,6 +179,35 @@ public class GitHubScraper extends Scraper {
         this.branch = branch;
     }
 
+    @Override
+    public boolean isValidLink() {
+        if(releases){
+            if(!apiFound("releases")){
+                return false;
+            }
+            if(getRepoArray().size() == 0){
+                Log.log("The provided link does not have any releases!");
+                return false;
+            }
+            return true;
+        }
+        if(!apiFound("branches")){
+            return false;
+        }
+        return true;
+    }
+
+    private boolean apiFound(String suffix){
+        String author = getAuthor();
+        String name = getName();
+        String api = "https://api.github.com/repos/" + author + "/" + name + "/" + suffix;
+        Page response = jsonScrape(api);
+        if(response == null){
+            return false;
+        }
+        return true;
+    }
+
     public boolean isReleases() {
         return releases;
     }

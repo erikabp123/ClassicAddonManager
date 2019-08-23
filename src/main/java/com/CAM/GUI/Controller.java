@@ -10,13 +10,10 @@ import com.CAM.HelperTools.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
@@ -149,7 +146,7 @@ public class Controller implements Initializable {
 
     private void determineBranch(String origin){
         String trimmedOrigin = UrlInfo.trimGitHubUrl(origin);
-        ArrayList<String> names = GitHubScraper.getBranches(origin);
+        ArrayList<String> names = GitHubScraper.getBranches(trimmedOrigin);
         Platform.runLater(() -> {
             ChoiceDialog<String> dialog = new ChoiceDialog<>();
             dialog.getItems().addAll(names);
@@ -194,7 +191,22 @@ public class Controller implements Initializable {
                 return;
             }
             if(origin.contains("github.com")){
-                determineBranch(origin);
+                String trimmedOrigin = UrlInfo.trimGitHubUrl(origin);
+                GitHubScraper scraper = new GitHubScraper(trimmedOrigin, null, true);
+                if(!checkboxReleases.isSelected()){
+                    scraper.setReleases(false);
+                    if(!scraper.isValidLink()){
+                        cleanUpAfterAddAction();
+                        return;
+                    }
+                    determineBranch(origin);
+                    return;
+                }
+                if(!scraper.isValidLink()){
+                    cleanUpAfterAddAction();
+                    return;
+                }
+                startAddonAddThread(null);
                 return;
             }
             startAddonAddThread(null);
@@ -231,6 +243,11 @@ public class Controller implements Initializable {
     private void checkIfProceedClassic(String origin){
         String trimmedOrigin = UrlInfo.trimCurseForgeUrl(origin);
         CurseForgeScraper scraper = CurseForgeScraper.getOfficialScraper(trimmedOrigin);
+        if(!scraper.isValidLink()){
+            Log.log("Link does not point to an addon!");
+            cleanUpAfterAddAction();
+            return;
+        }
         if(scraper.isClassicSupported()){
             startAddonAddThread(null);
             return;

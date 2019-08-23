@@ -5,6 +5,7 @@ import com.CAM.HelperTools.Log;
 import com.gargoylesoftware.htmlunit.html.*;
 
 import java.util.Date;
+import java.util.List;
 
 public class WowInterfaceScraper extends Scraper {
 
@@ -65,5 +66,15 @@ public class WowInterfaceScraper extends Scraper {
         HtmlDivision fileNameDiv = (HtmlDivision) page.getByXPath("//div[@id='version']").get(0);
         String fileName = fileNameDiv.getTextContent().replace("Version: ", "");
         return sanatizeInput(fileName);
+    }
+
+    @Override
+    public boolean isValidLink() {
+        HtmlPage page = getScrapedPage();
+        List<?> downloadDivList =  page.getByXPath("//div[@id='download']");
+        if(downloadDivList.isEmpty()){
+            return false;
+        }
+        return true;
     }
 }

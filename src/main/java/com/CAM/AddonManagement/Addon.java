@@ -70,7 +70,7 @@ public class Addon implements Comparable<Addon> {
 
     @Override
     public int compareTo(Addon o) {
-        return name.compareTo(o.name);
+        return name.toLowerCase().compareTo(o.name.toLowerCase());
     }
 
 

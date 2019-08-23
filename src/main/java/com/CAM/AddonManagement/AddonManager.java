@@ -89,6 +89,13 @@ public class AddonManager {
             Log.log("Failed to track addon!");
             return false;
         }
+
+        if(!scraper.isValidLink()){
+            Log.log("Url does not point to an addon!");
+            Log.log("Failed to track addon!");
+            return false;
+        }
+
         String name = scraper.getName();
         String author = scraper.getAuthor();
         Addon newAddon = new Addon(name, author, trimmedOrigin, request.branch, request.releases);
