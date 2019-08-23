@@ -95,10 +95,6 @@ Github addons require you to specify wheter the author wants you to download his
 
 To update the addons, simply press the 'update addons' button and the manager will check each managed addon for updates and if there are any available it will download and install them.
 
-```
-    TODO: Add screenshot
-```
-
 
 ## How it works (technical)
 
