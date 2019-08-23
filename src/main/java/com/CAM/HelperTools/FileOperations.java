@@ -6,6 +6,9 @@ import net.lingala.zip4j.model.FileHeader;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,22 +89,35 @@ public class FileOperations {
         return frankenstein;
     }
 
-    public static File[] fileFinder(String dirName){
+    public static File[] fileFinder(String dirName, FileFilter fileFilter){
         File dir = new File(dirName);
-        return dir.listFiles((dir1, filename) -> filename.endsWith(".toc"));
+        File[] files = dir.listFiles(fileFilter);
+        return files;
     }
 
     public static String determineTOCName(String directory){
         Log.verbose("Determining TOC file name ...");
-        String tocName = fileFinder(directory)[0].getName().replace(".toc", "");
+        FileFilter tocFilter = pathname -> {
+            if(!pathname.getName().endsWith(".toc")){
+                return false;
+            }
+            return true;
+        };
+        String tocName = fileFinder(directory, tocFilter)[0].getName().replace(".toc", "");
         Log.verbose("TOC with name " + tocName + "!");
         return tocName;
     }
 
     public static void renameDirectory(String oldPath, String newName){
-        File dir = new File(oldPath);
-        File newDir = new File(dir.getParent() + "\\" + newName);
-        dir.renameTo(newDir);
+        //File dir = new File(oldPath);
+        //File newDir = new File(dir.getParent() + "\\" + newName);
+        Path source = Paths.get(oldPath);
+        try {
+            Files.move(source, source.resolveSibling(newName));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //dir.renameTo(newDir);
     }
 
 
