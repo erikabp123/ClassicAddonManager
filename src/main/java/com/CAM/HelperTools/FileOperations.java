@@ -111,6 +111,7 @@ public class FileOperations {
     public static void renameDirectory(String oldPath, String newName){
         //File dir = new File(oldPath);
         //File newDir = new File(dir.getParent() + "\\" + newName);
+        deleteDirectory(oldPath);
         Path source = Paths.get(oldPath);
         try {
             Files.move(source, source.resolveSibling(newName));
