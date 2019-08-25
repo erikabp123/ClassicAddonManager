@@ -25,6 +25,9 @@
             <MenuItem fx:id="menuSetup" mnemonicParsing="false" onAction="#setupAction" text="Setup" />
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem fx:id="menuDebug" mnemonicParsing="false" onAction="#toggleDebugAction" text="Toggle Debug" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem fx:id="menuExport" mnemonicParsing="false" onAction="#exportAction" text="Export Addon List" />
+                  <MenuItem fx:id="menuImport" mnemonicParsing="false" onAction="#importAction" text="Import Addon List" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">

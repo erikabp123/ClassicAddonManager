@@ -91,6 +91,7 @@ public class FileOperations {
 
     public static File[] fileFinder(String dirName, FileFilter fileFilter){
         File dir = new File(dirName);
+        System.out.println("Is directory: " + dir.isDirectory());
         File[] files = dir.listFiles(fileFilter);
         return files;
     }
@@ -131,8 +132,13 @@ public class FileOperations {
     }
 
     public static void moveFile(String curPath, String newPath){
-        File file = new File(curPath);
-
+        File curDir = new File(curPath);
+        File newDir = new File(newPath);
+        try {
+            FileUtils.moveDirectory(curDir, newDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 

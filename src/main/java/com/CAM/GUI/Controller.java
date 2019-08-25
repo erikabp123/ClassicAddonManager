@@ -7,6 +7,8 @@ import com.CAM.DataCollection.CurseForgeScraper;
 import com.CAM.DataCollection.FileDownloader;
 import com.CAM.DataCollection.GitHubScraper;
 import com.CAM.HelperTools.*;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -87,6 +89,68 @@ public class Controller implements Initializable {
 
     @FXML
     public Text updatingVersionLabel;
+
+    @FXML
+    private void exportAction(){
+        Thread exportThread = new Thread(() -> {
+            ArrayList<Addon> addons = new ArrayList<>();
+            for(Addon addon : addonManager.getManagedAddons()){
+                addons.add(addon.export());
+            }
+            Gson gson = new Gson();
+            String exportString = gson.toJson(addons);
+
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Exported Addon List");
+                alert.setHeaderText("Send this to you friend!");
+                alert.setContentText(null);
+
+                TextArea textArea = new TextArea();
+                textArea.setText(exportString);
+                alert.getDialogPane().setContent(textArea);
+
+                alert.showAndWait();
+            });
+        });
+        exportThread.start();
+    }
+
+    @FXML
+    private void importAction(){
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Import Addon List");
+        alert.setHeaderText("Paste Addon Export Here");
+        alert.setContentText(null);
+
+        TextArea textArea = new TextArea();
+        alert.getDialogPane().setContent(textArea);
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() != ButtonType.OK){
+            return;
+        }
+
+        Thread importThread = new Thread(() -> {
+            Gson gson = new Gson();
+            ArrayList<Addon> imported = null;
+            try {
+                imported = gson.fromJson(textArea.getText(), new TypeToken<ArrayList<Addon>>(){}.getType());
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    Alert alertIncorrect = new Alert(Alert.AlertType.INFORMATION);
+                    alertIncorrect.setTitle("Invalid Import");
+                    alertIncorrect.setHeaderText("Import String was invalid!");
+                    alertIncorrect.setContentText("Double check the string and try again!");
+                    alertIncorrect.showAndWait();
+                });
+                return;
+            }
+            addonManager.importAddonList(imported);
+            Platform.runLater(() -> updateListView());
+        });
+        importThread.start();
+    }
 
     final ObservableList<String> listItems = FXCollections.observableArrayList();
 

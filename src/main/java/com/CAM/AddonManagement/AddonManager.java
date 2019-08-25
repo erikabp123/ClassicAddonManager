@@ -6,12 +6,8 @@ import com.CAM.DataCollection.Scraper;
 import com.CAM.DataCollection.WowInterfaceScraper;
 import com.CAM.HelperTools.*;
 import com.google.gson.Gson;
-import javafx.application.Platform;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import net.lingala.zip4j.model.FileHeader;
 
-import java.awt.desktop.SystemSleepEvent;
 import java.io.*;
 import java.util.*;
 
@@ -24,6 +20,25 @@ public class AddonManager {
     public AddonManager(String installLocation) {
         this.managedAddons = new ArrayList<>();
         this.installLocation = installLocation;
+    }
+
+    public void importAddonList(ArrayList<Addon> addons){
+        for (Addon addon : addons) {
+            if(listContainsAddon(addon)){
+                continue;
+            }
+            managedAddons.add(addon);
+        }
+        saveToFile();
+    }
+
+    private boolean listContainsAddon(Addon addon){
+        for(Addon storedAddon : managedAddons){
+            if (addon.getOrigin().equals(storedAddon.getOrigin())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void updateAddons() {
@@ -187,48 +202,71 @@ public class AddonManager {
             String fullPathToDirectory = installLocation + "\\" + directory;
             directoriesFullPaths.add(fullPathToDirectory);
         }
-        handleAllSubFolders(directoriesFullPaths);
+        Set<String> tocFolders = new HashSet<>();
+        handleAllSubFolders(directoriesFullPaths, tocFolders);
+        Set<String> newDirectories = new HashSet<>();
+        for(String fullPath : tocFolders){
+            File file = new File(fullPath);
+            newDirectories.add(file.getName());
+        }
+        logRename(addon, newDirectories);
+        /*
         if(addon.getOrigin().contains("github")) {
             renameFolders(addon);
         }
+         */
         Log.verbose("Successfully installed addon!");
     }
 
-    private Set<String> handleAllSubFolders(Set<String> directories){
-        Set<String> tocFolders = new HashSet<>();
+    private void handleAllSubFolders(Set<String> directories, Set<String> tocFolders){
         for(String directory : directories){
-            tocFolders.addAll(handleFolder(directory));
+            handleFolder(directory, tocFolders);
         }
-        return tocFolders;
     }
 
-    private Set<String> handleFolder(String directory){
-        Set<String> tocFolders = new HashSet<>();
+    private void handleFolder(String directory, Set<String> tocFolders){
+        System.out.println("Handling: " + directory);
         if(!containsSubFolders(directory)){
             tocFolders.add(directory);
-            return tocFolders;
+            return;
         }
         String newPath = renameParentFolder(directory);
-        Set<String> movedFolders = moveChildFoldersUp(newName);
-        deleteParentFolder(newName);
-        return movedFolders;
+        Set<String> moved = moveChildFoldersUp(newPath);
+        deleteParentFolder(newPath);
+        handleAllSubFolders(moved, tocFolders);
+    }
+
+    private void deleteParentFolder(String newPath) {
+        FileOperations.deleteDirectory(newPath);
     }
 
     private Set<String> moveChildFoldersUp(String parentPath) {
+        Set<String> moved = new HashSet<>();
         File dir = new File(parentPath);
         File[] files = dir.listFiles();
         for(int i=0; i<files.length; i++){
-            String curPath = files[i].getCanonicalPath();
-            String newPath = files[i].getParent() + "\\" + files[i].getName();
+            if(!files[i].isDirectory()){
+                continue;
+            }
+            String curPath = null;
+            String newPath = null;
+            try {
+                curPath = files[i].getCanonicalPath();
+                newPath = files[i].getParentFile().getParent() + "\\" + files[i].getName();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println("Moving: " + curPath + " to " + newPath);
             FileOperations.moveFile(curPath, newPath);
+            moved.add(newPath);
         }
-        FileOperations.moveFile();
+        return moved;
     }
 
     private String renameParentFolder(String path) {
         String newName = "CAM_BEING_RENAMED";
         FileOperations.renameDirectory(path, newName);
-        String[] pathParts = path.split("\\");
+        String[] pathParts = path.split("\\\\");
         String newPath = "";
         for(int i=0; i<pathParts.length - 1; i++){
             newPath = newPath + "\\" + pathParts[i];

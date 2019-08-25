@@ -23,6 +23,10 @@ public class Addon implements Comparable<Addon> {
         this.releases = releases;
     }
 
+    public Addon export(){
+        return new Addon(name, author, origin, branch, releases);
+    }
+
     public boolean fetchUpdate(Scraper scraper){
         //TODO: Consider tracking folders installed so that deleting is easier
         Log.verbose("Attempting to fetch update ...");
