@@ -91,7 +91,6 @@ public class FileOperations {
 
     public static File[] fileFinder(String dirName, FileFilter fileFilter){
         File dir = new File(dirName);
-        System.out.println("Is directory: " + dir.isDirectory());
         File[] files = dir.listFiles(fileFilter);
         return files;
     }

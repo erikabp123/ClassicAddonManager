@@ -210,11 +210,9 @@ public class AddonManager {
             newDirectories.add(file.getName());
         }
         logRename(addon, newDirectories);
-        /*
         if(addon.getOrigin().contains("github")) {
             renameFolders(addon);
         }
-         */
         Log.verbose("Successfully installed addon!");
     }
 
@@ -284,12 +282,11 @@ public class AddonManager {
     private void renameFolders(Addon addon) {
         Set<String> directories = readInstallationLog(addon);
         Set<String> renamedDirectories = new HashSet<>();
-        System.out.println("Directories: ");
         for (String directory : directories) {
-            System.out.println(directory);
             String fullPath = installLocation + "\\" + directory;
             if (!determineIfFolderShouldBeRenamed(fullPath)) {
                 renamedDirectories.add(directory);
+                continue;
             }
             String newName = renameFolderToTOCName(fullPath);
             renamedDirectories.add(newName);
@@ -316,7 +313,7 @@ public class AddonManager {
 
     private boolean determineIfFolderShouldBeRenamed(String path) {
         Log.verbose("Determining if folder should be renamed ...");
-        String[] pathParts = path.split("/");
+        String[] pathParts = path.split("\\\\");
         String folderName = pathParts[pathParts.length - 1];
         String requiredName = FileOperations.determineTOCName(path);
         if (folderName.equals(requiredName)) {
