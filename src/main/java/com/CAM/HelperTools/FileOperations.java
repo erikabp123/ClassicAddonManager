@@ -103,7 +103,11 @@ public class FileOperations {
             }
             return true;
         };
-        String tocName = fileFinder(directory, tocFilter)[0].getName().replace(".toc", "");
+        File[] tocFiles = fileFinder(directory, tocFilter);
+        if(tocFiles.length == 0){
+            return null;
+        }
+        String tocName = tocFiles[0].getName().replace(".toc", "");
         Log.verbose("TOC with name " + tocName + "!");
         return tocName;
     }
@@ -124,6 +128,11 @@ public class FileOperations {
             e.printStackTrace();
         }
         //dir.renameTo(newDir);
+    }
+
+    public static void moveFile(String curPath, String newPath){
+        File file = new File(curPath);
+
     }
 
 

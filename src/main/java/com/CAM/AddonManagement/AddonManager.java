@@ -11,6 +11,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import net.lingala.zip4j.model.FileHeader;
 
+import java.awt.desktop.SystemSleepEvent;
 import java.io.*;
 import java.util.*;
 
@@ -181,16 +182,73 @@ public class AddonManager {
         List<FileHeader> headers = FileOperations.unzip(zipPath, installLocation);
         logInstallation(addon, headers);
         FileOperations.deleteFile(zipPath);
-        if (addon.getOrigin().contains("github")) {
+        Set<String> directoriesFullPaths = new HashSet<>();
+        for(String directory : readInstallationLog(addon)){
+            String fullPathToDirectory = installLocation + "\\" + directory;
+            directoriesFullPaths.add(fullPathToDirectory);
+        }
+        handleAllSubFolders(directoriesFullPaths);
+        if(addon.getOrigin().contains("github")) {
             renameFolders(addon);
         }
         Log.verbose("Successfully installed addon!");
     }
 
+    private Set<String> handleAllSubFolders(Set<String> directories){
+        Set<String> tocFolders = new HashSet<>();
+        for(String directory : directories){
+            tocFolders.addAll(handleFolder(directory));
+        }
+        return tocFolders;
+    }
+
+    private Set<String> handleFolder(String directory){
+        Set<String> tocFolders = new HashSet<>();
+        if(!containsSubFolders(directory)){
+            tocFolders.add(directory);
+            return tocFolders;
+        }
+        String newPath = renameParentFolder(directory);
+        Set<String> movedFolders = moveChildFoldersUp(newName);
+        deleteParentFolder(newName);
+        return movedFolders;
+    }
+
+    private Set<String> moveChildFoldersUp(String parentPath) {
+        File dir = new File(parentPath);
+        File[] files = dir.listFiles();
+        for(int i=0; i<files.length; i++){
+            String curPath = files[i].getCanonicalPath();
+            String newPath = files[i].getParent() + "\\" + files[i].getName();
+            FileOperations.moveFile(curPath, newPath);
+        }
+        FileOperations.moveFile();
+    }
+
+    private String renameParentFolder(String path) {
+        String newName = "CAM_BEING_RENAMED";
+        FileOperations.renameDirectory(path, newName);
+        String[] pathParts = path.split("\\");
+        String newPath = "";
+        for(int i=0; i<pathParts.length - 1; i++){
+            newPath = newPath + "\\" + pathParts[i];
+        }
+        newPath = newPath + "\\" + newName;
+        return newPath;
+    }
+
+    private boolean containsSubFolders(String fullPath) {
+        String tocName = FileOperations.determineTOCName(fullPath);
+        boolean isTocFolder = (tocName == null);
+        return isTocFolder;
+    }
+
     private void renameFolders(Addon addon) {
         Set<String> directories = readInstallationLog(addon);
         Set<String> renamedDirectories = new HashSet<>();
+        System.out.println("Directories: ");
         for (String directory : directories) {
+            System.out.println(directory);
             String fullPath = installLocation + "\\" + directory;
             if (!determineIfFolderShouldBeRenamed(fullPath)) {
                 renamedDirectories.add(directory);
