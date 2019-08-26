@@ -123,7 +123,7 @@ public abstract class Scraper {
 
     public static String sanatizeInput(String input){
         String sanatized = input;
-        String[] illegals = {"?", "!", "\\", "/"};
+        String[] illegals = {"?", "!", "\\", "/", ":", "*", "<", ">", "|"};
         for(int i=0; i<illegals.length; i++){
             sanatized = sanatized.replace(illegals[i], "");
         }
