@@ -13,7 +13,7 @@ import java.util.Optional;
 public class SelfUpdater {
 
     public static final String REPO_LOCATION = "https://github.com/erikabp123/ClassicAddonManager";
-    public static final double VERSION = 0.48;
+    public static final double VERSION = 0.49;
     public static final int SLEEP_TIMER = 1000;
 
     public static void selfUpdate(Controller controller){

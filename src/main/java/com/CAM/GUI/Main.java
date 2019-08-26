@@ -23,8 +23,7 @@ public class Main extends Application {
         scene.getStylesheets().add(getClass().getClassLoader().getResource("bootstrap3.css").toExternalForm());
         stage.setScene(scene);
 
-
-        UserInput userInput = new GUIUserInput("Please provide path to WoW Classic Installation");
+        UserInput userInput = new GUIUserInput("Please provide path to WoW Classic Installation", primaryStage);
 
         AddonManager addonManager = AddonManager.initialize(userInput);
         if(addonManager == null){
