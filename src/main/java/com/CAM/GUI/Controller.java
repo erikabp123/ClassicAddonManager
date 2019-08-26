@@ -91,6 +91,19 @@ public class Controller implements Initializable {
     public Text updatingVersionLabel;
 
     @FXML
+    public MenuItem menuToggleGithub;
+
+    public static Controller controller;
+
+    public Controller(){
+        controller = this;
+    }
+
+    public static Controller getInstance(){
+        return controller;
+    }
+
+    @FXML
     private void exportAction(){
         Thread exportThread = new Thread(() -> {
             ArrayList<Addon> addons = new ArrayList<>();
@@ -152,6 +165,11 @@ public class Controller implements Initializable {
         importThread.start();
     }
 
+    @FXML
+    private void toggleGithubDownloadsAction(){
+        Log.toggleGithubDownloads();
+    }
+
     final ObservableList<String> listItems = FXCollections.observableArrayList();
 
     private AddonManager addonManager;
@@ -178,10 +196,9 @@ public class Controller implements Initializable {
         Thread removeThread = new Thread(() -> {
             Platform.runLater(() -> disableAll());
             ObservableList<Integer> selected = listViewAddons.getSelectionModel().getSelectedIndices();
-            if(selected.size() < 1){
-                return;
+            if(selected.size() != 0){
+                addonManager.removeAddon(selected.get(0));
             }
-            addonManager.removeAddon(selected.get(0));
             Platform.runLater(() -> {
                 updateListView();
                 enableAll();
@@ -333,7 +350,7 @@ public class Controller implements Initializable {
         });
     }
 
-    private void cleanUpAfterAddAction(){
+    public void cleanUpAfterAddAction(){
         Platform.runLater(() -> {
             enableAll();
             imageViewAdd.setVisible(false);
@@ -469,7 +486,7 @@ public class Controller implements Initializable {
         this.addonManager = addonManager;
     }
 
-    private void disableAll(){
+    public void disableAll(){
         buttonRemove.setDisable(true);
         buttonAdd.setDisable(true);
         buttonUpdate.setDisable(true);
@@ -477,7 +494,7 @@ public class Controller implements Initializable {
         checkboxReleases.setDisable(true);
     }
 
-    private void enableAll(){
+    public void enableAll(){
         buttonRemove.setDisable(false);
         buttonAdd.setDisable(false);
         buttonUpdate.setDisable(false);

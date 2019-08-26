@@ -28,6 +28,8 @@
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem fx:id="menuExport" mnemonicParsing="false" onAction="#exportAction" text="Export Addon List" />
                   <MenuItem fx:id="menuImport" mnemonicParsing="false" onAction="#importAction" text="Import Addon List" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem fx:id="menuToggleGithub" mnemonicParsing="false" onAction="#toggleGithubDownloadsAction" text="Toggle Github Downloads" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">

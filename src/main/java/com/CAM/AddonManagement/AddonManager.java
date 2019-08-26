@@ -44,6 +44,10 @@ public class AddonManager {
     public void updateAddons() {
         Log.log("Updating addons ...");
         for (Addon addon : managedAddons) {
+            if(Log.skipGithubDownloads && addon.getOrigin().contains("github.com")){
+                Log.log("Skipping github addon " + addon.getName() + " by " + addon.getAuthor());
+                continue;
+            }
             UpdateResponse response = addon.checkForUpdate();
             if (!response.isUpdateAvailable()) {
                 Log.verbose(addon.getName() + " by " + addon.getAuthor() + " is up to date!");

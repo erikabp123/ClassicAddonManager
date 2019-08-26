@@ -1,5 +1,6 @@
 package com.CAM.DataCollection;
 
+import com.CAM.GUI.Controller;
 import com.CAM.HelperTools.DateConverter;
 import com.CAM.HelperTools.Log;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -10,13 +11,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
-import netscape.javascript.JSObject;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map;
 
 public class GitHubScraper extends Scraper {
 
@@ -62,6 +62,17 @@ public class GitHubScraper extends Scraper {
         } catch (FailingHttpStatusCodeException e){
             Log.verbose("Scrape resulted in " + e.getStatusCode());
             setStatusCode(e.getStatusCode());
+            if(e.getStatusCode() == 403){
+                Platform.runLater(() -> {
+                    Alert limitAlert = new Alert(Alert.AlertType.ERROR);
+                    limitAlert.setTitle("Github Limit");
+                    limitAlert.setHeaderText("Github request limit hit!");
+                    limitAlert.setContentText("Github unfortunately has a 60 requests per hour limit for non-authenticated users!\n"
+                            + "Please wait 1 hour for the limit to reset or login with your github account (not yet available in this version)");
+                    limitAlert.showAndWait();
+                    Controller.getInstance().cleanUpAfterAddAction();
+                });
+            }
             return null;
         }
         catch (IOException e) {
