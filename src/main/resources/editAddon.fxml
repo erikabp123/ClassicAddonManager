@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="232.0" prefWidth="448.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.CAM.GUI.EditAddonController">
+   <children>
+      <TextField fx:id="addonAuthor" disable="true" editable="false" layoutX="10.0" layoutY="84.0" prefHeight="42.0" prefWidth="209.0" text="ADDON_AUTHOR" />
+      <TextField fx:id="addonName" disable="true" editable="false" layoutX="10.0" layoutY="27.0" prefHeight="42.0" prefWidth="209.0" text="ADDON_NAME" />
+      <TextField fx:id="lastUpdated" disable="true" editable="false" layoutX="229.0" layoutY="27.0" prefHeight="42.0" prefWidth="209.0" text="UPDATE_TIMESTAMP" />
+      <TextField fx:id="addonUrl" layoutX="10.0" layoutY="142.0" prefHeight="42.0" prefWidth="428.0" promptText="URL for addon" text="SAMPLE_URL" />
+      <Label layoutX="10.0" layoutY="10.0" text="Name" />
+      <Label layoutX="10.0" layoutY="67.0" text="Author" />
+      <Label layoutX="229.0" layoutY="10.0" text="Last Update Timestamp" />
+      <Label layoutX="10.0" layoutY="125.0" text="URL" />
+      <Button fx:id="saveButton" layoutX="229.0" layoutY="189.0" mnemonicParsing="false" onAction="#saveAction" prefHeight="32.0" prefWidth="100.0" styleClass="success" text="Save" />
+      <Button fx:id="cancelButton" layoutX="339.0" layoutY="189.0" mnemonicParsing="false" onAction="#cancelAction" prefHeight="32.0" prefWidth="99.0" text="Cancel" />
+      <TextField fx:id="branch" layoutX="229.0" layoutY="84.0" prefWidth="209.0" promptText="Name of github branch" />
+      <Label layoutX="229.0" layoutY="67.0" text="Branch Name" />
+      <CheckBox fx:id="releases" layoutX="69.0" layoutY="192.0" mnemonicParsing="false" onAction="#toggleReleases" text="Uses Releases" />
+   </children>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+</AnchorPane>
