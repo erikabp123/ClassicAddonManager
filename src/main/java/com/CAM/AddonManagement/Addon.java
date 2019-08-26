@@ -109,4 +109,16 @@ public class Addon implements Comparable<Addon> {
     public void setReleases(boolean releases) {
         this.releases = releases;
     }
+
+    public String getBranch(){
+        return branch;
+    }
+
+    public void setBranch(String branch){
+        this.branch = branch;
+    }
+
+    public void setOrigin(String origin){
+        this.origin = origin;
+    }
 }

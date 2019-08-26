@@ -13,7 +13,10 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuBar;
@@ -24,6 +27,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -205,6 +210,41 @@ public class Controller implements Initializable {
             });
         });
         removeThread.start();
+    }
+
+    @FXML
+    public void editAction(){
+        createEditAddonDialog();
+    }
+
+    private void createEditAddonDialog(){
+        ObservableList<Integer> selected = listViewAddons.getSelectionModel().getSelectedIndices();
+        if(selected.size() == 0){
+            return;
+        }
+
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("editAddon.fxml"));
+        Parent parent = null;
+        try {
+            parent = fxmlLoader.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        EditAddonController dialogController = fxmlLoader.getController();
+        Addon selectedAddon = addonManager.getManagedAddons().get(selected.get(0));
+        dialogController.createDialog(selectedAddon);
+
+        Scene scene = new Scene(parent);
+        scene.getStylesheets().add(getClass().getClassLoader().getResource("bootstrap3.css").toExternalForm());
+        Stage stage = new Stage();
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setScene(scene);
+        stage.setTitle("Edit Managed Addon");
+        stage.getIcons().add(new Image(getClass().getClassLoader().getResource("program_icon.png").toExternalForm()));
+        stage.showAndWait();
+        if(dialogController.buttonPress == EditAddonController.BUTTON_SAVE){
+            addonManager.saveToFile();
+        }
     }
 
     @FXML

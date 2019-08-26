@@ -1,10 +1,13 @@
 package com.CAM.DataCollection;
 
+import com.CAM.GUI.Controller;
 import com.CAM.HelperTools.Log;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 
 import java.io.IOException;
 import java.util.Date;
@@ -53,6 +56,18 @@ public abstract class Scraper {
             statuscode = e.getStatusCode();
             if(statuscode == 503){
                 return scrapeJS();
+            }
+            if(statuscode == 404){
+                Platform.runLater(() -> {
+                    Alert invalidUrlAlert = new Alert(Alert.AlertType.ERROR);
+                    invalidUrlAlert.setTitle("Url Is Not Valid!");
+                    invalidUrlAlert.setHeaderText("The URL provided for this addon is not valid!");
+                    invalidUrlAlert.setContentText("The URL provided for this addon resulted in a 404 (not found)!\n" +
+                            "Double check the URL, perhaps the addon has moved to another URL?");
+                    invalidUrlAlert.showAndWait();
+                    Controller.getInstance().cleanUpAfterAddAction();
+                });
+
             }
             return null;
         }
