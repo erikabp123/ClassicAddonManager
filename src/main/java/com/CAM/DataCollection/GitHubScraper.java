@@ -68,7 +68,8 @@ public class GitHubScraper extends Scraper {
                     limitAlert.setTitle("Github Limit");
                     limitAlert.setHeaderText("Github request limit hit!");
                     limitAlert.setContentText("Github unfortunately has a 60 requests per hour limit for non-authenticated users!\n"
-                            + "Please wait 1 hour for the limit to reset or login with your github account (not yet available in this version)");
+                            + "Please wait 1 hour for the limit to reset or login with your github account (not yet available in this version). \n"
+                            + "You can toggle github downloads off under the 'File' menu if you wish to continue updating non-github addons.");
                     limitAlert.showAndWait();
                     Controller.getInstance().cleanUpAfterAddAction();
                 });
