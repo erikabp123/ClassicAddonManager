@@ -6,7 +6,9 @@ import com.CAM.AddonManagement.AddonRequest;
 import com.CAM.DataCollection.CurseForgeScraper;
 import com.CAM.DataCollection.FileDownloader;
 import com.CAM.DataCollection.GitHubScraper;
+import com.CAM.DataCollection.ScrapeException;
 import com.CAM.HelperTools.*;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
@@ -19,12 +21,15 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
@@ -34,6 +39,8 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -250,22 +257,190 @@ public class Controller implements Initializable {
     @FXML
     private void updateAction(){
         Thread updateThread = new Thread(() -> {
-            Platform.runLater(() -> {
-                disableAll();
-                buttonUpdate.setVisible(false);
-                progressBarDownload.setVisible(true);
-            });
-            addonManager.updateAddons();
-            Platform.runLater(() -> {
-                enableAll();
-                buttonUpdate.setVisible(true);
-                progressBarDownload.setVisible(false);
-            });
+            try {
+                Platform.runLater(() -> {
+                    disableAll();
+                    buttonUpdate.setVisible(false);
+                    progressBarDownload.setVisible(true);
+                });
+
+                addonManager.updateAddons();
+
+            } catch (ScrapeException e) {
+                handleUpdateScrapeException(e);
+            } catch (Exception e){
+                handleUnknownException(e);
+            } finally {
+                Platform.runLater(() -> {
+                    enableAll();
+                    buttonUpdate.setVisible(true);
+                    progressBarDownload.setVisible(false);
+                });
+            }
+
         });
         updateThread.start();
     }
 
-    private void determineBranch(String origin){
+    private void handleUpdateScrapeException(ScrapeException e){
+        Log.log("Classic Addon Manager encountered an issue and is stopping!");
+        e.printStackTrace();
+        if(e.getType().equals(FailingHttpStatusCodeException.class)){
+            FailingHttpStatusCodeException exception = (FailingHttpStatusCodeException)e.getException();
+
+            if(exception.getStatusCode() == 404){
+                Platform.runLater(() -> {
+                    Alert invalidUrlAlert = new Alert(Alert.AlertType.ERROR);
+                    invalidUrlAlert.setTitle("Url Is No Longer Valid!");
+                    invalidUrlAlert.setHeaderText("The URL provided for " + e.getAddon().getName() + " is no longer valid!");
+                    invalidUrlAlert.setContentText("While attempting to update " + e.getAddon().getName() + " the program encountered a 404 (page not found)!\n" +
+                            "Double check the URL; perhaps the addon has been moved?");
+                    invalidUrlAlert.showAndWait();
+                });
+                return;
+            }
+
+            if(e.getSource() == AddonSource.GITHUB){
+                if(exception.getStatusCode() == 403){
+                    showGithubLimitAlert();
+                    return;
+                }
+            }
+
+            //TODO: Add any other causes of FailingHttpStatusCodeExepection here
+        }
+
+        if(e.getType().equals(ScrapeException.class)){
+            showInvalidUrlAlert(e);
+        }
+
+        if(e.getType().equals(NullPointerException.class)){
+            if(e.getSource() == AddonSource.GITHUB){
+                Platform.runLater(() -> {
+                    Alert invalidUrlAlert = new Alert(Alert.AlertType.ERROR);
+                    invalidUrlAlert.setTitle("Url Is No Longer Valid!");
+                    invalidUrlAlert.setHeaderText("The URL provided for " + e.getAddon().getName() + " is no longer valid!");
+                    invalidUrlAlert.setContentText("While attempting to update " + e.getAddon().getName() + " the program encountered a problem!\n" +
+                            "Double check the URL and Branch/Release; perhaps the addon has been moved or the branch/release has been changed?");
+                    invalidUrlAlert.showAndWait();
+                });
+                return;
+            }
+        }
+
+        if(e.getType().equals(IndexOutOfBoundsException.class)){
+            if(e.getSource() == AddonSource.GITHUB){
+                e.setMessage("Could not find download link! Perhaps the addon has moved?");
+                Platform.runLater(() -> {
+                    Alert releasesUrlAlert = new Alert(Alert.AlertType.ERROR);
+                    releasesUrlAlert.setTitle("Url Is No Longer Valid!");
+                    releasesUrlAlert.setHeaderText("The URL provided for " + e.getAddon().getName() + " is no longer valid!");
+                    releasesUrlAlert.setContentText("While attempting to update " + e.getAddon().getName() + " the program encountered a problem!\n" +
+                            "The addon does not appear to have any releases.");
+                    releasesUrlAlert.showAndWait();
+                });
+                return;
+            }
+            if(e.getSource() == AddonSource.WOWINTERFACE){
+                Platform.runLater(() -> {
+                    Alert invalidUrlAlert = new Alert(Alert.AlertType.ERROR);
+                    invalidUrlAlert.setTitle("Url Is No Longer Valid!");
+                    invalidUrlAlert.setHeaderText("The URL provided for " + e.getAddon().getName() + " is no longer valid!");
+                    invalidUrlAlert.setContentText("While attempting to update " + e.getAddon().getName() + " the program encountered a problem!\n" +
+                            "Double check the URL; perhaps the addon has been moved?");
+                    invalidUrlAlert.showAndWait();
+                });
+                return;
+            }
+        }
+
+        handleUnknownException(e);
+    }
+
+    private void showInvalidUrlAlert(ScrapeException e) {
+        Platform.runLater(() -> {
+            Alert invalidAlert = new Alert(Alert.AlertType.ERROR);
+            invalidAlert.setTitle("Invalid URL");
+            invalidAlert.setHeaderText("URL does not point to an addon!");
+            invalidAlert.setContentText(e.getMessage());
+            invalidAlert.showAndWait();
+        });
+        return;
+    }
+
+    private void showGithubLimitAlert() {
+        Platform.runLater(() -> {
+            Alert limitAlert = new Alert(Alert.AlertType.ERROR);
+            limitAlert.setTitle("Github Limit");
+            limitAlert.setHeaderText("Github request limit hit!");
+            limitAlert.setContentText("Github unfortunately has a 60 requests per hour limit for non-authenticated users!\n"
+                    + "Please wait 1 hour for the limit to reset or login with your github account (not yet available in this version). \n"
+                    + "You can toggle github downloads off under the 'File' menu if you wish to continue updating non-github addons.");
+            limitAlert.showAndWait();
+        });
+
+    }
+
+    private void handleUnknownException(Exception e){
+        Log.log("Classic Addon Manager encountered an issue and is stopping!");
+        e.printStackTrace();
+        Platform.runLater(() -> {
+            String title = "Exception Dialog";
+            String header = "Something went wrong!";
+            String content = "Classic Addon Manager encountered an unexpected error, please report this to the author on either Discord or Github (see the 'Help' menu).";
+            Alert alert = createExceptionAlert(title, header, content, e);
+            alert.showAndWait();
+        });
+    }
+
+    private Alert createExceptionAlert(String title, String header, String content, Exception e){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle(title);
+            alert.setHeaderText(header);
+            alert.setContentText(content);
+
+            // Create expandable Exception.
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            if(e.getClass().equals(ScrapeException.class)){
+                ScrapeException exception = (ScrapeException) e;
+                if(exception.getAddon() != null){
+                    pw.append("Addon: " + exception.getAddon().getName() +"\n");
+                    pw.append("Author: " + exception.getAddon().getAuthor() +"\n");
+                    pw.append("URL: " + exception.getAddon().getOrigin() +"\n");
+                    pw.append("Branch: " + exception.getAddon().getBranch());
+                    pw.append("Releases: " + exception.getAddon().isReleases());
+                    pw.append("Last Updated: " + exception.getAddon().getLastUpdated() +"\n");
+                    pw.append("Last File Name: " + exception.getAddon().getLastFileName() +"\n");
+                }
+                exception.getException().printStackTrace(pw);
+            }
+            e.printStackTrace(pw);
+            String exceptionText = sw.toString();
+
+            Label label = new Label("Send this to the author:");
+
+            TextArea textArea = new TextArea(exceptionText);
+            textArea.setEditable(false);
+            textArea.setWrapText(true);
+
+            textArea.setMaxWidth(Double.MAX_VALUE);
+            textArea.setMaxHeight(Double.MAX_VALUE);
+            GridPane.setVgrow(textArea, Priority.ALWAYS);
+            GridPane.setHgrow(textArea, Priority.ALWAYS);
+
+            GridPane expContent = new GridPane();
+            expContent.setMaxWidth(Double.MAX_VALUE);
+            expContent.add(label, 0, 0);
+            expContent.add(textArea, 0, 1);
+
+            // Set expandable Exception into the dialog pane.
+            alert.getDialogPane().setExpandableContent(expContent);
+
+            return alert;
+    }
+
+    private void determineBranch(String origin) throws ScrapeException {
         String trimmedOrigin = UrlInfo.trimGitHubUrl(origin);
         ArrayList<String> names = GitHubScraper.getBranches(trimmedOrigin);
         Platform.runLater(() -> {
@@ -283,7 +458,7 @@ public class Controller implements Initializable {
 
             Optional<String> result = dialog.showAndWait();
 
-            if(!result.isPresent()){
+            if(result.isEmpty()){
                 cleanUpAfterAddAction();
                 return;
             }
@@ -299,76 +474,133 @@ public class Controller implements Initializable {
                 imageViewAdd.setVisible(true);
             });
 
-            String origin = textFieldURL.getText();
+            try {
+                String origin = textFieldURL.getText();
 
-            UrlInfo urlInfo = UrlInfo.examineAddonUrl(origin);
-            if (!urlInfo.isValid) {
+                UrlInfo urlInfo = UrlInfo.examineAddonUrl(origin);
+                if (!urlInfo.isValid) {
+                    throw new ScrapeException(null, "URL does not point to a valid addon! Please double check the URL and try again!");
+                }
+
+                switch (urlInfo.addonSource){
+                    case CURSEFORGE:
+                        checkIfProceedClassic(origin);
+                        break;
+                    case GITHUB:
+                        handleGithubAdd(origin);
+                        break;
+                    case WOWINTERFACE:
+                        startAddonAddThread(origin);
+                        break;
+                }
+            } catch (ScrapeException e){
+                handleAddScrapeException(e);
                 cleanUpAfterAddAction();
-                return;
+            } catch (Exception e){
+                handleUnknownException(e);
+                cleanUpAfterAddAction();
             }
-
-            if(origin.contains("curseforge.com")){
-                checkIfProceedClassic(origin);
-                return;
-            }
-            if(origin.contains("github.com")){
-                String trimmedOrigin = UrlInfo.trimGitHubUrl(origin);
-                GitHubScraper scraper = new GitHubScraper(trimmedOrigin, null, true);
-                if(!checkboxReleases.isSelected()){
-                    scraper.setReleases(false);
-                    if(!scraper.isValidLink()){
-                        cleanUpAfterAddAction();
-                        return;
-                    }
-                    determineBranch(origin);
-                    return;
-                }
-                if(!scraper.isValidLink()){
-                    cleanUpAfterAddAction();
-                    return;
-                }
-                startAddonAddThread(null);
-                return;
-            }
-            startAddonAddThread(null);
-            return;
         });
         precheckThread.start();
     }
 
-    private void startAddonAddThread(String branch){
-        Thread addAddonThread = new Thread(() -> {
-            String origin = textFieldURL.getText();
-            boolean releases = checkboxReleases.isSelected();
+    private void handleGithubAdd(String origin) throws ScrapeException {
+        String trimmedOrigin = UrlInfo.trimGitHubUrl(origin);
+        if(checkboxReleases.isSelected()){
+            startAddonAddThread(null);
+            return;
+        }
+        determineBranch(trimmedOrigin);
+    }
 
-            AddonRequest request = new AddonRequest();
-            request.origin = origin;
-            request.branch = branch;
-            request.releases = releases;
+    private void handleAddScrapeException(ScrapeException e) {
+        e.printStackTrace();
+        Platform.runLater(() -> {
+            if(e.getType().equals(FailingHttpStatusCodeException.class)){
+                FailingHttpStatusCodeException exception = (FailingHttpStatusCodeException) e.getException();
 
-            if(!isValidRequest(request)){
-                cleanUpAfterAddAction();
-                return;
+                switch (exception.getStatusCode()){
+                    case 404:
+                        e.setMessage("The URL did not point to an addon! \n" +
+                                "This may be due to a typo, please double check the URL and try again!");
+                        showInvalidUrlAlert(e);
+                        return;
+                    case 403:
+                        if (e.getSource() == AddonSource.GITHUB) {
+                            showGithubLimitAlert();
+                        } else {
+                            showForbiddenRequestAlert();
+                        }
+                        return;
+                    case 400:
+                        //TODO: Alert informing that request is bad, maybe addon moved to a new URL? (especially the case with wowinterface)
+                        showBadRequestAlert();
+                        return;
+                    default:
+                        handleUnknownException(e);
+                        return;
+                }
             }
 
-            addonManager.addNewAddon(request);
-            Platform.runLater(() -> {
-                updateListView();
-                enableAll();
-                imageViewAdd.setVisible(false);
-            });
+            if(e.getType().equals(ScrapeException.class)){
+                showInvalidUrlAlert(e);
+                return;
+            }
+        });
+    }
+
+    private void showBadRequestAlert() {
+        Platform.runLater(() -> {
+            Alert badAlert = new Alert(Alert.AlertType.ERROR);
+            badAlert.setTitle("400 - Bad request");
+            badAlert.setHeaderText("Website responded with 400 - Bad Request!");
+            badAlert.setContentText("Double check the provided URL is correct! It may not be the correct URL!");
+            badAlert.showAndWait();
+        });
+    }
+
+    private void showForbiddenRequestAlert() {
+        Platform.runLater(() -> {
+            Alert forbiddenAlert = new Alert(Alert.AlertType.ERROR);
+            forbiddenAlert.setTitle("403 - Forbidden");
+            forbiddenAlert.setHeaderText("Request was denied - 403!");
+            forbiddenAlert.setContentText("The provided URL was blocked by the website (403 - forbidden). \n" +
+                    "Please wait a little and try again later or skip this addon!");
+            forbiddenAlert.showAndWait();
+        });
+    }
+
+    private void startAddonAddThread(String branch){
+        Thread addAddonThread = new Thread(() -> {
+            try {
+                String origin = textFieldURL.getText();
+                boolean releases = checkboxReleases.isSelected();
+
+                AddonRequest request = new AddonRequest();
+                request.origin = origin;
+                request.branch = branch;
+                request.releases = releases;
+
+                if(!isValidRequest(request)){
+                    cleanUpAfterAddAction();
+                    return;
+                }
+
+                addonManager.addNewAddon(request);
+            } catch (ScrapeException e) {
+                handleAddScrapeException(e);
+            } catch (Exception e) {
+                handleUnknownException(e);
+            } finally {
+                cleanUpAfterAddAction();
+            }
         });
         addAddonThread.start();
     }
 
-    private void checkIfProceedClassic(String origin){
+    private void checkIfProceedClassic(String origin) throws ScrapeException {
         String trimmedOrigin = UrlInfo.trimCurseForgeUrl(origin);
-        CurseForgeScraper scraper = CurseForgeScraper.getOfficialScraper(trimmedOrigin);
-        if(!scraper.isValidLink()){
-            Log.log("Link does not point to an addon!");
-            cleanUpAfterAddAction();
-            return;
-        }
+        CurseForgeScraper scraper = CurseForgeScraper.getOfficialScraper(trimmedOrigin, false);
         if(scraper.isClassicSupported()){
             startAddonAddThread(null);
             return;
@@ -392,6 +624,7 @@ public class Controller implements Initializable {
 
     public void cleanUpAfterAddAction(){
         Platform.runLater(() -> {
+            updateListView();
             enableAll();
             imageViewAdd.setVisible(false);
         });
@@ -515,7 +748,11 @@ public class Controller implements Initializable {
     }
 
     public void checkForUpdate(){
-        SelfUpdater.selfUpdate(this);
+        try {
+            SelfUpdater.selfUpdate(this);
+        } catch (ScrapeException e) {
+            Platform.runLater(() -> handleUnknownException(e));
+        }
     }
 
     public AddonManager getAddonManager(){

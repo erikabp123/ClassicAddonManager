@@ -1,13 +1,10 @@
 package com.CAM.DataCollection;
 
-import com.CAM.GUI.Controller;
+import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.Log;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import javafx.application.Platform;
-import javafx.scene.control.Alert;
 
 import java.io.IOException;
 import java.util.Date;
@@ -19,14 +16,15 @@ public abstract class Scraper {
     private final boolean css;
     private final boolean insecureSSL;
     private HtmlPage scrapedPage;
-    private int statuscode;
     private String branch;
+    private AddonSource source;
 
-    public Scraper(String url, boolean js, boolean css, boolean insecureSSL){
+    public Scraper(String url, boolean js, boolean css, boolean insecureSSL, AddonSource source) throws ScrapeException {
         this.url = url;
         this.js = js;
         this.css = css;
         this.insecureSSL = insecureSSL;
+        this.source = source;
         this.scrapedPage = scrape();
     }
 
@@ -41,78 +39,57 @@ public abstract class Scraper {
         this.branch = branch;
     }
 
-    public HtmlPage scrape(){
+    public HtmlPage scrape() throws ScrapeException {
         WebClient client = new WebClient();
         client.getOptions().setJavaScriptEnabled(js);
         client.getOptions().setCssEnabled(css);
         client.getOptions().setUseInsecureSSL(insecureSSL);
 
-        HtmlPage page = null;
+        HtmlPage page;
 
         try {
             page = client.getPage(url);
         } catch (FailingHttpStatusCodeException e){
             Log.verbose("Scrape resulted in " + e.getStatusCode());
-            statuscode = e.getStatusCode();
-            if(statuscode == 503){
-                return scrapeJS();
-            }
-            if(statuscode == 404){
-                Platform.runLater(() -> {
-                    Alert invalidUrlAlert = new Alert(Alert.AlertType.ERROR);
-                    invalidUrlAlert.setTitle("Url Is Not Valid!");
-                    invalidUrlAlert.setHeaderText("The URL provided for this addon is not valid!");
-                    invalidUrlAlert.setContentText("The URL provided for this addon resulted in a 404 (not found)!\n" +
-                            "Double check the URL, perhaps the addon has moved to another URL?");
-                    invalidUrlAlert.showAndWait();
-                    Controller.getInstance().cleanUpAfterAddAction();
-                });
 
+            switch (e.getStatusCode()){
+                case 503:
+                    return scrapeJS();
+                default:
+                    throw new ScrapeException(source, e);
             }
-            return null;
+        } catch (IOException e) {
+            throw new ScrapeException(source, e);
         }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        statuscode = 200;
+
         return page;
     }
 
-    private HtmlPage scrapeJS(){
+    private HtmlPage scrapeJS() throws ScrapeException {
         Log.verbose("Attempting JS scrape ...");
         WebClient client = new WebClient();
         client.getOptions().setJavaScriptEnabled(true);
         client.getOptions().setCssEnabled(css);
         client.getOptions().setUseInsecureSSL(insecureSSL);
 
-        HtmlPage page = null;
+        HtmlPage page;
 
         try {
             page = client.getPage(url);
             client.waitForBackgroundJavaScript(10_000);
         } catch (FailingHttpStatusCodeException e){
-            Log.verbose("Scrape resulted in " + e.getStatusCode());
-            statuscode = e.getStatusCode();
-            return null;
+            Log.verbose("JS scrape resulted in " + e.getStatusCode());
+            throw new ScrapeException(source, e);
+        } catch (IOException e){
+            throw new ScrapeException(source, e);
         }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        statuscode = 200;
+
         return page;
     }
 
-    public int getStatuscode(){
-        return statuscode;
-    }
+    public abstract String getDownloadLink() throws ScrapeException;
 
-    public void setStatusCode(int statuscode){
-        this.statuscode = statuscode;
-    }
-
-    public abstract String getDownloadLink();
-
-    public abstract Date getLastUpdated();
+    public abstract Date getLastUpdated() throws ScrapeException;
 
     public abstract String getName();
 
@@ -145,5 +122,5 @@ public abstract class Scraper {
         return sanatized;
     }
 
-    public abstract boolean isValidLink();
+    public abstract boolean isValidLink() throws ScrapeException;
 }

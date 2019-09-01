@@ -9,9 +9,9 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="232.0" prefWidth="448.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.CAM.GUI.EditAddonController">
    <children>
-      <TextField fx:id="addonAuthor" disable="true" editable="false" layoutX="10.0" layoutY="84.0" prefHeight="42.0" prefWidth="209.0" text="ADDON_AUTHOR" />
-      <TextField fx:id="addonName" disable="true" editable="false" layoutX="10.0" layoutY="27.0" prefHeight="42.0" prefWidth="209.0" text="ADDON_NAME" />
-      <TextField fx:id="lastUpdated" disable="true" editable="false" layoutX="229.0" layoutY="27.0" prefHeight="42.0" prefWidth="209.0" text="UPDATE_TIMESTAMP" />
+      <TextField fx:id="addonAuthor" editable="false" layoutX="10.0" layoutY="84.0" prefHeight="42.0" prefWidth="209.0" text="ADDON_AUTHOR" />
+      <TextField fx:id="addonName" editable="false" layoutX="10.0" layoutY="27.0" prefHeight="42.0" prefWidth="209.0" text="ADDON_NAME" />
+      <TextField fx:id="lastUpdated" editable="false" layoutX="229.0" layoutY="27.0" prefHeight="42.0" prefWidth="209.0" text="UPDATE_TIMESTAMP" />
       <TextField fx:id="addonUrl" layoutX="10.0" layoutY="142.0" prefHeight="42.0" prefWidth="428.0" promptText="URL for addon" text="SAMPLE_URL" />
       <Label layoutX="10.0" layoutY="10.0" text="Name" />
       <Label layoutX="10.0" layoutY="67.0" text="Author" />

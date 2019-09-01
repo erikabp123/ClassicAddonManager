@@ -1,6 +1,6 @@
 package com.CAM.DataCollection;
 
-import com.CAM.GUI.Controller;
+import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
 import com.CAM.HelperTools.Log;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -11,8 +11,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import javafx.application.Platform;
-import javafx.scene.control.Alert;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,24 +21,32 @@ public class GitHubScraper extends Scraper {
     private String branch;
     private boolean releases;
 
-    public GitHubScraper(String url, String branch, boolean releases){
+    public GitHubScraper(String url, String branch, boolean releases, boolean updatingAddon) throws ScrapeException {
         super(url, branch);
         this.branch = branch;
         this.releases = releases;
-        setStatusCode(200); //Dirty implementation, consider fixing
+        if(!updatingAddon && !isValidLink()){
+            throw new ScrapeException(AddonSource.GITHUB, "Invalid Github URL!");
+        }
     }
 
     @Override
-    public String getDownloadLink() {
+    public String getDownloadLink() throws ScrapeException {
         if(releases){
             return getReleasesDownload();
         }
         return getBranchDownload();
     }
 
-    private String getReleasesDownload(){
+    private String getReleasesDownload() throws ScrapeException {
         JsonArray jsonArray = getRepoArray();
-        String downloadLink = ((JsonObject) ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets")).get(0)).get("browser_download_url").getAsString();
+        String downloadLink;
+        try {
+            downloadLink = ((JsonObject) ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets")).get(0)).get("browser_download_url").getAsString();
+        } catch (IndexOutOfBoundsException e){
+            throw  new ScrapeException(AddonSource.GITHUB, e);
+        }
+
         return downloadLink;
     }
 
@@ -49,7 +55,7 @@ public class GitHubScraper extends Scraper {
         return getUrl() + downloadSuffix;
     }
 
-    public Page jsonScrape(String url){
+    public Page jsonScrape(String url) throws ScrapeException {
         WebClient client = new WebClient();
         client.getOptions().setJavaScriptEnabled(false);
         client.getOptions().setCssEnabled(false);
@@ -61,43 +67,29 @@ public class GitHubScraper extends Scraper {
             page = client.getPage(url);
         } catch (FailingHttpStatusCodeException e){
             Log.verbose("Scrape resulted in " + e.getStatusCode());
-            setStatusCode(e.getStatusCode());
-            if(e.getStatusCode() == 403){
-                Platform.runLater(() -> {
-                    Alert limitAlert = new Alert(Alert.AlertType.ERROR);
-                    limitAlert.setTitle("Github Limit");
-                    limitAlert.setHeaderText("Github request limit hit!");
-                    limitAlert.setContentText("Github unfortunately has a 60 requests per hour limit for non-authenticated users!\n"
-                            + "Please wait 1 hour for the limit to reset or login with your github account (not yet available in this version). \n"
-                            + "You can toggle github downloads off under the 'File' menu if you wish to continue updating non-github addons.");
-                    limitAlert.showAndWait();
-                    Controller.getInstance().cleanUpAfterAddAction();
-                });
-            }
-            return null;
-        }
-        catch (IOException e) {
-            e.printStackTrace();
+            throw new ScrapeException(AddonSource.GITHUB, e);
+        } catch (IOException e) {
+            throw new ScrapeException(AddonSource.GITHUB, e);
         }
         return page;
     }
 
     @Override
-    public Date getLastUpdated() {
+    public Date getLastUpdated() throws ScrapeException {
         if(releases){
             return getReleasesUpdated();
         }
         return getBranchUpdated();
     }
 
-    private Date getReleasesUpdated(){
+    private Date getReleasesUpdated() throws ScrapeException {
         JsonArray jsonArray = getRepoArray();
         String githubDate = ((JsonObject) jsonArray.get(0)).get("published_at").getAsString();
         Date date = DateConverter.convertFromGithub(githubDate);
         return date;
     }
 
-    private Date getBranchUpdated(){
+    private Date getBranchUpdated() throws ScrapeException{
         String[] repoInfo = getUrl().split("/");
         String prefix = "https://api.github.com/repos/";
         String suffix = "/branches/" + branch;
@@ -120,13 +112,13 @@ public class GitHubScraper extends Scraper {
         return new Gson().fromJson(json, JsonObject.class);
     }
 
-    public String getTag(){
+    public String getTag() throws ScrapeException {
         JsonArray jsonArray = getRepoArray();
         String tag = ((JsonObject) jsonArray.get(0)).get("tag_name").getAsString();
         return tag;
     }
 
-    public String getReleaseJarDownload(){
+    public String getReleaseJarDownload() throws ScrapeException {
         JsonArray jsonArray = getRepoArray();
         JsonArray assets = ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets"));
         int assetIndex = 0;
@@ -142,7 +134,7 @@ public class GitHubScraper extends Scraper {
         return downloadLink;
     }
 
-    private JsonArray getRepoArray(){
+    private JsonArray getRepoArray() throws ScrapeException {
         String[] repoInfo = getUrl().split("/");
         String prefix = "https://api.github.com/repos/";
         String suffix = "/releases";
@@ -168,9 +160,9 @@ public class GitHubScraper extends Scraper {
         return fileName;
     }
 
-    public static ArrayList<String> getBranches(String repo){
+    public static ArrayList<String> getBranches(String repo) throws ScrapeException {
         ArrayList<String> branches = new ArrayList<>();
-        GitHubScraper scraper = new GitHubScraper(repo, null, false);
+        GitHubScraper scraper = new GitHubScraper(repo, null, false, false);
         String author = scraper.getAuthor();
         String name = scraper.getName();
         String branchesApi = "https://api.github.com/repos/" + author + "/" + name + "/branches";
@@ -192,14 +184,18 @@ public class GitHubScraper extends Scraper {
     }
 
     @Override
-    public boolean isValidLink() {
+    public boolean isValidLink() throws ScrapeException {
+        String[] parts = getUrl().split("/");
+        if(parts.length < 5){
+            return false;
+        }
         if(releases){
             if(!apiFound("releases")){
                 return false;
             }
             if(getRepoArray().size() == 0){
                 Log.log("The provided link does not have any releases!");
-                return false;
+                throw new ScrapeException(AddonSource.GITHUB, "The provided link does not have any releases!");
             }
             return true;
         }
@@ -209,7 +205,7 @@ public class GitHubScraper extends Scraper {
         return true;
     }
 
-    private boolean apiFound(String suffix){
+    private boolean apiFound(String suffix) throws ScrapeException {
         String author = getAuthor();
         String name = getName();
         String api = "https://api.github.com/repos/" + author + "/" + name + "/" + suffix;

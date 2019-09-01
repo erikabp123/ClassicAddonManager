@@ -1,9 +1,6 @@
 package com.CAM.AddonManagement;
 
-import com.CAM.DataCollection.CurseForgeScraper;
-import com.CAM.DataCollection.GitHubScraper;
-import com.CAM.DataCollection.Scraper;
-import com.CAM.DataCollection.WowInterfaceScraper;
+import com.CAM.DataCollection.*;
 import com.CAM.HelperTools.*;
 import com.google.gson.Gson;
 import net.lingala.zip4j.model.FileHeader;
@@ -41,7 +38,7 @@ public class AddonManager {
         return false;
     }
 
-    public void updateAddons() {
+    public void updateAddons() throws ScrapeException {
         Log.log("Updating addons ...");
         for (Addon addon : managedAddons) {
             if(Log.skipGithubDownloads && addon.getOrigin().contains("github.com")){
@@ -61,7 +58,7 @@ public class AddonManager {
         Log.log("Finished updating!");
     }
 
-    public boolean addNewAddon(AddonRequest request) {
+    public boolean addNewAddon(AddonRequest request) throws ScrapeException {
         Log.log("Attempting to track new addon ...");
 
         UrlInfo urlInfo = UrlInfo.examineAddonUrl(request.origin);
@@ -71,13 +68,13 @@ public class AddonManager {
         }
         String trimmedOrigin = "";
         switch (urlInfo.addonSource) {
-            case curseforge:
+            case CURSEFORGE:
                 trimmedOrigin = UrlInfo.trimCurseForgeUrl(request.origin);
                 break;
-            case github:
+            case GITHUB:
                 trimmedOrigin = UrlInfo.trimGitHubUrl(request.origin);
                 break;
-            case wowinterface:
+            case WOWINTERFACE:
                 trimmedOrigin = UrlInfo.trimWowInterfaceUrl(request.origin);
                 break;
         }
@@ -93,27 +90,14 @@ public class AddonManager {
         Scraper scraper = null;
 
         switch (urlInfo.addonSource) {
-            case curseforge:
-                scraper = CurseForgeScraper.makeScraper(trimmedOrigin);
+            case CURSEFORGE:
+                scraper = CurseForgeScraper.makeScraper(trimmedOrigin, false);
                 break;
-            case github:
-                scraper = new GitHubScraper(trimmedOrigin, request.branch, request.releases);
+            case GITHUB:
+                scraper = new GitHubScraper(trimmedOrigin, request.branch, request.releases, false);
                 break;
-            case wowinterface:
-                scraper = new WowInterfaceScraper(trimmedOrigin);
-        }
-
-        // Not relevant for github, so github is hardcoded to be 200
-        if (scraper.getStatuscode() != 200) {
-            Log.verbose("Status code: " + scraper.getStatuscode());
-            Log.log("Failed to track addon!");
-            return false;
-        }
-
-        if(!scraper.isValidLink()){
-            Log.log("Url does not point to an addon!");
-            Log.log("Failed to track addon!");
-            return false;
+            case WOWINTERFACE:
+                scraper = new WowInterfaceScraper(trimmedOrigin, false);
         }
 
         String name = scraper.getName();

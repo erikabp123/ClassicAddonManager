@@ -1,47 +1,44 @@
 package com.CAM.DataCollection;
 
+import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
 import com.CAM.HelperTools.Log;
 import com.gargoylesoftware.htmlunit.html.*;
-import javafx.application.Platform;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 public class CurseForgeScraper extends Scraper {
 
     private final static String gameVersion = "1738749986%3A67408"; //TODO: change to non-final and support automatic scraping of gameVersion in case it changes
-    private final static String searchSuffix = "/files/all?filter-game-version=" + gameVersion;
+    private final static String officialSuffix = "/files/all?filter-game-version=" + gameVersion;
     private final static String nonOfficialSuffix = "/files/all";
     private final static String websiteUrl = "https://www.curseforge.com";
 
     private String baseUrl;
 
-    public static CurseForgeScraper makeScraper(String url){
-        CurseForgeScraper scraper = getOfficialScraper(url);
+    public static CurseForgeScraper makeScraper(String url, boolean updatingAddon) throws ScrapeException {
+        CurseForgeScraper scraper = getOfficialScraper(url, updatingAddon);
         if(scraper.isClassicSupported()){
             return scraper;
         }
-        return getNonOfficialScraper(url);
+        return getNonOfficialScraper(url, updatingAddon);
     }
 
-    public static CurseForgeScraper getNonOfficialScraper(String url){
-        CurseForgeScraper scraper = new CurseForgeScraper(url + nonOfficialSuffix);
-        scraper.setBaseUrl(url);
-        return scraper;
+    public static CurseForgeScraper getNonOfficialScraper(String url, boolean updatingAddon) throws ScrapeException {
+        return new CurseForgeScraper(url, nonOfficialSuffix, updatingAddon);
     }
 
-    public static CurseForgeScraper getOfficialScraper(String url){
-        CurseForgeScraper scraper = new CurseForgeScraper(url + searchSuffix);
-        scraper.setBaseUrl(url);
-        return scraper;
+    public static CurseForgeScraper getOfficialScraper(String url, boolean updatingAddon) throws ScrapeException {
+        return new CurseForgeScraper(url, officialSuffix, updatingAddon);
     }
 
-    public CurseForgeScraper(String url) {
-        super(url, false, false, true);
+    public CurseForgeScraper(String url, String suffix, boolean updatingAddon) throws ScrapeException {
+        super(url + suffix, false, false, true, AddonSource.CURSEFORGE);
+        this.baseUrl = url;
+        if(!updatingAddon && !isValidLink()){
+            throw new ScrapeException(AddonSource.CURSEFORGE, "Invalid CurseForge url!");
+        }
     }
 
     @Override
@@ -92,10 +89,10 @@ public class CurseForgeScraper extends Scraper {
     }
 
     @Override
-    public boolean isValidLink() {
+    public boolean isValidLink() throws ScrapeException {
         CurseForgeScraper scraper = this;
-        if(getUrl().endsWith(searchSuffix)){
-            scraper = getNonOfficialScraper(baseUrl);
+        if(getUrl().endsWith(officialSuffix)){
+            scraper = getNonOfficialScraper(baseUrl, false);
         }
         HtmlPage page = scraper.getScrapedPage();
         if(page == null){

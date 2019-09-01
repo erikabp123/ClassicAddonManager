@@ -1,5 +1,6 @@
 package com.CAM.DataCollection;
 
+import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
 import com.CAM.HelperTools.Log;
 import com.gargoylesoftware.htmlunit.html.*;
@@ -9,18 +10,22 @@ import java.util.List;
 
 public class WowInterfaceScraper extends Scraper {
 
-    public WowInterfaceScraper(String url){
-        super(url, false, false, true);
+    public WowInterfaceScraper(String url, boolean updatingAddon) throws ScrapeException {
+        super(url, false, false, true, AddonSource.WOWINTERFACE);
+
+        if(!updatingAddon && !isValidLink()){
+            throw new ScrapeException(AddonSource.WOWINTERFACE, "Invalid WowInterface url!");
+        }
     }
 
     @Override
-    public String getDownloadLink() {
+    public String getDownloadLink() throws ScrapeException {
         HtmlPage page = getScrapedPage();
         HtmlDivision downloadDiv = (HtmlDivision) page.getByXPath("//div[@id='download']").get(0);
         HtmlAnchor downloadAnchor= (HtmlAnchor) downloadDiv.getByXPath(".//a").get(0);
         String relative = downloadAnchor.getHrefAttribute();
         String fullPath = "https://www.wowinterface.com" + relative;
-        Scraper scraper = new WowInterfaceScraper(fullPath);
+        Scraper scraper = new WowInterfaceScraper(fullPath, true);
         HtmlPage downloadPage = scraper.getScrapedPage();
         HtmlDivision manualDiv = (HtmlDivision) downloadPage.getByXPath("//div[@class='manuallink']").get(0);
         HtmlAnchor manualAnchor= (HtmlAnchor) manualDiv.getByXPath(".//a").get(0);

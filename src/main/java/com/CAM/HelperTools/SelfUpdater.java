@@ -2,6 +2,7 @@ package com.CAM.HelperTools;
 
 import com.CAM.DataCollection.FileDownloader;
 import com.CAM.DataCollection.GitHubScraper;
+import com.CAM.DataCollection.ScrapeException;
 import com.CAM.GUI.Controller;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
@@ -16,7 +17,7 @@ public class SelfUpdater {
     public static final double VERSION = 0.54;
     public static final int SLEEP_TIMER = 1000;
 
-    public static void selfUpdate(Controller controller){
+    public static void selfUpdate(Controller controller) throws ScrapeException {
         Log.log("Running self updater ...");
         String downloadLink = checkForNewRelease();
         if(downloadLink == null){
@@ -75,11 +76,11 @@ public class SelfUpdater {
         }
     }
 
-    public static String checkForNewRelease(){
+    public static String checkForNewRelease() throws ScrapeException {
         Log.log("Checking for new release ...");
         //check github for new release, same method as checking for releases of addon
         // if new version available, return download link as string, else return null
-        GitHubScraper scraper = new GitHubScraper(REPO_LOCATION, null, true);
+        GitHubScraper scraper = new GitHubScraper(REPO_LOCATION, null, true, true);
         String cleaned = scraper.getTag().replace("v", "");
         double tagAsNum = Double.parseDouble(cleaned);
         if(tagAsNum <= VERSION){

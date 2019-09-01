@@ -1,6 +1,7 @@
 package com.CAM.AddonManagement;
 
 import com.CAM.DataCollection.*;
+import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
 import com.CAM.HelperTools.Log;
 
@@ -27,47 +28,81 @@ public class Addon implements Comparable<Addon> {
         return new Addon(name, author, origin, branch, releases);
     }
 
-    public boolean fetchUpdate(Scraper scraper){
+    public boolean fetchUpdate(Scraper scraper) throws ScrapeException {
         //TODO: Consider tracking folders installed so that deleting is easier
-        Log.verbose("Attempting to fetch update ...");
-        String downloadLink = scraper.getDownloadLink();
-        FileDownloader downloader = new FileDownloader("downloads");
-        String fileName = name + "_" + author + "_(" + scraper.getFileName() + ").zip";
-        downloader.downloadFileMonitored(downloadLink, fileName);
-        lastUpdated = scraper.getLastUpdated();
-        lastFileName = fileName;
+        try {
+            Log.verbose("Attempting to fetch update ...");
+            String downloadLink = scraper.getDownloadLink();
+            FileDownloader downloader = new FileDownloader("downloads");
+            String fileName = name + "_" + author + "_(" + scraper.getFileName() + ").zip";
+            downloader.downloadFileMonitored(downloadLink, fileName);
+            lastUpdated = scraper.getLastUpdated();
+            lastFileName = fileName;
+        } catch (ScrapeException e){
+            e.setAddon(this);
+            throw e;
+        } catch (Exception e) {
+            ScrapeException exception = new ScrapeException(getAddonSource(), e);
+            exception.setAddon(this);
+            throw exception;
+        }
         Log.verbose("Successfully fetched new update!");
         return true;
     }
 
-    public UpdateResponse checkForUpdate(){
-        Scraper scraper = getScraper();
-        UpdateResponse response = new UpdateResponse(scraper, true);
+    public UpdateResponse checkForUpdate() throws ScrapeException {
+        UpdateResponse response;
+        try {
+            Scraper scraper = getScraper(true);
+            response = new UpdateResponse(scraper, true);
 
-        // Check if addon has ever been updated through this program
-        //TODO: consider whether redundant, could be useful later for determining if addon was installed manually though
-        if(lastUpdated == null){
-            return response;
+            // Check if addon has ever been updated through this program
+            // TODO: consider whether redundant, could be useful later for determining if addon was installed manually though
+            if(lastUpdated == null){
+                return response;
+            }
+            // Get the date of the last update as seen by scrape
+            Date lastUpdateScrape = scraper.getLastUpdated();
+            // Check if scrape has seen a newer update
+            if(DateConverter.isNewerDate(lastUpdateScrape, lastUpdated)){
+                return response;
+            }
+            // There are no new updates
+            response.setUpdateAvailable(false);
+        } catch (ScrapeException e){
+            e.setAddon(this);
+            throw e;
         }
-        // Get the date of the last update as seen by scrape
-        Date lastUpdateScrape = scraper.getLastUpdated();
-        // Check if scrape has seen a newer update
-        if(DateConverter.isNewerDate(lastUpdateScrape, lastUpdated)){
-            return response;
-        }
-        // There are no new updates
-        response.setUpdateAvailable(false);
+
         return response;
     }
 
-    private Scraper getScraper(){
+    private Scraper getScraper(boolean updatingAddon) throws ScrapeException {
+        try {
+            switch (getAddonSource()){
+                case CURSEFORGE:
+                    return CurseForgeScraper.makeScraper(origin, updatingAddon);
+                case GITHUB:
+                    return new GitHubScraper(origin, branch, releases, updatingAddon);
+                case WOWINTERFACE:
+                    return new WowInterfaceScraper(origin, updatingAddon);
+            }
+        } catch (ScrapeException e){
+            e.setAddon(this);
+            throw e;
+        }
+
+        return null;
+    }
+
+    private AddonSource getAddonSource(){
         if(origin.contains("curseforge.com")){
-            return CurseForgeScraper.makeScraper(origin);
+            return AddonSource.CURSEFORGE;
         }
         if(origin.contains("github.com")){
-            return new GitHubScraper(origin, branch, releases);
+            return AddonSource.GITHUB;
         } if(origin.contains("wowinterface.com")){
-            return new WowInterfaceScraper(origin);
+            return AddonSource.WOWINTERFACE;
         }
         return null;
     }

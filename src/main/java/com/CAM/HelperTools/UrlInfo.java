@@ -2,7 +2,7 @@ package com.CAM.HelperTools;
 
 import java.net.URL;
 
-import static com.CAM.HelperTools.UrlInfo.AddonSource.*;
+import static com.CAM.HelperTools.AddonSource.*;
 
 public class UrlInfo {
 
@@ -23,17 +23,17 @@ public class UrlInfo {
         }
         if(origin.contains("curseforge.com")){
             Log.verbose("curseforge link detected!");
-            urlInfo.addonSource = curseforge;
+            urlInfo.addonSource = CURSEFORGE;
             urlInfo.isValid = isValidCurseForgeUrl(origin);
             return urlInfo;
         } if(origin.contains("github.com")){
             Log.verbose("github link detected!");
-            urlInfo.addonSource = github;
+            urlInfo.addonSource = GITHUB;
             urlInfo.isValid = isValidGithubUrl(origin);
             return urlInfo;
         } if(origin.contains("wowinterface.com")){
             Log.verbose("WowInterface link detected!");
-            urlInfo.addonSource = wowinterface;
+            urlInfo.addonSource = WOWINTERFACE;
             urlInfo.isValid = isValidWowInterfaceUrl(origin);
             return urlInfo;
         }
@@ -119,12 +119,6 @@ public class UrlInfo {
     public static String trimWowInterfaceUrl(String origin){
         String[] parts = origin.split("#");
         return parts[0];
-    }
-
-    public enum AddonSource {
-        curseforge,
-        github,
-        wowinterface
     }
 
 }
