@@ -39,21 +39,28 @@ public class AddonManager {
     }
 
     public void updateAddons() throws ScrapeException {
+
         Log.log("Updating addons ...");
         for (Addon addon : managedAddons) {
-            if(Log.skipGithubDownloads && addon.getOrigin().contains("github.com")){
-                Log.log("Skipping github addon " + addon.getName() + " by " + addon.getAuthor());
-                continue;
+            try{
+                if(Log.skipGithubDownloads && addon.getOrigin().contains("github.com")){
+                    Log.log("Skipping github addon " + addon.getName() + " by " + addon.getAuthor());
+                    continue;
+                }
+                UpdateResponse response = addon.checkForUpdate();
+                if (!response.isUpdateAvailable()) {
+                    Log.verbose(addon.getName() + " by " + addon.getAuthor() + " is up to date!");
+                    continue;
+                }
+                Log.log("update available for: " + addon.getName() + " by " + addon.getAuthor() + "!");
+                addon.fetchUpdate(response.getScraper());
+                install(addon);
+                saveToFile();
+            } catch (ScrapeException e){
+                throw e;
+            } catch (Exception e) {
+                throw new ScrapeException(addon.getAddonSource(), e);
             }
-            UpdateResponse response = addon.checkForUpdate();
-            if (!response.isUpdateAvailable()) {
-                Log.verbose(addon.getName() + " by " + addon.getAuthor() + " is up to date!");
-                continue;
-            }
-            Log.log("update available for: " + addon.getName() + " by " + addon.getAuthor() + "!");
-            addon.fetchUpdate(response.getScraper());
-            install(addon);
-            saveToFile();
         }
         Log.log("Finished updating!");
     }

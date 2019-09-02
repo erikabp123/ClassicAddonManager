@@ -95,7 +95,7 @@ public class Addon implements Comparable<Addon> {
         return null;
     }
 
-    private AddonSource getAddonSource(){
+    public AddonSource getAddonSource(){
         if(origin.contains("curseforge.com")){
             return AddonSource.CURSEFORGE;
         }
