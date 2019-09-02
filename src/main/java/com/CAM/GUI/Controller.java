@@ -9,6 +9,7 @@ import com.CAM.DataCollection.GitHubScraper;
 import com.CAM.DataCollection.ScrapeException;
 import com.CAM.HelperTools.*;
 import com.CAM.Updating.SelfUpdater;
+import com.CAM.Updating.VersionInfo;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -729,7 +730,7 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        menuAboutVersion.setText("Version " + SelfUpdater.VERSION);
+        menuAboutVersion.setText("Version " + VersionInfo.CAM_VERSION);
         imageViewAdd.setImage(new Image(this.getClass().getClassLoader().getResource("adding.gif").toExternalForm()));
         listViewAddons.setItems(listItems);
         Log.listen(new GUILogListener(textAreaOutputLog));
