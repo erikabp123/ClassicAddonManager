@@ -1,9 +1,10 @@
-package com.CAM.HelperTools;
+package com.CAM.Updating;
 
 import com.CAM.DataCollection.FileDownloader;
 import com.CAM.DataCollection.GitHubScraper;
 import com.CAM.DataCollection.ScrapeException;
 import com.CAM.GUI.Controller;
+import com.CAM.HelperTools.Log;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -14,7 +15,6 @@ import java.util.Optional;
 public class SelfUpdater {
 
     public static final String REPO_LOCATION = "https://github.com/erikabp123/ClassicAddonManager";
-    public static final double VERSION = 0.59;
     public static final int SLEEP_TIMER = 1000;
 
     public static void selfUpdate(Controller controller) throws ScrapeException {
@@ -54,6 +54,10 @@ public class SelfUpdater {
 
     }
 
+    public static void finishUpdate(){
+
+    }
+
     private static String fetchNewVersion(String url) {
         Log.verbose("Attempting to download new release ...");
         FileDownloader downloader = new FileDownloader("downloads");
@@ -83,7 +87,7 @@ public class SelfUpdater {
         GitHubScraper scraper = new GitHubScraper(REPO_LOCATION, null, true, true);
         String cleaned = scraper.getTag().replace("v", "");
         double tagAsNum = Double.parseDouble(cleaned);
-        if(tagAsNum <= VERSION){
+        if(tagAsNum <= VersionInfo.CAM_VERSION){
             Log.log("No new release available!");
             return null;
         }

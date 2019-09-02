@@ -8,6 +8,7 @@ import com.CAM.DataCollection.FileDownloader;
 import com.CAM.DataCollection.GitHubScraper;
 import com.CAM.DataCollection.ScrapeException;
 import com.CAM.HelperTools.*;
+import com.CAM.Updating.SelfUpdater;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
