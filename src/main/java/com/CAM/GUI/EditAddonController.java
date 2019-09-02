@@ -5,10 +5,12 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.util.ResourceBundle;
@@ -50,6 +52,16 @@ public class EditAddonController implements Initializable {
 
     @FXML
     private void saveAction(ActionEvent event){
+        try {
+            URL url = new URL(addonUrl.getText());
+        } catch (MalformedURLException e) {
+            Alert malformedAlert = new Alert(Alert.AlertType.ERROR);
+            malformedAlert.setTitle("Invalid URL format!");
+            malformedAlert.setHeaderText("The URL is not a valid format URL!");
+            malformedAlert.setContentText("The URL provided for the addon is not in the correct format, it must start with http or https and be of the format 'https://www.WEBSITE.com/...'!");
+            malformedAlert.showAndWait();
+            return;
+        }
         if(!releases.isSelected()){
             addon.setBranch(branch.getText());
         }

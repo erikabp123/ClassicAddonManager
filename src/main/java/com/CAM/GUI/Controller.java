@@ -41,6 +41,7 @@ import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -352,6 +353,17 @@ public class Controller implements Initializable {
                 });
                 return;
             }
+        }
+
+        if(e.getType().equals(MalformedURLException.class)){
+            Platform.runLater(() -> {
+                Alert malformedAlert = new Alert(Alert.AlertType.ERROR);
+                malformedAlert.setTitle("Invalid URL format!");
+                malformedAlert.setHeaderText("The URL provided for " + e.getAddon().getName() + " is not a valid format URL!");
+                malformedAlert.setContentText("While attempting to update " + e.getAddon().getName() + " the program encountered a problem!\n" +
+                        "The URL provided for the addon is not in the correct format, it must start with http or https and be of the format 'https://www.WEBSITE.com/...'!");
+                malformedAlert.showAndWait();
+            });
         }
 
         handleUnknownException(e);
