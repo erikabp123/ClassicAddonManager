@@ -6,8 +6,8 @@ import java.io.*;
 
 public class VersionInfo {
     public static final double CAM_VERSION = 0.62;
-    public static final double EXE_VERSION = 0.0;
-    public static final double AUTOUPDATER_VERSION = 0.0;
+    public static final double EXE_VERSION = 0.1;
+    public static final double AUTOUPDATER_VERSION = 0.1;
 
     public double expectedCAM;
     public double expectedExe;
