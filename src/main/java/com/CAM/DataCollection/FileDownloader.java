@@ -13,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class FileDownloader {
 
@@ -32,6 +33,12 @@ public class FileDownloader {
     public void notifyAllListeners(double progress){
         for(DownloadListener listener : listeners){
             listener.notify(progress);
+        }
+    }
+
+    public void notifyAllListenersMultiDownload(double progress, double totalProgress){
+        for(DownloadListener listener : listeners){
+            listener.notifyMultipleDownload(progress, totalProgress);
         }
     }
 
@@ -96,8 +103,95 @@ public class FileDownloader {
         }
     }
 
+    public void downloadMultipleFilesMonitored(HashMap<String, String> files){
+        HashMap<String, FileDownload> fileSizes = establishFileSize(files);
 
+        long sumFileSize = 0;
+        for(String key : fileSizes.keySet()){
+            sumFileSize += fileSizes.get(key).fileSize;
+        }
+        System.out.println("sumFileSize: " + sumFileSize);
+        long totalCount = 0;
+
+        for(String stringUrl : files.keySet()){
+            String fileName = files.get(stringUrl);
+            URL url = fileSizes.get(stringUrl).url;
+            int fileSize = fileSizes.get(stringUrl).fileSize;
+
+            File file = new File(downloadLocation + "/" + fileName);
+            InputStream source = null;
+            try {
+                source = url.openStream();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            try {
+
+                final FileOutputStream output = FileUtils.openOutputStream(file);
+                try {
+
+                    final byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+                    long count = 0;
+                    int n = 0;
+                    while (EOF != (n = source.read(buffer))) {
+                        output.write(buffer, 0, n);
+                        count += n;
+                        totalCount += n;
+                        double progress = (count*1.0/fileSize);
+                        double totalProgress = (totalCount*1.0/sumFileSize);
+                        notifyAllListenersMultiDownload(progress, totalProgress);
+                    }
+
+                    output.close(); // don't swallow close Exception if copy completes normally
+                } finally {
+                    IOUtils.closeQuietly(output);
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                IOUtils.closeQuietly(source);
+            }
+
+            System.out.println("Finished download");
+        }
+
+    }
+
+    private HashMap<String, FileDownload> establishFileSize(HashMap<String, String> files){
+        HashMap<String, FileDownload> fileSizes = new HashMap<>();
+        for(String stringUrl : files.keySet()){
+
+            URL url = null;
+            URLConnection urlConnection = null;
+            try {
+                url = new URL(stringUrl);
+                urlConnection = url.openConnection();
+                urlConnection.connect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            fileSizes.put(stringUrl, new FileDownload(urlConnection.getContentLength(), url));
+        }
+        return fileSizes;
+    }
+
+
+
+    private class FileDownload {
+        int fileSize;
+        URL url;
+
+        public FileDownload(int fileSize, URL url){
+            this.fileSize = fileSize;
+            this.url = url;
+        }
+    }
 
 
 
 }
+
+

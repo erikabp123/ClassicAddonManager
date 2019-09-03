@@ -20,11 +20,13 @@ public class GitHubScraper extends Scraper {
 
     private String branch;
     private boolean releases;
+    private JsonArray repoArray;
 
     public GitHubScraper(String url, String branch, boolean releases, boolean updatingAddon) throws ScrapeException {
         super(url, branch);
         this.branch = branch;
         this.releases = releases;
+        this.repoArray = null;
         if(!updatingAddon && !isValidLink()){
             throw new ScrapeException(AddonSource.GITHUB, "Invalid Github URL!");
         }
@@ -118,6 +120,22 @@ public class GitHubScraper extends Scraper {
         return tag;
     }
 
+    public String getUpdateManifestLink() throws ScrapeException {
+        JsonArray jsonArray = getRepoArray();
+        JsonArray assets = ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets"));
+        int assetIndex = 0;
+        for(int i=0; i<assets.size(); i++){
+            String fileName = ((JsonObject) assets.get(i)).get("name").getAsString();
+            if(!fileName.equals("VERSIONING")){
+                continue;
+            }
+            assetIndex = i;
+            break;
+        }
+        String downloadLink = ((JsonObject) ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets")).get(assetIndex)).get("browser_download_url").getAsString();
+        return downloadLink;
+    }
+
     public String getReleaseJarDownload() throws ScrapeException {
         JsonArray jsonArray = getRepoArray();
         JsonArray assets = ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets"));
@@ -134,12 +152,32 @@ public class GitHubScraper extends Scraper {
         return downloadLink;
     }
 
+    public String getReleaseExeDownload() throws ScrapeException {
+        JsonArray jsonArray = getRepoArray();
+        JsonArray assets = ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets"));
+        int assetIndex = 0;
+        for(int i=0; i<assets.size(); i++){
+            String fileName = ((JsonObject) assets.get(i)).get("name").getAsString();
+            if(!fileName.contains(".exe")){
+                continue;
+            }
+            assetIndex = i;
+            break;
+        }
+        String downloadLink = ((JsonObject) ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets")).get(assetIndex)).get("browser_download_url").getAsString();
+        return downloadLink;
+    }
+
     private JsonArray getRepoArray() throws ScrapeException {
+        if(repoArray != null){
+            return repoArray;
+        }
         String[] repoInfo = getUrl().split("/");
         String prefix = "https://api.github.com/repos/";
         String suffix = "/releases";
         String url = prefix + repoInfo[3] + "/" + repoInfo[4] + suffix;
-        return getJsonArray(jsonScrape(url));
+        repoArray = getJsonArray(jsonScrape(url));
+        return repoArray;
     }
 
     @Override

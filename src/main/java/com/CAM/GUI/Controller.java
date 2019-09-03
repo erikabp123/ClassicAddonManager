@@ -97,6 +97,9 @@ public class Controller implements Initializable {
     public ProgressBar progressBarUpdate;
 
     @FXML
+    public ProgressBar progressBarUpdateTotal;
+
+    @FXML
     public MenuBar menuBar;
 
     @FXML
@@ -645,11 +648,11 @@ public class Controller implements Initializable {
     }
 
     private void progressBarListen(){
-        DownloadListener downloadListener = new GUIDownloadListener(progressBarDownload);
-        FileDownloader.listen(downloadListener);
+        DownloadListener downloadListenerAddon = new GUIDownloadListener(progressBarDownload);
+        FileDownloader.listen(downloadListenerAddon);
 
-        DownloadListener downloadListener1 = new GUIDownloadListener(progressBarUpdate);
-        FileDownloader.listen(downloadListener1);
+        DownloadListener downloadListenerUpdate = new GUIDownloadListener(progressBarUpdate, progressBarUpdateTotal);
+        FileDownloader.listen(downloadListenerUpdate);
     }
 
     public void hideForUpdate(){
@@ -671,6 +674,7 @@ public class Controller implements Initializable {
         imageViewUpdate.setImage(new Image(this.getClass().getClassLoader().getResource("gears_load.gif").toExternalForm()));
         imageViewUpdate.setDisable(false);
         progressBarUpdate.setVisible(true);
+        progressBarUpdateTotal.setVisible(true);
     }
 
     private boolean isValidRequest(AddonRequest request){

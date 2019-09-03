@@ -9,18 +9,30 @@ import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 import java.util.Optional;
 
 public class SelfUpdater {
 
     public static final String REPO_LOCATION = "https://github.com/erikabp123/ClassicAddonManager";
+    public static final String AUTOUPDATER_REPO_LOCATION = "https://github.com/erikabp123/AutoUpdater";
+    public static final String EXE_REPO_LOCATION = "";
     public static final int SLEEP_TIMER = 1000;
 
     public static void selfUpdate(Controller controller) throws ScrapeException {
         Log.log("Running self updater ...");
-        String downloadLink = checkForNewRelease();
-        if(downloadLink == null){
+        GitHubScraper scraper = new GitHubScraper(REPO_LOCATION, null, true, true);
+        HashMap<String, String> filesToDownload = determineDownloads(scraper);
+        String downloadLink = checkForNewRelease(scraper);
+        if(downloadLink != null){
+            filesToDownload.put(downloadLink, "ClassicAddonManager.jar");
+        }
+        if(filesToDownload.isEmpty()){
             Log.log("Self Updater finished without finding any new updates!");
             return;
         }
@@ -36,7 +48,8 @@ public class SelfUpdater {
                     controller.hideForUpdate();
                 });
                 Thread downloadThread = new Thread(() -> {
-                    String path = fetchNewVersion(downloadLink);
+                    fetchNewVersion(filesToDownload);
+                    moveAutoUpdater();
                     Platform.runLater(() -> {
                         Alert alert1 = new Alert(Alert.AlertType.WARNING);
                         alert1.setTitle("Update Shutdown");
@@ -54,20 +67,44 @@ public class SelfUpdater {
 
     }
 
-    public static void finishUpdate(){
-
+    public static void moveAutoUpdater() {
+        try {
+            moveFile("downloads/AutoUpdater.jar", "system/AutoUpdater.jar");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private static String fetchNewVersion(String url) {
+    private static HashMap<String, String> determineDownloads(GitHubScraper scraper) throws ScrapeException {
+        HashMap<String, String> filesToDownload = new HashMap<>();
+        VersionInfo versionInfo = VersionInfo.readVersioningFile();
+        String manifestLink = scraper.getUpdateManifestLink();
+        FileDownloader downloader = new FileDownloader("system");
+        downloader.downloadFile(manifestLink, "VERSIONING");
+        GitHubScraper updaterScraper = new GitHubScraper(AUTOUPDATER_REPO_LOCATION, null, true, true);
+        if(versionInfo != null){
+            versionInfo = VersionInfo.readVersioningFile();
+        }
+        if(versionInfo == null || versionInfo.expectedAutoUpdate > VersionInfo.AUTOUPDATER_VERSION){
+            String jarLink = updaterScraper.getReleaseJarDownload();
+            filesToDownload.put(jarLink, "AutoUpdater.jar");
+        }
+        if(versionInfo == null || versionInfo.expectedExe > VersionInfo.EXE_VERSION){
+            String exeLink = updaterScraper.getReleaseExeDownload();
+            filesToDownload.put(exeLink, "Classic Addon Manager.exe");
+        }
+        return filesToDownload;
+    }
+
+    private static void fetchNewVersion(HashMap<String, String> filesToDownload) {
         Log.verbose("Attempting to download new release ...");
         FileDownloader downloader = new FileDownloader("downloads");
-        String fileName = "ClassicAddonManager.jar";
-        downloader.downloadFileMonitored(url, fileName);
+        downloader.downloadMultipleFilesMonitored(filesToDownload);
         Log.verbose("Successfully downloaded new release!");
-        return "downloads/" + fileName;
     }
 
     private static void launcherUpdateInstaller() {
+
         String curDir = System.getProperty("user.dir");
         String pathToElevate = curDir + "\\" + "system\\Elevate.exe";
         String pathToJava = curDir + "\\system\\jdk-12.0.2\\bin\\javaw.exe\" -jar";
@@ -80,11 +117,17 @@ public class SelfUpdater {
         }
     }
 
-    public static String checkForNewRelease() throws ScrapeException {
+    private static void moveFile(String curPath, String newPath) throws IOException {
+        File managerJar = new File(curPath);
+        if(managerJar.exists()){
+            Files.move(Paths.get(curPath), Paths.get(newPath), StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    public static String checkForNewRelease(GitHubScraper scraper) throws ScrapeException {
         Log.log("Checking for new release ...");
         //check github for new release, same method as checking for releases of addon
         // if new version available, return download link as string, else return null
-        GitHubScraper scraper = new GitHubScraper(REPO_LOCATION, null, true, true);
         String cleaned = scraper.getTag().replace("v", "");
         double tagAsNum = Double.parseDouble(cleaned);
         if(tagAsNum <= VersionInfo.CAM_VERSION){
