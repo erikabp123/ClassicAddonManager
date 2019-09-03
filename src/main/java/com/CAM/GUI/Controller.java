@@ -111,6 +111,24 @@ public class Controller implements Initializable {
     @FXML
     public MenuItem menuToggleGithub;
 
+    @FXML
+    public MenuItem menuAboutUpdates;
+
+    @FXML
+    public Button buttonEdit;
+
+    @FXML
+    public void checkForUpdatesAction(){
+        Thread updateThread = new Thread(() -> {
+            try {
+                SelfUpdater.selfUpdate(Controller.controller);
+            } catch (ScrapeException e) {
+                handleUnknownException(e);
+            }
+        });
+        updateThread.start();
+    }
+
     public static Controller controller;
 
     public Controller(){
@@ -658,6 +676,7 @@ public class Controller implements Initializable {
     public void hideForUpdate(){
         buttonUpdate.setDisable(true);
         buttonRemove.setDisable(true);
+        buttonEdit.setDisable(true);
         buttonAdd.setDisable(true);
         textAreaOutputLog.setDisable(true);
         textFieldURL.setDisable(true);

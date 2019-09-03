@@ -41,6 +41,8 @@
             <Menu mnemonicParsing="false" text="About">
               <items>
                 <MenuItem fx:id="menuAboutVersion" disable="true" mnemonicParsing="false" text="Version" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem fx:id="menuAboutUpdates" mnemonicParsing="false" onAction="#checkForUpdatesAction" text="Check For Updates" />
               </items>
             </Menu>
       </menus>
