@@ -28,10 +28,6 @@ public class SelfUpdater {
         Log.log("Running self updater ...");
         GitHubScraper scraper = new GitHubScraper(REPO_LOCATION, null, true, true);
         HashMap<String, String> filesToDownload = determineDownloads(scraper);
-        String downloadLink = checkForNewRelease(scraper);
-        if(downloadLink != null){
-            filesToDownload.put(downloadLink, "ClassicAddonManager.jar");
-        }
         if(filesToDownload.isEmpty()){
             Log.log("Self Updater finished without finding any new updates!");
             return;
@@ -78,18 +74,24 @@ public class SelfUpdater {
     private static HashMap<String, String> determineDownloads(GitHubScraper scraper) throws ScrapeException {
         HashMap<String, String> filesToDownload = new HashMap<>();
         VersionInfo versionInfo = VersionInfo.readVersioningFile();
-        String manifestLink = scraper.getUpdateManifestLink();
-        FileDownloader downloader = new FileDownloader("system");
-        downloader.downloadFile(manifestLink, "VERSIONING");
-        GitHubScraper updaterScraper = new GitHubScraper(AUTOUPDATER_REPO_LOCATION, null, true, true);
-        if(versionInfo != null){
+        boolean newTag = getTag(scraper) > VersionInfo.CAM_VERSION;
+        boolean forceExtras = (versionInfo == null);
+        if(versionInfo == null || newTag){
+            String manifestLink = scraper.getUpdateManifestLink();
+            FileDownloader downloader = new FileDownloader("system");
+            downloader.downloadFile(manifestLink, "VERSIONING");
             versionInfo = VersionInfo.readVersioningFile();
         }
-        if(versionInfo == null || versionInfo.expectedAutoUpdate > VersionInfo.AUTOUPDATER_VERSION){
+        GitHubScraper updaterScraper = new GitHubScraper(AUTOUPDATER_REPO_LOCATION, null, true, true);
+        if(versionInfo.expectedCAM > VersionInfo.CAM_VERSION){
+            String camLink = scraper.getReleaseJarDownload();
+            filesToDownload.put(camLink, "ClassicAddonManager.jar");
+        }
+        if(forceExtras || versionInfo.expectedAutoUpdate > VersionInfo.AUTOUPDATER_VERSION){
             String jarLink = updaterScraper.getReleaseJarDownload();
             filesToDownload.put(jarLink, "AutoUpdater.jar");
         }
-        if(versionInfo == null || versionInfo.expectedExe > VersionInfo.EXE_VERSION){
+        if(forceExtras || versionInfo.expectedExe > VersionInfo.EXE_VERSION){
             String exeLink = updaterScraper.getReleaseExeDownload();
             filesToDownload.put(exeLink, "Classic Addon Manager.exe");
         }
@@ -124,18 +126,10 @@ public class SelfUpdater {
         }
     }
 
-    public static String checkForNewRelease(GitHubScraper scraper) throws ScrapeException {
-        Log.log("Checking for new release ...");
-        //check github for new release, same method as checking for releases of addon
-        // if new version available, return download link as string, else return null
+    public static double getTag(GitHubScraper scraper) throws ScrapeException {
         String cleaned = scraper.getTag().replace("v", "");
         double tagAsNum = Double.parseDouble(cleaned);
-        if(tagAsNum <= VersionInfo.CAM_VERSION){
-            Log.log("No new release available!");
-            return null;
-        }
-        Log.log("Found new release!");
-        return scraper.getReleaseJarDownload();
+        return tagAsNum;
     }
 
 
