@@ -38,18 +38,28 @@ public class AddonManager {
         return false;
     }
 
-    public void updateAddons() throws ScrapeException {
-
+    public ArrayList<Exception> updateAddons(UpdateProgressListener listener) {
+        ArrayList<Exception> exceptions = new ArrayList<>();
         Log.log("Updating addons ...");
+        int position = 0;
+        int statusCode;
         for (Addon addon : managedAddons) {
+            statusCode = 1;
+            listener.informStart(position);
             try{
                 if(Log.skipGithubDownloads && addon.getOrigin().contains("github.com")){
                     Log.log("Skipping github addon " + addon.getName() + " by " + addon.getAuthor());
+                    statusCode = 2;
+                    listener.informFinish(position, statusCode);
+                    position++;
                     continue;
                 }
                 UpdateResponse response = addon.checkForUpdate();
                 if (!response.isUpdateAvailable()) {
                     Log.verbose(addon.getName() + " by " + addon.getAuthor() + " is up to date!");
+                    statusCode = 1;
+                    listener.informFinish(position, statusCode);
+                    position++;
                     continue;
                 }
                 Log.log("update available for: " + addon.getName() + " by " + addon.getAuthor() + "!");
@@ -57,12 +67,17 @@ public class AddonManager {
                 install(addon);
                 saveToFile();
             } catch (ScrapeException e){
-                throw e;
+                exceptions.add(e);
+                statusCode = 0;
             } catch (Exception e) {
-                throw new ScrapeException(addon.getAddonSource(), e);
+                exceptions.add(new ScrapeException(addon, e));
+                statusCode = 0;
             }
+            listener.informFinish(position, statusCode);
+            position++;
         }
         Log.log("Finished updating!");
+        return exceptions;
     }
 
     public boolean addNewAddon(AddonRequest request) throws ScrapeException {

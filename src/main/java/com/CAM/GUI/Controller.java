@@ -3,6 +3,7 @@ package com.CAM.GUI;
 import com.CAM.AddonManagement.Addon;
 import com.CAM.AddonManagement.AddonManager;
 import com.CAM.AddonManagement.AddonRequest;
+import com.CAM.AddonManagement.UpdateProgressListener;
 import com.CAM.DataCollection.CurseForgeScraper;
 import com.CAM.DataCollection.FileDownloader;
 import com.CAM.DataCollection.GitHubScraper;
@@ -36,6 +37,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -118,7 +120,7 @@ public class Controller implements Initializable {
     public Button buttonEdit;
 
     @FXML
-    public void checkForUpdatesAction(){
+    public void checkForUpdatesAction() {
         Thread updateThread = new Thread(() -> {
             try {
                 SelfUpdater.selfUpdate(Controller.controller);
@@ -131,19 +133,19 @@ public class Controller implements Initializable {
 
     public static Controller controller;
 
-    public Controller(){
+    public Controller() {
         controller = this;
     }
 
-    public static Controller getInstance(){
+    public static Controller getInstance() {
         return controller;
     }
 
     @FXML
-    private void exportAction(){
+    private void exportAction() {
         Thread exportThread = new Thread(() -> {
             ArrayList<Addon> addons = new ArrayList<>();
-            for(Addon addon : addonManager.getManagedAddons()){
+            for (Addon addon : addonManager.getManagedAddons()) {
                 addons.add(addon.export());
             }
             Gson gson = new Gson();
@@ -166,7 +168,7 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void importAction(){
+    private void importAction() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Import Addon List");
         alert.setHeaderText("Paste Addon Export Here");
@@ -176,7 +178,7 @@ public class Controller implements Initializable {
         alert.getDialogPane().setContent(textArea);
 
         Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() != ButtonType.OK){
+        if (result.get() != ButtonType.OK) {
             return;
         }
 
@@ -184,7 +186,8 @@ public class Controller implements Initializable {
             Gson gson = new Gson();
             ArrayList<Addon> imported = null;
             try {
-                imported = gson.fromJson(textArea.getText(), new TypeToken<ArrayList<Addon>>(){}.getType());
+                imported = gson.fromJson(textArea.getText(), new TypeToken<ArrayList<Addon>>() {
+                }.getType());
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     Alert alertIncorrect = new Alert(Alert.AlertType.INFORMATION);
@@ -202,7 +205,7 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void toggleGithubDownloadsAction(){
+    private void toggleGithubDownloadsAction() {
         Log.toggleGithubDownloads();
     }
 
@@ -213,26 +216,26 @@ public class Controller implements Initializable {
     private ContextMenu contextMenuOutputLog;
 
     @FXML
-    private void setupAction(){
+    private void setupAction() {
         UserInput userInput = new GUIUserInput("Please provide path to WoW Classic Installation");
         String installLocation = AddonManager.specifyInstallLocation(userInput);
-        if(installLocation == null){
+        if (installLocation == null) {
             return;
         }
         addonManager.setInstallLocation(installLocation);
     }
 
     @FXML
-    private void toggleDebugAction(){
+    private void toggleDebugAction() {
         Log.toggleLogging();
     }
 
     @FXML
-    private void removeAction(){
+    private void removeAction() {
         Thread removeThread = new Thread(() -> {
             Platform.runLater(() -> disableAll());
             ObservableList<Integer> selected = listViewAddons.getSelectionModel().getSelectedIndices();
-            if(selected.size() != 0){
+            if (selected.size() != 0) {
                 addonManager.removeAddon(selected.get(0));
             }
             Platform.runLater(() -> {
@@ -244,13 +247,13 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    public void editAction(){
+    public void editAction() {
         createEditAddonDialog();
     }
 
-    private void createEditAddonDialog(){
+    private void createEditAddonDialog() {
         ObservableList<Integer> selected = listViewAddons.getSelectionModel().getSelectedIndices();
-        if(selected.size() == 0){
+        if (selected.size() == 0) {
             return;
         }
 
@@ -273,46 +276,47 @@ public class Controller implements Initializable {
         stage.setTitle("Edit Managed Addon");
         stage.getIcons().add(new Image(getClass().getClassLoader().getResource("program_icon.png").toExternalForm()));
         stage.showAndWait();
-        if(dialogController.buttonPress == EditAddonController.BUTTON_SAVE){
+        if (dialogController.buttonPress == EditAddonController.BUTTON_SAVE) {
             addonManager.saveToFile();
         }
     }
 
     @FXML
-    private void updateAction(){
+    private void updateAction() {
         Thread updateThread = new Thread(() -> {
-            try {
-                Platform.runLater(() -> {
-                    disableAll();
-                    buttonUpdate.setVisible(false);
-                    progressBarDownload.setVisible(true);
-                });
+            Platform.runLater(() -> {
+                disableAll();
+                buttonUpdate.setVisible(false);
+                progressBarDownload.setVisible(true);
+            });
 
-                addonManager.updateAddons();
+            UpdateProgressListener progressListener = new GUIUpdateProgressListener(this);
 
-            } catch (ScrapeException e) {
-                handleUpdateScrapeException(e);
-            } catch (Exception e){
-                handleUnknownException(e);
-            } finally {
-                Platform.runLater(() -> {
-                    enableAll();
-                    buttonUpdate.setVisible(true);
-                    progressBarDownload.setVisible(false);
-                });
+            ArrayList<Exception> exceptions = addonManager.updateAddons(progressListener);
+            for (Exception e : exceptions) {
+                if (e.getClass() == ScrapeException.class) {
+                    handleUpdateScrapeException((ScrapeException) e);
+                } else {
+                    handleUnknownException(e);
+                }
             }
+            Platform.runLater(() -> {
+                enableAll();
+                buttonUpdate.setVisible(true);
+                progressBarDownload.setVisible(false);
+            });
 
         });
         updateThread.start();
     }
 
-    private void handleUpdateScrapeException(ScrapeException e){
+    private void handleUpdateScrapeException(ScrapeException e) {
         Log.log("Classic Addon Manager encountered an issue and is stopping!");
         e.printStackTrace();
-        if(e.getType().equals(FailingHttpStatusCodeException.class)){
-            FailingHttpStatusCodeException exception = (FailingHttpStatusCodeException)e.getException();
+        if (e.getType().equals(FailingHttpStatusCodeException.class)) {
+            FailingHttpStatusCodeException exception = (FailingHttpStatusCodeException) e.getException();
 
-            if(exception.getStatusCode() == 404){
+            if (exception.getStatusCode() == 404) {
                 Platform.runLater(() -> {
                     Alert invalidUrlAlert = new Alert(Alert.AlertType.ERROR);
                     invalidUrlAlert.setTitle("Url Is No Longer Valid!");
@@ -324,8 +328,8 @@ public class Controller implements Initializable {
                 return;
             }
 
-            if(e.getSource() == AddonSource.GITHUB){
-                if(exception.getStatusCode() == 403){
+            if (e.getSource() == AddonSource.GITHUB) {
+                if (exception.getStatusCode() == 403) {
                     showGithubLimitAlert();
                     return;
                 }
@@ -334,12 +338,12 @@ public class Controller implements Initializable {
             //TODO: Add any other causes of FailingHttpStatusCodeExepection here
         }
 
-        if(e.getType().equals(ScrapeException.class)){
+        if (e.getType().equals(ScrapeException.class)) {
             showInvalidUrlAlert(e);
         }
 
-        if(e.getType().equals(NullPointerException.class)){
-            if(e.getSource() == AddonSource.GITHUB){
+        if (e.getType().equals(NullPointerException.class)) {
+            if (e.getSource() == AddonSource.GITHUB) {
                 Platform.runLater(() -> {
                     Alert invalidUrlAlert = new Alert(Alert.AlertType.ERROR);
                     invalidUrlAlert.setTitle("Url Is No Longer Valid!");
@@ -352,8 +356,8 @@ public class Controller implements Initializable {
             }
         }
 
-        if(e.getType().equals(IndexOutOfBoundsException.class)){
-            if(e.getSource() == AddonSource.GITHUB){
+        if (e.getType().equals(IndexOutOfBoundsException.class)) {
+            if (e.getSource() == AddonSource.GITHUB) {
                 e.setMessage("Could not find download link! Perhaps the addon has moved?");
                 Platform.runLater(() -> {
                     Alert releasesUrlAlert = new Alert(Alert.AlertType.ERROR);
@@ -365,7 +369,7 @@ public class Controller implements Initializable {
                 });
                 return;
             }
-            if(e.getSource() == AddonSource.WOWINTERFACE){
+            if (e.getSource() == AddonSource.WOWINTERFACE) {
                 Platform.runLater(() -> {
                     Alert invalidUrlAlert = new Alert(Alert.AlertType.ERROR);
                     invalidUrlAlert.setTitle("Url Is No Longer Valid!");
@@ -378,7 +382,7 @@ public class Controller implements Initializable {
             }
         }
 
-        if(e.getType().equals(MalformedURLException.class)){
+        if (e.getType().equals(MalformedURLException.class)) {
             Platform.runLater(() -> {
                 Alert malformedAlert = new Alert(Alert.AlertType.ERROR);
                 malformedAlert.setTitle("Invalid URL format!");
@@ -416,7 +420,7 @@ public class Controller implements Initializable {
 
     }
 
-    private void handleUnknownException(Exception e){
+    private void handleUnknownException(Exception e) {
         Log.log("Classic Addon Manager encountered an issue and is stopping!");
         e.printStackTrace();
         Platform.runLater(() -> {
@@ -428,51 +432,51 @@ public class Controller implements Initializable {
         });
     }
 
-    private Alert createExceptionAlert(String title, String header, String content, Exception e){
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(title);
-            alert.setHeaderText(header);
-            alert.setContentText(content);
+    private Alert createExceptionAlert(String title, String header, String content, Exception e) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
 
-            // Create expandable Exception.
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            if(e.getClass().equals(ScrapeException.class)){
-                ScrapeException exception = (ScrapeException) e;
-                if(exception.getAddon() != null){
-                    pw.append("Addon: " + exception.getAddon().getName() +"\n");
-                    pw.append("Author: " + exception.getAddon().getAuthor() +"\n");
-                    pw.append("URL: " + exception.getAddon().getOrigin() +"\n");
-                    pw.append("Branch: " + exception.getAddon().getBranch());
-                    pw.append("Releases: " + exception.getAddon().isReleases());
-                    pw.append("Last Updated: " + exception.getAddon().getLastUpdated() +"\n");
-                    pw.append("Last File Name: " + exception.getAddon().getLastFileName() +"\n");
-                }
-                exception.getException().printStackTrace(pw);
+        // Create expandable Exception.
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        if (e.getClass().equals(ScrapeException.class)) {
+            ScrapeException exception = (ScrapeException) e;
+            if (exception.getAddon() != null) {
+                pw.append("Addon: " + exception.getAddon().getName() + "\n");
+                pw.append("Author: " + exception.getAddon().getAuthor() + "\n");
+                pw.append("URL: " + exception.getAddon().getOrigin() + "\n");
+                pw.append("Branch: " + exception.getAddon().getBranch());
+                pw.append("Releases: " + exception.getAddon().isReleases());
+                pw.append("Last Updated: " + exception.getAddon().getLastUpdated() + "\n");
+                pw.append("Last File Name: " + exception.getAddon().getLastFileName() + "\n");
             }
-            e.printStackTrace(pw);
-            String exceptionText = sw.toString();
+            exception.getException().printStackTrace(pw);
+        }
+        e.printStackTrace(pw);
+        String exceptionText = sw.toString();
 
-            Label label = new Label("Send this to the author:");
+        Label label = new Label("Send this to the author:");
 
-            TextArea textArea = new TextArea(exceptionText);
-            textArea.setEditable(false);
-            textArea.setWrapText(true);
+        TextArea textArea = new TextArea(exceptionText);
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
 
-            textArea.setMaxWidth(Double.MAX_VALUE);
-            textArea.setMaxHeight(Double.MAX_VALUE);
-            GridPane.setVgrow(textArea, Priority.ALWAYS);
-            GridPane.setHgrow(textArea, Priority.ALWAYS);
+        textArea.setMaxWidth(Double.MAX_VALUE);
+        textArea.setMaxHeight(Double.MAX_VALUE);
+        GridPane.setVgrow(textArea, Priority.ALWAYS);
+        GridPane.setHgrow(textArea, Priority.ALWAYS);
 
-            GridPane expContent = new GridPane();
-            expContent.setMaxWidth(Double.MAX_VALUE);
-            expContent.add(label, 0, 0);
-            expContent.add(textArea, 0, 1);
+        GridPane expContent = new GridPane();
+        expContent.setMaxWidth(Double.MAX_VALUE);
+        expContent.add(label, 0, 0);
+        expContent.add(textArea, 0, 1);
 
-            // Set expandable Exception into the dialog pane.
-            alert.getDialogPane().setExpandableContent(expContent);
+        // Set expandable Exception into the dialog pane.
+        alert.getDialogPane().setExpandableContent(expContent);
 
-            return alert;
+        return alert;
     }
 
     private void determineBranch(String origin) throws ScrapeException {
@@ -485,7 +489,7 @@ public class Controller implements Initializable {
             dialog.setTitle("Github Branch");
             dialog.setHeaderText("The addon you're adding has the following branches:");
             dialog.setContentText("Branch:");
-            if(names.contains("master")){
+            if (names.contains("master")) {
                 dialog.setSelectedItem("master");
             } else {
                 dialog.setSelectedItem(names.get(0));
@@ -493,7 +497,7 @@ public class Controller implements Initializable {
 
             Optional<String> result = dialog.showAndWait();
 
-            if(result.isEmpty()){
+            if (result.isEmpty()) {
                 cleanUpAfterAddAction();
                 return;
             }
@@ -502,7 +506,7 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void addAction(){
+    private void addAction() {
         Thread precheckThread = new Thread(() -> {
             Platform.runLater(() -> {
                 disableAll();
@@ -517,7 +521,7 @@ public class Controller implements Initializable {
                     throw new ScrapeException(null, "URL does not point to a valid addon! Please double check the URL and try again!");
                 }
 
-                switch (urlInfo.addonSource){
+                switch (urlInfo.addonSource) {
                     case CURSEFORGE:
                         checkIfProceedClassic(origin);
                         break;
@@ -528,10 +532,10 @@ public class Controller implements Initializable {
                         startAddonAddThread(origin);
                         break;
                 }
-            } catch (ScrapeException e){
+            } catch (ScrapeException e) {
                 handleAddScrapeException(e);
                 cleanUpAfterAddAction();
-            } catch (Exception e){
+            } catch (Exception e) {
                 handleUnknownException(e);
                 cleanUpAfterAddAction();
             }
@@ -541,7 +545,7 @@ public class Controller implements Initializable {
 
     private void handleGithubAdd(String origin) throws ScrapeException {
         String trimmedOrigin = UrlInfo.trimGitHubUrl(origin);
-        if(checkboxReleases.isSelected()){
+        if (checkboxReleases.isSelected()) {
             startAddonAddThread(null);
             return;
         }
@@ -551,10 +555,10 @@ public class Controller implements Initializable {
     private void handleAddScrapeException(ScrapeException e) {
         e.printStackTrace();
         Platform.runLater(() -> {
-            if(e.getType().equals(FailingHttpStatusCodeException.class)){
+            if (e.getType().equals(FailingHttpStatusCodeException.class)) {
                 FailingHttpStatusCodeException exception = (FailingHttpStatusCodeException) e.getException();
 
-                switch (exception.getStatusCode()){
+                switch (exception.getStatusCode()) {
                     case 404:
                         e.setMessage("The URL did not point to an addon! \n" +
                                 "This may be due to a typo, please double check the URL and try again!");
@@ -577,7 +581,7 @@ public class Controller implements Initializable {
                 }
             }
 
-            if(e.getType().equals(ScrapeException.class)){
+            if (e.getType().equals(ScrapeException.class)) {
                 showInvalidUrlAlert(e);
                 return;
             }
@@ -605,7 +609,7 @@ public class Controller implements Initializable {
         });
     }
 
-    private void startAddonAddThread(String branch){
+    private void startAddonAddThread(String branch) {
         Thread addAddonThread = new Thread(() -> {
             try {
                 String origin = textFieldURL.getText();
@@ -616,7 +620,7 @@ public class Controller implements Initializable {
                 request.branch = branch;
                 request.releases = releases;
 
-                if(!isValidRequest(request)){
+                if (!isValidRequest(request)) {
                     cleanUpAfterAddAction();
                     return;
                 }
@@ -636,7 +640,7 @@ public class Controller implements Initializable {
     private void checkIfProceedClassic(String origin) throws ScrapeException {
         String trimmedOrigin = UrlInfo.trimCurseForgeUrl(origin);
         CurseForgeScraper scraper = CurseForgeScraper.getOfficialScraper(trimmedOrigin, false);
-        if(scraper.isClassicSupported()){
+        if (scraper.isClassicSupported()) {
             startAddonAddThread(null);
             return;
         }
@@ -649,7 +653,7 @@ public class Controller implements Initializable {
                     "NOTE: There is no guarantee this addon will work with classic!");
 
             Optional<ButtonType> result = alert.showAndWait();
-            if (result.get() != ButtonType.OK){
+            if (result.get() != ButtonType.OK) {
                 cleanUpAfterAddAction();
                 return;
             }
@@ -657,7 +661,7 @@ public class Controller implements Initializable {
         });
     }
 
-    public void cleanUpAfterAddAction(){
+    public void cleanUpAfterAddAction() {
         Platform.runLater(() -> {
             updateListView();
             enableAll();
@@ -665,7 +669,7 @@ public class Controller implements Initializable {
         });
     }
 
-    private void progressBarListen(){
+    private void progressBarListen() {
         DownloadListener downloadListenerAddon = new GUIDownloadListener(progressBarDownload);
         FileDownloader.listen(downloadListenerAddon);
 
@@ -673,7 +677,7 @@ public class Controller implements Initializable {
         FileDownloader.listen(downloadListenerUpdate);
     }
 
-    public void hideForUpdate(){
+    public void hideForUpdate() {
         buttonUpdate.setDisable(true);
         buttonRemove.setDisable(true);
         buttonEdit.setDisable(true);
@@ -696,32 +700,32 @@ public class Controller implements Initializable {
         progressBarUpdateTotal.setVisible(true);
     }
 
-    private boolean isValidRequest(AddonRequest request){
-        if(request.origin.contains("curseforge.com") || request.origin.contains("wowinterface.com")){
+    private boolean isValidRequest(AddonRequest request) {
+        if (request.origin.contains("curseforge.com") || request.origin.contains("wowinterface.com")) {
             return true;
         }
-        if(request.releases){
+        if (request.releases) {
             return true;
         }
-        if(!request.branch.equals("")){
+        if (!request.branch.equals("")) {
             return true;
         }
         return false;
     }
 
     @FXML
-    private void githubRedirectAction(){
+    private void githubRedirectAction() {
         String github = "https://github.com/erikabp123/ClassicAddonManager";
         openUrl(github);
     }
 
     @FXML
-    private void discordRedirectAction(){
+    private void discordRedirectAction() {
         String discord = "https://discord.gg/StX3gbw";
         openUrl(discord);
     }
 
-    private void openUrl(String url){
+    private void openUrl(String url) {
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             try {
                 Desktop.getDesktop().browse(new URI(url));
@@ -733,35 +737,36 @@ public class Controller implements Initializable {
         }
     }
 
-    public void updateListView(){
+    public void updateListView() {
         ArrayList<String> addonNames = new ArrayList<>();
-        for(Addon addon : addonManager.getManagedAddons()){
+        for (Addon addon : addonManager.getManagedAddons()) {
             addonNames.add(addon.getName());
         }
         listItems.setAll(addonNames);
         updateListViewLabel();
     }
 
-    private void updateListViewLabel(){
+    private void updateListViewLabel() {
         int managedCount = addonManager.getManagedAddons().size();
         String textSuffix = "addons";
-        if(managedCount == 1){
+        if (managedCount == 1) {
             textSuffix = "addon";
         }
-        textManagedLabel.setText("Managing " + managedCount +" " + textSuffix);
+        textManagedLabel.setText("Managing " + managedCount + " " + textSuffix);
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         menuAboutVersion.setText("Version " + VersionInfo.CAM_VERSION);
         imageViewAdd.setImage(new Image(this.getClass().getClassLoader().getResource("adding.gif").toExternalForm()));
+        listViewAddons.setCellFactory(param -> new AddonListCell<>());
         listViewAddons.setItems(listItems);
         Log.listen(new GUILogListener(textAreaOutputLog));
         progressBarListen();
         setupOutputLogContextMenu();
     }
 
-    private void setupOutputLogContextMenu(){
+    private void setupOutputLogContextMenu() {
         contextMenuOutputLog = new ContextMenu();
         MenuItem clearLog = new MenuItem("Clear log");
         MenuItem selectAll = new MenuItem("Select all");
@@ -774,7 +779,7 @@ public class Controller implements Initializable {
         copy.setOnAction(event -> {
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             String selected = textAreaOutputLog.getSelectedText();
-            if(selected.equals("")){
+            if (selected.equals("")) {
                 return;
             }
             clipboard.setContents(new StringSelection(selected), null);
@@ -784,7 +789,7 @@ public class Controller implements Initializable {
         textAreaOutputLog.setContextMenu(contextMenuOutputLog);
     }
 
-    public void checkForUpdate(){
+    public void checkForUpdate() {
         try {
             SelfUpdater.selfUpdate(this);
         } catch (ScrapeException e) {
@@ -792,26 +797,28 @@ public class Controller implements Initializable {
         }
     }
 
-    public AddonManager getAddonManager(){
+    public AddonManager getAddonManager() {
         return addonManager;
     }
 
-    public void setAddonManager(AddonManager addonManager){
+    public void setAddonManager(AddonManager addonManager) {
         this.addonManager = addonManager;
     }
 
-    public void disableAll(){
+    public void disableAll() {
         buttonRemove.setDisable(true);
         buttonAdd.setDisable(true);
         buttonUpdate.setDisable(true);
+        buttonEdit.setDisable(true);
         textFieldURL.setDisable(true);
         checkboxReleases.setDisable(true);
     }
 
-    public void enableAll(){
+    public void enableAll() {
         buttonRemove.setDisable(false);
         buttonAdd.setDisable(false);
         buttonUpdate.setDisable(false);
+        buttonEdit.setDisable(false);
         textFieldURL.setDisable(false);
         checkboxReleases.setDisable(false);
     }

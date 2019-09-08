@@ -87,7 +87,6 @@ public class FileDownloader {
                     output.write(buffer, 0, n);
                     count += n;
                     double progress = (count*1.0/fileSize);
-                    System.out.println(progress);
                     notifyAllListeners(progress);
                 }
 

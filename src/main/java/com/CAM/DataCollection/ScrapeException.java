@@ -23,6 +23,13 @@ public class ScrapeException extends Exception {
         this.source = source;
     }
 
+    public ScrapeException(Addon addon, Exception e){
+        super();
+        this.exception = e;
+        this.addon = addon;
+        this.source = addon.getAddonSource();
+    }
+
 
     public Exception getException() {
         return exception;
