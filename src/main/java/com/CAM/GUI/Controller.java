@@ -22,13 +22,13 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
@@ -37,7 +37,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -55,92 +54,240 @@ import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
 
+    //================================================================================
+    // General - Fields
+    //================================================================================
+    private static Controller controller;
+    final ObservableList<String> listItems = FXCollections.observableArrayList();
+    private AddonManager addonManager;
 
-    @FXML
-    private ListView<String> listViewAddons;
-
-    @FXML
-    private Button buttonRemove;
-
-    @FXML
-    private TextField textFieldURL;
-
-    @FXML
-    private Text textManagedLabel;
-
-    @FXML
-    private TextArea textAreaOutputLog;
-
-    @FXML
-    private ImageView imageViewAdd;
-
-    @FXML
-    private CheckBox checkboxReleases;
-
+    //================================================================================
+    // FXML - Fields
+    //================================================================================
+    //region General UI
     @FXML
     public VBox vboxMainUI;
+    //endregion
 
-    @FXML
-    public ImageView imageViewUpdate;
-
-    @FXML
-    public ProgressBar progressBarDownload;
-
-    @FXML
-    private Button buttonUpdate;
-
-    @FXML
-    private Button buttonAdd;
-
-    @FXML
-    private MenuItem menuAboutVersion;
-
-    @FXML
-    public ProgressBar progressBarUpdate;
-
-    @FXML
-    public ProgressBar progressBarUpdateTotal;
-
+    //region Menus
     @FXML
     public MenuBar menuBar;
 
     @FXML
-    public Text textOutputLogLabel;
-
-    @FXML
-    public Text updatingVersionLabel;
+    private MenuItem menuAboutVersion;
 
     @FXML
     public MenuItem menuToggleGithub;
 
     @FXML
     public MenuItem menuAboutUpdates;
+    //endregion
+
+    //region Text
+    @FXML
+    private Text textManagedLabel;
+
+    @FXML
+    public Text textOutputLogLabel;
+
+    @FXML
+    public Text updatingVersionLabel;
+    //endregion
+
+    //region Buttons
+    @FXML
+    private Button buttonAdd;
+
+    @FXML
+    private Button buttonUpdate;
+
+    @FXML
+    private Button buttonRemove;
 
     @FXML
     public Button buttonEdit;
+    //endregion
+
+    //region Checkboxes
+    @FXML
+    private CheckBox checkboxReleases;
+
+    //endregion
+
+    //region ListViews
+    @FXML
+    private ListView<String> listViewAddons;
+    //endregion
+
+    //region Text Input/Output
+    @FXML
+    private TextField textFieldURL;
 
     @FXML
-    public void checkForUpdatesAction() {
-        Thread updateThread = new Thread(() -> {
+    private TextArea textAreaOutputLog;
+    //endregion
+
+    //region Loading Images
+    @FXML
+    private ImageView imageViewAdd;
+
+    @FXML
+    public ImageView imageViewUpdate;
+    //endregion
+
+    //region Progress Bars
+    @FXML
+    public ProgressBar progressBarDownload;
+
+    @FXML
+    public ProgressBar progressBarUpdate;
+
+    @FXML
+    public ProgressBar progressBarUpdateTotal;
+    //endregion
+
+    //================================================================================
+    // FXML - Functions
+    //================================================================================
+    //region General Functionality
+    @FXML
+    private void setupAction() {
+        UserInput userInput = new GUIUserInput("Please provide path to WoW Classic Installation");
+        String installLocation = AddonManager.specifyInstallLocation(userInput);
+        if (installLocation == null) {
+            return;
+        }
+        addonManager.setInstallLocation(installLocation);
+    }
+
+    @FXML
+    private void addAction() {
+        Thread precheckThread = new Thread(() -> {
+            Platform.runLater(() -> {
+                disableAll();
+                imageViewAdd.setVisible(true);
+            });
+
             try {
-                SelfUpdater.selfUpdate(Controller.controller);
+                String origin = textFieldURL.getText();
+
+                UrlInfo urlInfo = UrlInfo.examineAddonUrl(origin);
+                if (!urlInfo.isValid) {
+                    throw new ScrapeException(null, "URL does not point to a valid addon! Please double check the URL and try again!");
+                }
+
+                switch (urlInfo.addonSource) {
+                    case CURSEFORGE:
+                        checkIfProceedClassic(origin);
+                        break;
+                    case GITHUB:
+                        handleGithubAdd(origin);
+                        break;
+                    case WOWINTERFACE:
+                        startAddonAddThread(origin);
+                        break;
+                }
             } catch (ScrapeException e) {
+                handleAddScrapeException(e);
+                cleanUpAfterAddAction();
+            } catch (Exception e) {
                 handleUnknownException(e);
+                cleanUpAfterAddAction();
             }
+        });
+        precheckThread.start();
+    }
+
+    @FXML
+    private void updateAction() {
+        Thread updateThread = new Thread(() -> {
+            Platform.runLater(() -> {
+                disableAll();
+                buttonUpdate.setVisible(false);
+                progressBarDownload.setVisible(true);
+            });
+
+            UpdateProgressListener progressListener = new GUIUpdateProgressListener(this);
+
+            ArrayList<Exception> exceptions = addonManager.updateAddons(progressListener);
+            for (Exception e : exceptions) {
+                if (e.getClass() == ScrapeException.class) {
+                    handleUpdateScrapeException((ScrapeException) e);
+                } else {
+                    handleUnknownException(e);
+                }
+            }
+            Platform.runLater(() -> {
+                enableAll();
+                buttonUpdate.setVisible(true);
+                progressBarDownload.setVisible(false);
+            });
+
         });
         updateThread.start();
     }
 
-    public static Controller controller;
-
-    public Controller() {
-        controller = this;
+    @FXML
+    private void removeAction() {
+        Thread removeThread = new Thread(() -> {
+            Platform.runLater(() -> disableAll());
+            ObservableList<Integer> selected = listViewAddons.getSelectionModel().getSelectedIndices();
+            if (selected.size() != 0) {
+                addonManager.removeAddon(selected.get(0));
+            }
+            Platform.runLater(() -> {
+                updateListView();
+                enableAll();
+            });
+        });
+        removeThread.start();
     }
 
-    public static Controller getInstance() {
-        return controller;
+    @FXML
+    public void editAction() {
+        ObservableList<Integer> selected = listViewAddons.getSelectionModel().getSelectedIndices();
+        if (selected.size() == 0) {
+            return;
+        }
+
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("editAddon.fxml"));
+        Parent parent = null;
+        try {
+            parent = fxmlLoader.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        EditAddonController dialogController = fxmlLoader.getController();
+        Addon selectedAddon = addonManager.getManagedAddons().get(selected.get(0));
+        dialogController.createDialog(selectedAddon);
+
+        Scene scene = new Scene(parent);
+        scene.getStylesheets().add(getClass().getClassLoader().getResource("bootstrap3.css").toExternalForm());
+        Stage stage = new Stage();
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setScene(scene);
+        stage.setTitle("Edit Managed Addon");
+        stage.getIcons().add(new Image(getClass().getClassLoader().getResource("program_icon.png").toExternalForm()));
+        stage.showAndWait();
+        if (dialogController.buttonPress == EditAddonController.BUTTON_SAVE) {
+            addonManager.saveToFile();
+        }
+    }
+    //endregion
+
+    //region Toggleable Settings
+    @FXML
+    private void toggleDebugAction() {
+        Log.toggleLogging();
     }
 
+    @FXML
+    private void toggleGithubDownloadsAction() {
+        Log.toggleGithubDownloads();
+    }
+    //endregion
+
+    //region Import/Export
     @FXML
     private void exportAction() {
         Thread exportThread = new Thread(() -> {
@@ -203,113 +350,205 @@ public class Controller implements Initializable {
         });
         importThread.start();
     }
+    //endregion
 
+    //region Version and Updating
     @FXML
-    private void toggleGithubDownloadsAction() {
-        Log.toggleGithubDownloads();
-    }
-
-    final ObservableList<String> listItems = FXCollections.observableArrayList();
-
-    private AddonManager addonManager;
-
-    private ContextMenu contextMenuOutputLog;
-
-    @FXML
-    private void setupAction() {
-        UserInput userInput = new GUIUserInput("Please provide path to WoW Classic Installation");
-        String installLocation = AddonManager.specifyInstallLocation(userInput);
-        if (installLocation == null) {
-            return;
-        }
-        addonManager.setInstallLocation(installLocation);
-    }
-
-    @FXML
-    private void toggleDebugAction() {
-        Log.toggleLogging();
-    }
-
-    @FXML
-    private void removeAction() {
-        Thread removeThread = new Thread(() -> {
-            Platform.runLater(() -> disableAll());
-            ObservableList<Integer> selected = listViewAddons.getSelectionModel().getSelectedIndices();
-            if (selected.size() != 0) {
-                addonManager.removeAddon(selected.get(0));
-            }
-            Platform.runLater(() -> {
-                updateListView();
-                enableAll();
-            });
-        });
-        removeThread.start();
-    }
-
-    @FXML
-    public void editAction() {
-        createEditAddonDialog();
-    }
-
-    private void createEditAddonDialog() {
-        ObservableList<Integer> selected = listViewAddons.getSelectionModel().getSelectedIndices();
-        if (selected.size() == 0) {
-            return;
-        }
-
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("editAddon.fxml"));
-        Parent parent = null;
-        try {
-            parent = fxmlLoader.load();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        EditAddonController dialogController = fxmlLoader.getController();
-        Addon selectedAddon = addonManager.getManagedAddons().get(selected.get(0));
-        dialogController.createDialog(selectedAddon);
-
-        Scene scene = new Scene(parent);
-        scene.getStylesheets().add(getClass().getClassLoader().getResource("bootstrap3.css").toExternalForm());
-        Stage stage = new Stage();
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.setScene(scene);
-        stage.setTitle("Edit Managed Addon");
-        stage.getIcons().add(new Image(getClass().getClassLoader().getResource("program_icon.png").toExternalForm()));
-        stage.showAndWait();
-        if (dialogController.buttonPress == EditAddonController.BUTTON_SAVE) {
-            addonManager.saveToFile();
-        }
-    }
-
-    @FXML
-    private void updateAction() {
+    public void checkForUpdatesAction() {
         Thread updateThread = new Thread(() -> {
-            Platform.runLater(() -> {
-                disableAll();
-                buttonUpdate.setVisible(false);
-                progressBarDownload.setVisible(true);
-            });
-
-            UpdateProgressListener progressListener = new GUIUpdateProgressListener(this);
-
-            ArrayList<Exception> exceptions = addonManager.updateAddons(progressListener);
-            for (Exception e : exceptions) {
-                if (e.getClass() == ScrapeException.class) {
-                    handleUpdateScrapeException((ScrapeException) e);
-                } else {
-                    handleUnknownException(e);
-                }
+            try {
+                SelfUpdater.selfUpdate(Controller.controller);
+            } catch (ScrapeException e) {
+                handleUnknownException(e);
             }
-            Platform.runLater(() -> {
-                enableAll();
-                buttonUpdate.setVisible(true);
-                progressBarDownload.setVisible(false);
-            });
-
         });
         updateThread.start();
     }
+    //endregion
 
+    //region Redirection
+    @FXML
+    private void githubRedirectAction() {
+        String github = "https://github.com/erikabp123/ClassicAddonManager";
+        openUrl(github);
+    }
+
+    @FXML
+    private void discordRedirectAction() {
+        String discord = "https://discord.gg/StX3gbw";
+        openUrl(discord);
+    }
+
+    private void openUrl(String url) {
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            try {
+                Desktop.getDesktop().browse(new URI(url));
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    //endregion
+
+    //================================================================================
+    // General - Constructor
+    //================================================================================
+    public Controller() {
+        controller = this;
+    }
+
+    //================================================================================
+    // JavaFX - Setup
+    //================================================================================
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        menuAboutVersion.setText("Version " + VersionInfo.CAM_VERSION);
+        imageViewAdd.setImage(new Image(this.getClass().getClassLoader().getResource("adding.gif").toExternalForm()));
+        listViewAddons.setCellFactory(param -> new AddonListCell<>());
+        listViewAddons.setItems(listItems);
+        Log.listen(new GUILogListener(textAreaOutputLog));
+        progressBarListen();
+        setupOutputLogContextMenu();
+    }
+
+    //================================================================================
+    // Error Handling
+    //================================================================================
+    //region General
+    private Alert createExceptionAlert(String title, String header, String content, Exception e) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+
+        // Create expandable Exception.
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        if (e.getClass().equals(ScrapeException.class)) {
+            ScrapeException exception = (ScrapeException) e;
+            if (exception.getAddon() != null) {
+                pw.append("Addon: " + exception.getAddon().getName() + "\n");
+                pw.append("Author: " + exception.getAddon().getAuthor() + "\n");
+                pw.append("URL: " + exception.getAddon().getOrigin() + "\n");
+                pw.append("Branch: " + exception.getAddon().getBranch());
+                pw.append("Releases: " + exception.getAddon().isReleases());
+                pw.append("Last Updated: " + exception.getAddon().getLastUpdated() + "\n");
+                pw.append("Last File Name: " + exception.getAddon().getLastFileName() + "\n");
+            }
+            exception.getException().printStackTrace(pw);
+        }
+        e.printStackTrace(pw);
+        String exceptionText = sw.toString();
+
+        Label label = new Label("Send this to the author:");
+
+        TextArea textArea = new TextArea(exceptionText);
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+
+        textArea.setMaxWidth(Double.MAX_VALUE);
+        textArea.setMaxHeight(Double.MAX_VALUE);
+        GridPane.setVgrow(textArea, Priority.ALWAYS);
+        GridPane.setHgrow(textArea, Priority.ALWAYS);
+
+        GridPane expContent = new GridPane();
+        expContent.setMaxWidth(Double.MAX_VALUE);
+        expContent.add(label, 0, 0);
+        expContent.add(textArea, 0, 1);
+
+        // Set expandable Exception into the dialog pane.
+        alert.getDialogPane().setExpandableContent(expContent);
+
+        return alert;
+    }
+
+    private void showInvalidUrlAlert(ScrapeException e) {
+        Platform.runLater(() -> {
+            Alert invalidAlert = new Alert(Alert.AlertType.ERROR);
+            invalidAlert.setTitle("Invalid URL");
+            invalidAlert.setHeaderText("URL does not point to an addon!");
+            invalidAlert.setContentText(e.getMessage());
+            invalidAlert.showAndWait();
+        });
+        return;
+    }
+
+    private void showGithubLimitAlert() {
+        Platform.runLater(() -> {
+            Alert limitAlert = new Alert(Alert.AlertType.ERROR);
+            limitAlert.setTitle("Github Limit");
+            limitAlert.setHeaderText("Github request limit hit!");
+            limitAlert.setContentText("Github unfortunately has a 60 requests per hour limit for non-authenticated users!\n"
+                    + "Please wait 1 hour for the limit to reset or login with your github account (not yet available in this version). \n"
+                    + "You can toggle github downloads off under the 'File' menu if you wish to continue updating non-github addons.");
+            limitAlert.showAndWait();
+        });
+
+    }
+
+    private void showBadRequestAlert() {
+        Platform.runLater(() -> {
+            Alert badAlert = new Alert(Alert.AlertType.ERROR);
+            badAlert.setTitle("400 - Bad request");
+            badAlert.setHeaderText("Website responded with 400 - Bad Request!");
+            badAlert.setContentText("Double check the provided URL is correct! It may not be the correct URL!");
+            badAlert.showAndWait();
+        });
+    }
+
+    private void showForbiddenRequestAlert() {
+        Platform.runLater(() -> {
+            Alert forbiddenAlert = new Alert(Alert.AlertType.ERROR);
+            forbiddenAlert.setTitle("403 - Forbidden");
+            forbiddenAlert.setHeaderText("Request was denied - 403!");
+            forbiddenAlert.setContentText("The provided URL was blocked by the website (403 - forbidden). \n" +
+                    "Please wait a little and try again later or skip this addon!");
+            forbiddenAlert.showAndWait();
+        });
+    }
+    //endregion
+
+    //region Adding
+    private void handleAddScrapeException(ScrapeException e) {
+        e.printStackTrace();
+        Platform.runLater(() -> {
+            if (e.getType().equals(FailingHttpStatusCodeException.class)) {
+                FailingHttpStatusCodeException exception = (FailingHttpStatusCodeException) e.getException();
+
+                switch (exception.getStatusCode()) {
+                    case 404:
+                        e.setMessage("The URL did not point to an addon! \n" +
+                                "This may be due to a typo, please double check the URL and try again!");
+                        showInvalidUrlAlert(e);
+                        return;
+                    case 403:
+                        if (e.getSource() == AddonSource.GITHUB) {
+                            showGithubLimitAlert();
+                        } else {
+                            showForbiddenRequestAlert();
+                        }
+                        return;
+                    case 400:
+                        //TODO: Alert informing that request is bad, maybe addon moved to a new URL? (especially the case with wowinterface)
+                        showBadRequestAlert();
+                        return;
+                    default:
+                        handleUnknownException(e);
+                        return;
+                }
+            }
+
+            if (e.getType().equals(ScrapeException.class)) {
+                showInvalidUrlAlert(e);
+                return;
+            }
+        });
+    }
+    //endregion
+
+    //region Updates
     private void handleUpdateScrapeException(ScrapeException e) {
         Log.log("Classic Addon Manager encountered an issue and is stopping!");
         e.printStackTrace();
@@ -395,31 +634,9 @@ public class Controller implements Initializable {
 
         handleUnknownException(e);
     }
+    //endregion
 
-    private void showInvalidUrlAlert(ScrapeException e) {
-        Platform.runLater(() -> {
-            Alert invalidAlert = new Alert(Alert.AlertType.ERROR);
-            invalidAlert.setTitle("Invalid URL");
-            invalidAlert.setHeaderText("URL does not point to an addon!");
-            invalidAlert.setContentText(e.getMessage());
-            invalidAlert.showAndWait();
-        });
-        return;
-    }
-
-    private void showGithubLimitAlert() {
-        Platform.runLater(() -> {
-            Alert limitAlert = new Alert(Alert.AlertType.ERROR);
-            limitAlert.setTitle("Github Limit");
-            limitAlert.setHeaderText("Github request limit hit!");
-            limitAlert.setContentText("Github unfortunately has a 60 requests per hour limit for non-authenticated users!\n"
-                    + "Please wait 1 hour for the limit to reset or login with your github account (not yet available in this version). \n"
-                    + "You can toggle github downloads off under the 'File' menu if you wish to continue updating non-github addons.");
-            limitAlert.showAndWait();
-        });
-
-    }
-
+    //region Unknown Errors
     private void handleUnknownException(Exception e) {
         Log.log("Classic Addon Manager encountered an issue and is stopping!");
         e.printStackTrace();
@@ -431,184 +648,11 @@ public class Controller implements Initializable {
             alert.showAndWait();
         });
     }
+    //endregion
 
-    private Alert createExceptionAlert(String title, String header, String content, Exception e) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-
-        // Create expandable Exception.
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        if (e.getClass().equals(ScrapeException.class)) {
-            ScrapeException exception = (ScrapeException) e;
-            if (exception.getAddon() != null) {
-                pw.append("Addon: " + exception.getAddon().getName() + "\n");
-                pw.append("Author: " + exception.getAddon().getAuthor() + "\n");
-                pw.append("URL: " + exception.getAddon().getOrigin() + "\n");
-                pw.append("Branch: " + exception.getAddon().getBranch());
-                pw.append("Releases: " + exception.getAddon().isReleases());
-                pw.append("Last Updated: " + exception.getAddon().getLastUpdated() + "\n");
-                pw.append("Last File Name: " + exception.getAddon().getLastFileName() + "\n");
-            }
-            exception.getException().printStackTrace(pw);
-        }
-        e.printStackTrace(pw);
-        String exceptionText = sw.toString();
-
-        Label label = new Label("Send this to the author:");
-
-        TextArea textArea = new TextArea(exceptionText);
-        textArea.setEditable(false);
-        textArea.setWrapText(true);
-
-        textArea.setMaxWidth(Double.MAX_VALUE);
-        textArea.setMaxHeight(Double.MAX_VALUE);
-        GridPane.setVgrow(textArea, Priority.ALWAYS);
-        GridPane.setHgrow(textArea, Priority.ALWAYS);
-
-        GridPane expContent = new GridPane();
-        expContent.setMaxWidth(Double.MAX_VALUE);
-        expContent.add(label, 0, 0);
-        expContent.add(textArea, 0, 1);
-
-        // Set expandable Exception into the dialog pane.
-        alert.getDialogPane().setExpandableContent(expContent);
-
-        return alert;
-    }
-
-    private void determineBranch(String origin) throws ScrapeException {
-        String trimmedOrigin = UrlInfo.trimGitHubUrl(origin);
-        ArrayList<String> names = GitHubScraper.getBranches(trimmedOrigin);
-        Platform.runLater(() -> {
-            ChoiceDialog<String> dialog = new ChoiceDialog<>();
-            dialog.getItems().addAll(names);
-
-            dialog.setTitle("Github Branch");
-            dialog.setHeaderText("The addon you're adding has the following branches:");
-            dialog.setContentText("Branch:");
-            if (names.contains("master")) {
-                dialog.setSelectedItem("master");
-            } else {
-                dialog.setSelectedItem(names.get(0));
-            }
-
-            Optional<String> result = dialog.showAndWait();
-
-            if (result.isEmpty()) {
-                cleanUpAfterAddAction();
-                return;
-            }
-            startAddonAddThread(result.get());
-        });
-    }
-
-    @FXML
-    private void addAction() {
-        Thread precheckThread = new Thread(() -> {
-            Platform.runLater(() -> {
-                disableAll();
-                imageViewAdd.setVisible(true);
-            });
-
-            try {
-                String origin = textFieldURL.getText();
-
-                UrlInfo urlInfo = UrlInfo.examineAddonUrl(origin);
-                if (!urlInfo.isValid) {
-                    throw new ScrapeException(null, "URL does not point to a valid addon! Please double check the URL and try again!");
-                }
-
-                switch (urlInfo.addonSource) {
-                    case CURSEFORGE:
-                        checkIfProceedClassic(origin);
-                        break;
-                    case GITHUB:
-                        handleGithubAdd(origin);
-                        break;
-                    case WOWINTERFACE:
-                        startAddonAddThread(origin);
-                        break;
-                }
-            } catch (ScrapeException e) {
-                handleAddScrapeException(e);
-                cleanUpAfterAddAction();
-            } catch (Exception e) {
-                handleUnknownException(e);
-                cleanUpAfterAddAction();
-            }
-        });
-        precheckThread.start();
-    }
-
-    private void handleGithubAdd(String origin) throws ScrapeException {
-        String trimmedOrigin = UrlInfo.trimGitHubUrl(origin);
-        if (checkboxReleases.isSelected()) {
-            startAddonAddThread(null);
-            return;
-        }
-        determineBranch(trimmedOrigin);
-    }
-
-    private void handleAddScrapeException(ScrapeException e) {
-        e.printStackTrace();
-        Platform.runLater(() -> {
-            if (e.getType().equals(FailingHttpStatusCodeException.class)) {
-                FailingHttpStatusCodeException exception = (FailingHttpStatusCodeException) e.getException();
-
-                switch (exception.getStatusCode()) {
-                    case 404:
-                        e.setMessage("The URL did not point to an addon! \n" +
-                                "This may be due to a typo, please double check the URL and try again!");
-                        showInvalidUrlAlert(e);
-                        return;
-                    case 403:
-                        if (e.getSource() == AddonSource.GITHUB) {
-                            showGithubLimitAlert();
-                        } else {
-                            showForbiddenRequestAlert();
-                        }
-                        return;
-                    case 400:
-                        //TODO: Alert informing that request is bad, maybe addon moved to a new URL? (especially the case with wowinterface)
-                        showBadRequestAlert();
-                        return;
-                    default:
-                        handleUnknownException(e);
-                        return;
-                }
-            }
-
-            if (e.getType().equals(ScrapeException.class)) {
-                showInvalidUrlAlert(e);
-                return;
-            }
-        });
-    }
-
-    private void showBadRequestAlert() {
-        Platform.runLater(() -> {
-            Alert badAlert = new Alert(Alert.AlertType.ERROR);
-            badAlert.setTitle("400 - Bad request");
-            badAlert.setHeaderText("Website responded with 400 - Bad Request!");
-            badAlert.setContentText("Double check the provided URL is correct! It may not be the correct URL!");
-            badAlert.showAndWait();
-        });
-    }
-
-    private void showForbiddenRequestAlert() {
-        Platform.runLater(() -> {
-            Alert forbiddenAlert = new Alert(Alert.AlertType.ERROR);
-            forbiddenAlert.setTitle("403 - Forbidden");
-            forbiddenAlert.setHeaderText("Request was denied - 403!");
-            forbiddenAlert.setContentText("The provided URL was blocked by the website (403 - forbidden). \n" +
-                    "Please wait a little and try again later or skip this addon!");
-            forbiddenAlert.showAndWait();
-        });
-    }
-
+    //================================================================================
+    // Adding addons
+    //================================================================================
     private void startAddonAddThread(String branch) {
         Thread addAddonThread = new Thread(() -> {
             try {
@@ -661,20 +705,122 @@ public class Controller implements Initializable {
         });
     }
 
+    private void handleGithubAdd(String origin) throws ScrapeException {
+        String trimmedOrigin = UrlInfo.trimGitHubUrl(origin);
+        if (checkboxReleases.isSelected()) {
+            startAddonAddThread(null);
+            return;
+        }
+        determineBranch(trimmedOrigin);
+    }
+
+    private void determineBranch(String origin) throws ScrapeException {
+        String trimmedOrigin = UrlInfo.trimGitHubUrl(origin);
+        ArrayList<String> names = GitHubScraper.getBranches(trimmedOrigin);
+        Platform.runLater(() -> {
+            ChoiceDialog<String> dialog = new ChoiceDialog<>();
+            dialog.getItems().addAll(names);
+
+            dialog.setTitle("Github Branch");
+            dialog.setHeaderText("The addon you're adding has the following branches:");
+            dialog.setContentText("Branch:");
+            if (names.contains("master")) {
+                dialog.setSelectedItem("master");
+            } else {
+                dialog.setSelectedItem(names.get(0));
+            }
+
+            Optional<String> result = dialog.showAndWait();
+
+            if (result.isEmpty()) {
+                cleanUpAfterAddAction();
+                return;
+            }
+            startAddonAddThread(result.get());
+        });
+    }
+
+    private boolean isValidRequest(AddonRequest request) {
+        if (request.origin.contains("curseforge.com") || request.origin.contains("wowinterface.com")) {
+            return true;
+        }
+        if (request.releases) {
+            return true;
+        }
+        if (!request.branch.equals("")) {
+            return true;
+        }
+        return false;
+    }
+
+    //================================================================================
+    // Updating Program
+    //================================================================================
+
+    public void checkForUpdate() {
+        try {
+            SelfUpdater.selfUpdate(this);
+        } catch (ScrapeException e) {
+            Platform.runLater(() -> handleUnknownException(e));
+        }
+    }
+
+    //================================================================================
+    // Output Log
+    //================================================================================
+    //region Output Log Functionality
+    private void setupOutputLogContextMenu() {
+        ContextMenu contextMenuOutputLog = new ContextMenu();
+        MenuItem clearLog = new MenuItem("Clear log");
+        MenuItem selectAll = new MenuItem("Select all");
+        MenuItem copy = new MenuItem("Copy");
+        MenuItem separator1 = new SeparatorMenuItem();
+        MenuItem separator2 = new SeparatorMenuItem();
+
+        clearLog.setOnAction(event -> textAreaOutputLog.clear());
+        selectAll.setOnAction(event -> textAreaOutputLog.selectAll());
+        copy.setOnAction(event -> {
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            String selected = textAreaOutputLog.getSelectedText();
+            if (selected.equals("")) {
+                return;
+            }
+            clipboard.setContents(new StringSelection(selected), null);
+        });
+
+        contextMenuOutputLog.getItems().addAll(selectAll, separator1, copy, separator2, clearLog);
+        textAreaOutputLog.setContextMenu(contextMenuOutputLog);
+    }
+    //endregion
+
+    //================================================================================
+    // Visibility/Interaction Toggling
+    //================================================================================
+    //region Updating/Adding Visibility
+    public void disableAll() {
+        buttonRemove.setDisable(true);
+        buttonAdd.setDisable(true);
+        buttonUpdate.setDisable(true);
+        buttonEdit.setDisable(true);
+        textFieldURL.setDisable(true);
+        checkboxReleases.setDisable(true);
+    }
+
+    public void enableAll() {
+        buttonRemove.setDisable(false);
+        buttonAdd.setDisable(false);
+        buttonUpdate.setDisable(false);
+        buttonEdit.setDisable(false);
+        textFieldURL.setDisable(false);
+        checkboxReleases.setDisable(false);
+    }
+
     public void cleanUpAfterAddAction() {
         Platform.runLater(() -> {
             updateListView();
             enableAll();
             imageViewAdd.setVisible(false);
         });
-    }
-
-    private void progressBarListen() {
-        DownloadListener downloadListenerAddon = new GUIDownloadListener(progressBarDownload);
-        FileDownloader.listen(downloadListenerAddon);
-
-        DownloadListener downloadListenerUpdate = new GUIDownloadListener(progressBarUpdate, progressBarUpdateTotal);
-        FileDownloader.listen(downloadListenerUpdate);
     }
 
     public void hideForUpdate() {
@@ -699,43 +845,7 @@ public class Controller implements Initializable {
         progressBarUpdate.setVisible(true);
         progressBarUpdateTotal.setVisible(true);
     }
-
-    private boolean isValidRequest(AddonRequest request) {
-        if (request.origin.contains("curseforge.com") || request.origin.contains("wowinterface.com")) {
-            return true;
-        }
-        if (request.releases) {
-            return true;
-        }
-        if (!request.branch.equals("")) {
-            return true;
-        }
-        return false;
-    }
-
-    @FXML
-    private void githubRedirectAction() {
-        String github = "https://github.com/erikabp123/ClassicAddonManager";
-        openUrl(github);
-    }
-
-    @FXML
-    private void discordRedirectAction() {
-        String discord = "https://discord.gg/StX3gbw";
-        openUrl(discord);
-    }
-
-    private void openUrl(String url) {
-        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-            try {
-                Desktop.getDesktop().browse(new URI(url));
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+    //endregion
 
     public void updateListView() {
         ArrayList<String> addonNames = new ArrayList<>();
@@ -755,48 +865,17 @@ public class Controller implements Initializable {
         textManagedLabel.setText("Managing " + managedCount + " " + textSuffix);
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        menuAboutVersion.setText("Version " + VersionInfo.CAM_VERSION);
-        imageViewAdd.setImage(new Image(this.getClass().getClassLoader().getResource("adding.gif").toExternalForm()));
-        listViewAddons.setCellFactory(param -> new AddonListCell<>());
-        listViewAddons.setItems(listItems);
-        Log.listen(new GUILogListener(textAreaOutputLog));
-        progressBarListen();
-        setupOutputLogContextMenu();
+    private void progressBarListen() {
+        DownloadListener downloadListenerAddon = new GUIDownloadListener(progressBarDownload);
+        FileDownloader.listen(downloadListenerAddon);
+
+        DownloadListener downloadListenerUpdate = new GUIDownloadListener(progressBarUpdate, progressBarUpdateTotal);
+        FileDownloader.listen(downloadListenerUpdate);
     }
 
-    private void setupOutputLogContextMenu() {
-        contextMenuOutputLog = new ContextMenu();
-        MenuItem clearLog = new MenuItem("Clear log");
-        MenuItem selectAll = new MenuItem("Select all");
-        MenuItem copy = new MenuItem("Copy");
-        MenuItem separator1 = new SeparatorMenuItem();
-        MenuItem separator2 = new SeparatorMenuItem();
-
-        clearLog.setOnAction(event -> textAreaOutputLog.clear());
-        selectAll.setOnAction(event -> textAreaOutputLog.selectAll());
-        copy.setOnAction(event -> {
-            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            String selected = textAreaOutputLog.getSelectedText();
-            if (selected.equals("")) {
-                return;
-            }
-            clipboard.setContents(new StringSelection(selected), null);
-        });
-
-        contextMenuOutputLog.getItems().addAll(selectAll, separator1, copy, separator2, clearLog);
-        textAreaOutputLog.setContextMenu(contextMenuOutputLog);
-    }
-
-    public void checkForUpdate() {
-        try {
-            SelfUpdater.selfUpdate(this);
-        } catch (ScrapeException e) {
-            Platform.runLater(() -> handleUnknownException(e));
-        }
-    }
-
+    //================================================================================
+    // Misc
+    //================================================================================
     public AddonManager getAddonManager() {
         return addonManager;
     }
@@ -805,22 +884,8 @@ public class Controller implements Initializable {
         this.addonManager = addonManager;
     }
 
-    public void disableAll() {
-        buttonRemove.setDisable(true);
-        buttonAdd.setDisable(true);
-        buttonUpdate.setDisable(true);
-        buttonEdit.setDisable(true);
-        textFieldURL.setDisable(true);
-        checkboxReleases.setDisable(true);
-    }
-
-    public void enableAll() {
-        buttonRemove.setDisable(false);
-        buttonAdd.setDisable(false);
-        buttonUpdate.setDisable(false);
-        buttonEdit.setDisable(false);
-        textFieldURL.setDisable(false);
-        checkboxReleases.setDisable(false);
+    public static Controller getInstance() {
+        return controller;
     }
 
 

@@ -5,7 +5,7 @@ import com.google.gson.Gson;
 import java.io.*;
 
 public class VersionInfo {
-    public static final double CAM_VERSION = 0.63;
+    public static final double CAM_VERSION = 0.635;
     public static final double EXE_VERSION = 0.1;
     public static final double AUTOUPDATER_VERSION = 0.1;
 
