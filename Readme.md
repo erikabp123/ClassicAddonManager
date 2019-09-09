@@ -96,11 +96,14 @@ Github addons require you to specify wheter the author wants you to download his
 To update the addons, simply press the 'update addons' button and the manager will check each managed addon for updates and if there are any available it will download and install them.
 
 
-## How it works (technical)
+## How to support
 
-```
-    TODO
-```
+If you like the program consider telling your friends about it!
+
+
+If you feel that still isn't enough...
+
+I would never expect anyone to pay for this program, but as I have gotten requests to make it possible to donate to the project I have created a patreon where people who wish to make a donation may do so. This is NEVER expected, but I definetly appreciate it.
 
 ## Built With
 
