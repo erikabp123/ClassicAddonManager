@@ -3,6 +3,7 @@ package com.CAM.GUI;
 import javafx.scene.control.ListCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Region;
 
 public class AddonListCell<T> extends ListCell<T> {
 
@@ -24,6 +25,7 @@ public class AddonListCell<T> extends ListCell<T> {
 
     @Override
     protected void updateItem(T item, boolean empty) {
+        setPrefHeight(22);
         super.updateItem(item, empty);
         if(empty){
             setText(null);

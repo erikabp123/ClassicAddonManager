@@ -16,7 +16,9 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -49,8 +51,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.stream.IntStream;
 
 public class Controller implements Initializable {
 
@@ -125,6 +129,9 @@ public class Controller implements Initializable {
 
     @FXML
     private TextArea textAreaOutputLog;
+
+    @FXML
+    private TextField filterAddonsTextField;
     //endregion
 
     //region Loading Images
@@ -200,6 +207,7 @@ public class Controller implements Initializable {
 
     @FXML
     private void updateAction() {
+        filterAddonsTextField.setText(null);
         Thread updateThread = new Thread(() -> {
             Platform.runLater(() -> {
                 disableAll();
@@ -231,9 +239,9 @@ public class Controller implements Initializable {
     private void removeAction() {
         Thread removeThread = new Thread(() -> {
             Platform.runLater(() -> disableAll());
-            ObservableList<Integer> selected = listViewAddons.getSelectionModel().getSelectedIndices();
-            if (selected.size() != 0) {
-                addonManager.removeAddon(selected.get(0));
+            int selectedIndex = getNonFilteredIndex();
+            if (selectedIndex != -1) {
+                addonManager.removeAddon(selectedIndex);
             }
             Platform.runLater(() -> {
                 updateListView();
@@ -245,8 +253,8 @@ public class Controller implements Initializable {
 
     @FXML
     public void editAction() {
-        ObservableList<Integer> selected = listViewAddons.getSelectionModel().getSelectedIndices();
-        if (selected.size() == 0) {
+        int selectedIndex = getNonFilteredIndex();
+        if (selectedIndex == -1) {
             return;
         }
 
@@ -258,7 +266,7 @@ public class Controller implements Initializable {
             e.printStackTrace();
         }
         EditAddonController dialogController = fxmlLoader.getController();
-        Addon selectedAddon = addonManager.getManagedAddons().get(selected.get(0));
+        Addon selectedAddon = addonManager.getManagedAddons().get(selectedIndex);
         dialogController.createDialog(selectedAddon);
 
         Scene scene = new Scene(parent);
@@ -407,7 +415,7 @@ public class Controller implements Initializable {
         menuAboutVersion.setText("Version " + VersionInfo.CAM_VERSION);
         imageViewAdd.setImage(new Image(this.getClass().getClassLoader().getResource("adding.gif").toExternalForm()));
         listViewAddons.setCellFactory(param -> new AddonListCell<>());
-        listViewAddons.setItems(listItems);
+        setFilterList();
         Log.listen(new GUILogListener(textAreaOutputLog));
         progressBarListen();
         setupOutputLogContextMenu();
@@ -756,7 +764,6 @@ public class Controller implements Initializable {
     //================================================================================
     // Updating Program
     //================================================================================
-
     public void checkForUpdate() {
         try {
             SelfUpdater.selfUpdate(this);
@@ -804,6 +811,7 @@ public class Controller implements Initializable {
         buttonEdit.setDisable(true);
         textFieldURL.setDisable(true);
         checkboxReleases.setDisable(true);
+        filterAddonsTextField.setDisable(true);
     }
 
     public void enableAll() {
@@ -813,6 +821,7 @@ public class Controller implements Initializable {
         buttonEdit.setDisable(false);
         textFieldURL.setDisable(false);
         checkboxReleases.setDisable(false);
+        filterAddonsTextField.setDisable(false);
     }
 
     public void cleanUpAfterAddAction() {
@@ -837,8 +846,11 @@ public class Controller implements Initializable {
         textManagedLabel.setVisible(false);
         textOutputLogLabel.setDisable(true);
         textOutputLogLabel.setVisible(false);
+        filterAddonsTextField.setDisable(true);
+
         updatingVersionLabel.setDisable(false);
         updatingVersionLabel.setVisible(true);
+
 
         imageViewUpdate.setImage(new Image(this.getClass().getClassLoader().getResource("gears_load.gif").toExternalForm()));
         imageViewUpdate.setDisable(false);
@@ -872,6 +884,55 @@ public class Controller implements Initializable {
         DownloadListener downloadListenerUpdate = new GUIDownloadListener(progressBarUpdate, progressBarUpdateTotal);
         FileDownloader.listen(downloadListenerUpdate);
     }
+
+    //region Filtering List View
+
+    private void setFilterList(){
+        listViewAddons.setItems(listItems);
+        filterAddonsTextField.textProperty().addListener(obs->{
+            FilteredList<String> filteredData = new FilteredList<>(listItems, s -> true);
+            String filter = filterAddonsTextField.getText();
+            if(filter == null || filter.length() == 0) {
+                filteredData.setPredicate(s -> true);
+            }
+            else {
+                filteredData.setPredicate(s -> s.toLowerCase().contains(filter.toLowerCase()));
+            }
+            listViewAddons.setItems(filteredData);
+        });
+
+        listItems.addListener((ListChangeListener<String>) c -> filterAddonsTextField.setText(null));
+    }
+
+    private int getNonFilteredIndex(){
+        ObservableList<Integer> selected = listViewAddons.getSelectionModel().getSelectedIndices();
+        if (selected.size() == 0) {
+            return -1;
+        }
+        int selectedIndex = selected.get(0);
+        // Not filtered
+        if(listViewAddons.getItems().size() == listItems.size()){
+            return selectedIndex;
+        }
+        // Filtered
+        List<Addon> addons =  getAddonManager().getManagedAddons();
+        String[] selectedName = listViewAddons.getItems().get(selectedIndex).split(":");
+        String selectedNameStripped = selectedName[selectedName.length - 1];
+        int trueIndex = 0;
+        for(Addon addon : addons){
+            if(addon.getName().equals(selectedNameStripped)){
+                return trueIndex;
+            }
+            trueIndex++;
+        }
+        // should never reach this, will only happen if the names are different in the displayed list and the actual storage
+        return -1;
+    }
+
+
+
+
+    //endregion
 
     //================================================================================
     // Misc

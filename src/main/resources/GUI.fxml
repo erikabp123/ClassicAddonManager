@@ -16,7 +16,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox fx:id="vboxMainUI" prefHeight="433.0" prefWidth="646.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.CAM.GUI.Controller">
+<VBox fx:id="vboxMainUI" prefHeight="478.0" prefWidth="697.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.CAM.GUI.Controller">
   <children>
     <MenuBar fx:id="menuBar" prefHeight="29.0" prefWidth="719.0" VBox.vgrow="NEVER">
       <menus>
@@ -47,28 +47,29 @@
             </Menu>
       </menus>
     </MenuBar>
-    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="406.0" prefWidth="677.0" VBox.vgrow="ALWAYS">
+    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="478.0" prefWidth="716.0" VBox.vgrow="ALWAYS">
          <children>
-            <ListView fx:id="listViewAddons" layoutX="14.0" layoutY="51.0" prefHeight="200.0" prefWidth="200.0" />
-            <Text fx:id="textManagedLabel" layoutX="14.0" layoutY="37.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Managing (0) addons" textAlignment="CENTER" wrappingWidth="200.0" />
-            <Button fx:id="buttonRemove" layoutX="16.0" layoutY="260.0" mnemonicParsing="false" onAction="#removeAction" prefHeight="32.0" prefWidth="95.0" styleClass="danger" text="Remove" />
-            <TextField fx:id="textFieldURL" layoutX="14.0" layoutY="349.0" prefHeight="32.0" prefWidth="487.0" promptText="Addon Url" />
-            <Button fx:id="buttonAdd" layoutX="512.0" layoutY="349.0" mnemonicParsing="false" onAction="#addAction" prefHeight="32.0" prefWidth="104.0" text="Add" />
-            <Button fx:id="buttonUpdate" layoutX="329.0" layoutY="260.0" mnemonicParsing="false" onAction="#updateAction" prefHeight="134.0" prefWidth="189.0" text="Update Addons" />
-            <TextArea fx:id="textAreaOutputLog" editable="false" focusTraversable="false" layoutX="236.0" layoutY="51.0" prefHeight="200.0" prefWidth="380.0" />
-            <Text fx:id="textOutputLogLabel" layoutX="396.0" layoutY="37.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Output Log" />
-            <ImageView fx:id="imageViewAdd" fitHeight="13.0" fitWidth="104.0" layoutX="512.0" layoutY="327.0" pickOnBounds="true" preserveRatio="true" visible="false" />
-            <CheckBox fx:id="checkboxReleases" layoutX="16.0" layoutY="321.0" mnemonicParsing="false" text="Use Releases" />
-            <ProgressBar fx:id="progressBarDownload" disable="true" layoutX="236.0" layoutY="260.0" prefHeight="18.0" prefWidth="380.0" progress="0.0" visible="false" />
-            <ImageView fx:id="imageViewUpdate" disable="true" fitHeight="150.0" fitWidth="200.0" layoutX="223.0" layoutY="127.0" pickOnBounds="true" preserveRatio="true" />
-            <ProgressBar fx:id="progressBarUpdateTotal" layoutX="14.0" layoutY="303.0" prefHeight="18.0" prefWidth="603.0" progress="0.0" visible="false" />
-            <ProgressBar fx:id="progressBarUpdate" layoutX="64.0" layoutY="328.0" prefHeight="18.0" prefWidth="503.0" progress="0.0" visible="false" />
-            <Text fx:id="updatingVersionLabel" disable="true" layoutX="178.0" layoutY="118.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Updating addon manager..." visible="false">
+            <ListView fx:id="listViewAddons" layoutX="14.0" layoutY="72.0" prefHeight="231.0" prefWidth="262.0" />
+            <Text fx:id="textManagedLabel" layoutX="14.0" layoutY="26.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Managing 0 addons" textAlignment="CENTER" wrappingWidth="262.0" />
+            <Button fx:id="buttonRemove" layoutX="16.0" layoutY="312.0" mnemonicParsing="false" onAction="#removeAction" prefHeight="32.0" prefWidth="125.0" styleClass="danger" text="Remove" />
+            <TextField fx:id="textFieldURL" layoutX="14.0" layoutY="401.0" prefHeight="32.0" prefWidth="556.0" promptText="Addon Url" />
+            <Button fx:id="buttonAdd" layoutX="579.0" layoutY="400.0" mnemonicParsing="false" onAction="#addAction" prefHeight="26.0" prefWidth="104.0" text="Add" />
+            <Button fx:id="buttonUpdate" layoutX="393.0" layoutY="314.0" mnemonicParsing="false" onAction="#updateAction" prefHeight="134.0" prefWidth="189.0" text="Update Addons" />
+            <TextArea fx:id="textAreaOutputLog" editable="false" focusTraversable="false" layoutX="291.0" layoutY="38.0" prefHeight="265.0" prefWidth="392.0" />
+            <Text fx:id="textOutputLogLabel" layoutX="292.0" layoutY="26.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Output Log" textAlignment="CENTER" wrappingWidth="392.0" />
+            <TextField fx:id="filterAddonsTextField" layoutX="14.0" layoutY="38.0" prefWidth="262.0" promptText="Search Addons" />
+            <ImageView fx:id="imageViewAdd" fitHeight="13.0" fitWidth="104.0" layoutX="564.0" layoutY="380.0" pickOnBounds="true" preserveRatio="true" visible="false" />
+            <CheckBox fx:id="checkboxReleases" layoutX="16.0" layoutY="373.0" mnemonicParsing="false" text="Use Releases" />
+            <Button fx:id="buttonEdit" layoutX="150.0" layoutY="312.0" mnemonicParsing="false" onAction="#editAction" prefHeight="32.0" prefWidth="125.0" text="Edit" />
+            <ProgressBar fx:id="progressBarDownload" disable="true" layoutX="291.0" layoutY="312.0" prefHeight="18.0" prefWidth="380.0" progress="0.0" visible="false" />
+            <ImageView fx:id="imageViewUpdate" disable="true" fitHeight="150.0" fitWidth="200.0" layoutX="223.0" layoutY="113.0" pickOnBounds="true" preserveRatio="true" />
+            <ProgressBar fx:id="progressBarUpdateTotal" layoutX="14.0" layoutY="308.0" prefHeight="18.0" prefWidth="666.0" progress="0.0" visible="false" />
+            <ProgressBar fx:id="progressBarUpdate" layoutX="97.0" layoutY="337.0" prefHeight="18.0" prefWidth="500.0" progress="0.0" visible="false" />
+            <Text fx:id="updatingVersionLabel" disable="true" layoutX="178.0" layoutY="98.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Updating addon manager..." visible="false">
                <font>
                   <Font size="24.0" />
                </font>
             </Text>
-            <Button fx:id="buttonEdit" layoutX="119.0" layoutY="260.0" mnemonicParsing="false" onAction="#editAction" prefHeight="32.0" prefWidth="95.0" text="Edit" />
          </children>
     </AnchorPane>
   </children>
