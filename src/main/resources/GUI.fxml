@@ -45,6 +45,11 @@
                   <MenuItem fx:id="menuAboutUpdates" mnemonicParsing="false" onAction="#checkForUpdatesAction" text="Check For Updates" />
               </items>
             </Menu>
+            <Menu mnemonicParsing="false" text="Donate">
+               <items>
+                  <MenuItem fx:id="menuDonatePatreon" mnemonicParsing="false" onAction="#patreonRedirectAction" text="Patreon" />
+               </items>
+            </Menu>
       </menus>
     </MenuBar>
     <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="478.0" prefWidth="716.0" VBox.vgrow="ALWAYS">

@@ -387,6 +387,12 @@ public class Controller implements Initializable {
         openUrl(discord);
     }
 
+    @FXML
+    private void patreonRedirectAction() {
+        String discord = "https://www.patreon.com/ClassicAddonManager";
+        openUrl(discord);
+    }
+
     private void openUrl(String url) {
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             try {
@@ -542,6 +548,11 @@ public class Controller implements Initializable {
                         //TODO: Alert informing that request is bad, maybe addon moved to a new URL? (especially the case with wowinterface)
                         showBadRequestAlert();
                         return;
+                    case 503:
+                        e.setMessage("The URL provided responded with an internal server error! \n" +
+                                "This is likely due to the website being down or experiencing issues. Try waiting 15-20 min!");
+                        showInvalidUrlAlert(e);
+                        return;
                     default:
                         handleUnknownException(e);
                         return;
@@ -570,6 +581,18 @@ public class Controller implements Initializable {
                     invalidUrlAlert.setHeaderText("The URL provided for " + e.getAddon().getName() + " is no longer valid!");
                     invalidUrlAlert.setContentText("While attempting to update " + e.getAddon().getName() + " the program encountered a 404 (page not found)!\n" +
                             "Double check the URL; perhaps the addon has been moved?");
+                    invalidUrlAlert.showAndWait();
+                });
+                return;
+            }
+
+            if (exception.getStatusCode() == 503) {
+                Platform.runLater(() -> {
+                    Alert invalidUrlAlert = new Alert(Alert.AlertType.ERROR);
+                    invalidUrlAlert.setTitle("Website is encountering problems!");
+                    invalidUrlAlert.setHeaderText("The URL provided for " + e.getAddon().getName() + " is currently experiencing problems!");
+                    invalidUrlAlert.setContentText("While attempting to update " + e.getAddon().getName() + " the program encountered a 503 (internal server error)!\n" +
+                            "This is likely " + e.getAddon().getAddonSource() + " being down or having temporary problems. Try waiting sometime!");
                     invalidUrlAlert.showAndWait();
                 });
                 return;
