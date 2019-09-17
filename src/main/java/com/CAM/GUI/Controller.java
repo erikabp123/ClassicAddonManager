@@ -627,6 +627,17 @@ public class Controller implements Initializable {
                 });
                 return;
             }
+            if (e.getSource() == AddonSource.TUKUI) {
+                Platform.runLater(() -> {
+                    Alert invalidUrlAlert = new Alert(Alert.AlertType.ERROR);
+                    invalidUrlAlert.setTitle("Url Is No Longer Valid!");
+                    invalidUrlAlert.setHeaderText("The URL provided for " + e.getAddon().getName() + " is no longer valid!");
+                    invalidUrlAlert.setContentText("While attempting to update " + e.getAddon().getName() + " the program encountered a problem!\n" +
+                            "Double check the URL; perhaps the addon has been moved?");
+                    invalidUrlAlert.showAndWait();
+                });
+                return;
+            }
         }
 
         if (e.getType().equals(IndexOutOfBoundsException.class)) {

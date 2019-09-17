@@ -13,6 +13,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import java.awt.desktop.SystemEventListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -128,7 +129,7 @@ public class TukuiScraper extends Scraper {
     private boolean apiFound() throws ScrapeException {
         String api = "https://www.tukui.org/api.php?classic-addon=" + addonNumber;
         Page response = jsonScrape(api);
-        if (response == null) {
+        if (response == null || response.getWebResponse().getContentAsString().equals("")) {
             return false;
         }
         return true;
