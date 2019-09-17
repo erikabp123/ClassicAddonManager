@@ -39,6 +39,16 @@ public abstract class Scraper {
         this.branch = branch;
     }
 
+    public Scraper(String url){
+        //For use for non-scraping, aka when an API is available
+        //TODO: Create a separate interface that this class implements, such that API dont use scraper class
+        this.url = url;
+        this.js = false;
+        this.css = false;
+        this.insecureSSL = false;
+        this.scrapedPage = null;
+    }
+
     public HtmlPage scrape() throws ScrapeException {
         WebClient client = new WebClient();
         client.getOptions().setJavaScriptEnabled(js);
@@ -91,11 +101,11 @@ public abstract class Scraper {
 
     public abstract Date getLastUpdated() throws ScrapeException;
 
-    public abstract String getName();
+    public abstract String getName() throws ScrapeException;
 
-    public abstract String getAuthor();
+    public abstract String getAuthor() throws ScrapeException;
 
-    public abstract String getFileName();
+    public abstract String getFileName() throws ScrapeException;
 
     public String getUrl(){
         return url;

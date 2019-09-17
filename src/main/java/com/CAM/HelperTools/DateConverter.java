@@ -44,6 +44,18 @@ public class DateConverter {
         return date;
     }
 
+    public static Date convertFromTukui(String tukuiFormat){
+        Date date = null;
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+            date = dateFormat.parse(tukuiFormat);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date;
+    }
+
     public static Date convertFromWowInterface(String wowinterfaceFormat){
         Date date = null;
         try {
