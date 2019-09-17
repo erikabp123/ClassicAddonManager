@@ -3,6 +3,7 @@ package com.CAM.DataCollection;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
 import com.CAM.HelperTools.Log;
+import com.CAM.HelperTools.UrlInfo;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -24,14 +25,14 @@ public class TukuiScraper extends Scraper {
     public TukuiScraper(String url, boolean updatingAddon) throws ScrapeException {
         super(url);
         this.repoObject = null;
-        this.addonNumber = extractAddonNumber();
+        this.addonNumber = extractAddonNumber(url);
         if (!updatingAddon && !isValidLink()) {
             throw new ScrapeException(AddonSource.TUKUI, "Invalid Tukui URL!");
         }
     }
 
-    private int extractAddonNumber() {
-        String suffix = getUrl().split("id=")[1];
+    public static int extractAddonNumber(String url) {
+        String suffix = url.split("id=")[1];
         final StringBuilder sb = new StringBuilder(suffix.length());
         for (int i = 0; i < suffix.length(); i++) {
             final char c = suffix.charAt(i);
@@ -115,27 +116,16 @@ public class TukuiScraper extends Scraper {
 
     @Override
     public boolean isValidLink() throws ScrapeException {
-        String[] parts = getUrl().split("/");
-        if (parts.length < 5) {
+        if(!UrlInfo.isValidTukuiUrl(getUrl())){
             return false;
         }
-        if (releases) {
-            if (!apiFound("releases")) {
-                return false;
-            }
-            if (getRepoArray().size() == 0) {
-                Log.log("The provided link does not have any releases!");
-                throw new ScrapeException(AddonSource.GITHUB, "The provided link does not have any releases!");
-            }
-            return true;
-        }
-        if (!apiFound("branches")) {
+        if (!apiFound()) {
             return false;
         }
         return true;
     }
 
-    private boolean apiFound(String suffix) throws ScrapeException {
+    private boolean apiFound() throws ScrapeException {
         String api = "https://www.tukui.org/api.php?classic-addon=" + addonNumber;
         Page response = jsonScrape(api);
         if (response == null) {

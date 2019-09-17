@@ -99,6 +99,9 @@ public class AddonManager {
             case WOWINTERFACE:
                 trimmedOrigin = UrlInfo.trimWowInterfaceUrl(request.origin);
                 break;
+            case TUKUI:
+                trimmedOrigin = UrlInfo.trimTukuiUrl(request.origin);
+                break;
         }
 
         for (Addon addon : managedAddons) {
@@ -120,6 +123,10 @@ public class AddonManager {
                 break;
             case WOWINTERFACE:
                 scraper = new WowInterfaceScraper(trimmedOrigin, false);
+                break;
+            case TUKUI:
+                scraper = new TukuiScraper(trimmedOrigin, false);
+                break;
         }
 
         String name = scraper.getName();

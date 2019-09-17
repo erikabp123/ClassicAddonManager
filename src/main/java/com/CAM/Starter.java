@@ -1,7 +1,5 @@
 package com.CAM;
 
-import com.CAM.Updating.VersionInfo;
-
 public class Starter {
 
     public static void main(String[] args) throws Exception {

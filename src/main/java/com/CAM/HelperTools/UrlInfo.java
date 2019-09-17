@@ -1,5 +1,7 @@
 package com.CAM.HelperTools;
 
+import com.CAM.DataCollection.TukuiScraper;
+
 import java.net.URL;
 
 import static com.CAM.HelperTools.AddonSource.*;
@@ -36,12 +38,17 @@ public class UrlInfo {
             urlInfo.addonSource = WOWINTERFACE;
             urlInfo.isValid = isValidWowInterfaceUrl(origin);
             return urlInfo;
+        } if(origin.contains("tukui.org")){
+            Log.verbose("Tukui link detected!");
+            urlInfo.addonSource = TUKUI;
+            urlInfo.isValid = isValidTukuiUrl(origin);
+            return urlInfo;
         }
         Log.verbose("Invalid website choice!");
         return urlInfo;
     }
 
-    private static Boolean isValidCurseForgeUrl(String origin){
+    public static Boolean isValidCurseForgeUrl(String origin){
         //TODO: Change to regex?
         String curseforgePrefix = "https://www.curseforge.com/wow/addons/";
         int prefixLength = curseforgePrefix.length();
@@ -57,7 +64,7 @@ public class UrlInfo {
         return true;
     }
 
-    private static boolean isValidGithubUrl(String origin) {
+    public static boolean isValidGithubUrl(String origin) {
         String githubPrefix = "https://github.com/";
         if(!isValidURL(origin)){
             return false;
@@ -72,7 +79,7 @@ public class UrlInfo {
         return true;
     }
 
-    private static boolean isValidWowInterfaceUrl(String origin) {
+    public static boolean isValidWowInterfaceUrl(String origin) {
         String wowinterfacePrefix = "https://www.wowinterface.com/downloads/";
         if(!isValidURL(origin)){
             return false;
@@ -83,7 +90,18 @@ public class UrlInfo {
         return true;
     }
 
-    private static boolean isValidURL(String url) {
+    public static boolean isValidTukuiUrl(String origin) {
+        boolean correctPrefix = origin.startsWith("https://www.tukui.org/classic-addons.php?id=");
+        if(!isValidURL(origin)){
+            return false;
+        }
+        if (!correctPrefix) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean isValidURL(String url) {
         try {
             new URL(url).toURI();
             return true;
@@ -119,6 +137,12 @@ public class UrlInfo {
     public static String trimWowInterfaceUrl(String origin){
         String[] parts = origin.split("#");
         return parts[0];
+    }
+
+    public static String trimTukuiUrl(String origin){
+        String prefix = "https://www.tukui.org/classic-addons.php?id=";
+        int addonNumber = TukuiScraper.extractAddonNumber(origin);
+        return prefix + addonNumber;
     }
 
 }

@@ -29,7 +29,6 @@ public class Addon implements Comparable<Addon> {
     }
 
     public boolean fetchUpdate(Scraper scraper) throws ScrapeException {
-        //TODO: Consider tracking folders installed so that deleting is easier
         try {
             Log.verbose("Attempting to fetch update ...");
             String downloadLink = scraper.getDownloadLink();
@@ -86,6 +85,8 @@ public class Addon implements Comparable<Addon> {
                     return new GitHubScraper(origin, branch, releases, updatingAddon);
                 case WOWINTERFACE:
                     return new WowInterfaceScraper(origin, updatingAddon);
+                case TUKUI:
+                    return new TukuiScraper(origin, updatingAddon);
             }
         } catch (ScrapeException e){
             e.setAddon(this);
@@ -98,11 +99,12 @@ public class Addon implements Comparable<Addon> {
     public AddonSource getAddonSource(){
         if(origin.contains("curseforge.com")){
             return AddonSource.CURSEFORGE;
-        }
-        if(origin.contains("github.com")){
+        } if(origin.contains("github.com")){
             return AddonSource.GITHUB;
         } if(origin.contains("wowinterface.com")){
             return AddonSource.WOWINTERFACE;
+        } if(origin.contains("tukui.org")){
+            return AddonSource.TUKUI;
         }
         return null;
     }

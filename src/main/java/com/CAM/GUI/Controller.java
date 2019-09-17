@@ -193,6 +193,9 @@ public class Controller implements Initializable {
                     case WOWINTERFACE:
                         startAddonAddThread(origin);
                         break;
+                    case TUKUI:
+                        startAddonAddThread(origin);
+                        break;
                 }
             } catch (ScrapeException e) {
                 handleAddScrapeException(e);
@@ -772,7 +775,7 @@ public class Controller implements Initializable {
     }
 
     private boolean isValidRequest(AddonRequest request) {
-        if (request.origin.contains("curseforge.com") || request.origin.contains("wowinterface.com")) {
+        if (request.origin.contains("curseforge.com") || request.origin.contains("wowinterface.com") || request.origin.contains("tukui.org")) {
             return true;
         }
         if (request.releases) {
