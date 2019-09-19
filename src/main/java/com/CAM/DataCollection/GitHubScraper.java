@@ -28,7 +28,7 @@ public class GitHubScraper extends Scraper {
         this.releases = releases;
         this.repoArray = null;
         if(!updatingAddon && !isValidLink()){
-            throw new ScrapeException(AddonSource.GITHUB, "Invalid Github URL!");
+            throw new ScrapeException(getAddonSource(), "Invalid Github URL!");
         }
     }
 
@@ -46,7 +46,7 @@ public class GitHubScraper extends Scraper {
         try {
             downloadLink = ((JsonObject) ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets")).get(0)).get("browser_download_url").getAsString();
         } catch (IndexOutOfBoundsException e){
-            throw  new ScrapeException(AddonSource.GITHUB, e);
+            throw  new ScrapeException(getAddonSource(), e);
         }
 
         return downloadLink;
@@ -69,9 +69,9 @@ public class GitHubScraper extends Scraper {
             page = client.getPage(url);
         } catch (FailingHttpStatusCodeException e){
             Log.verbose("Scrape resulted in " + e.getStatusCode());
-            throw new ScrapeException(AddonSource.GITHUB, e);
+            throw new ScrapeException(getAddonSource(), e);
         } catch (IOException e) {
-            throw new ScrapeException(AddonSource.GITHUB, e);
+            throw new ScrapeException(getAddonSource(), e);
         }
         return page;
     }
@@ -233,7 +233,7 @@ public class GitHubScraper extends Scraper {
             }
             if(getRepoArray().size() == 0){
                 Log.log("The provided link does not have any releases!");
-                throw new ScrapeException(AddonSource.GITHUB, "The provided link does not have any releases!");
+                throw new ScrapeException(getAddonSource(), "The provided link does not have any releases!");
             }
             return true;
         }
@@ -241,6 +241,11 @@ public class GitHubScraper extends Scraper {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public AddonSource getAddonSource() {
+        return AddonSource.GITHUB;
     }
 
     private boolean apiFound(String suffix) throws ScrapeException {

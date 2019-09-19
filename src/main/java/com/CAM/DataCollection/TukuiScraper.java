@@ -28,7 +28,7 @@ public class TukuiScraper extends Scraper {
         this.repoObject = null;
         this.addonNumber = extractAddonNumber(url);
         if (!updatingAddon && !isValidLink()) {
-            throw new ScrapeException(AddonSource.TUKUI, "Invalid Tukui URL!");
+            throw new ScrapeException(getAddonSource(), "Invalid Tukui URL!");
         }
     }
 
@@ -64,9 +64,9 @@ public class TukuiScraper extends Scraper {
             page = client.getPage(url);
         } catch (FailingHttpStatusCodeException e) {
             Log.verbose("Scrape resulted in " + e.getStatusCode());
-            throw new ScrapeException(AddonSource.GITHUB, e);
+            throw new ScrapeException(getAddonSource(), e);
         } catch (IOException e) {
-            throw new ScrapeException(AddonSource.GITHUB, e);
+            throw new ScrapeException(getAddonSource(), e);
         }
         return page;
     }
@@ -124,6 +124,11 @@ public class TukuiScraper extends Scraper {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public AddonSource getAddonSource() {
+        return AddonSource.TUKUI;
     }
 
     private boolean apiFound() throws ScrapeException {

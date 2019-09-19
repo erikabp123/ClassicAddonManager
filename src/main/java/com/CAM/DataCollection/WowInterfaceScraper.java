@@ -10,6 +10,8 @@ import java.util.List;
 
 public class WowInterfaceScraper extends Scraper {
 
+    public static final AddonSource addonSource = AddonSource.WOWINTERFACE;
+
     public WowInterfaceScraper(String url, boolean updatingAddon) throws ScrapeException {
         super(url, false, false, true, AddonSource.WOWINTERFACE);
 
@@ -81,5 +83,10 @@ public class WowInterfaceScraper extends Scraper {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public AddonSource getAddonSource() {
+        return AddonSource.WOWINTERFACE;
     }
 }

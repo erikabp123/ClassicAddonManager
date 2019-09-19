@@ -4,5 +4,6 @@ public enum AddonSource {
     CURSEFORGE,
     GITHUB,
     WOWINTERFACE,
-    TUKUI
+    TUKUI,
+    WOWACE
 }

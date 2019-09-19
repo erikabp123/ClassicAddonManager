@@ -67,4 +67,8 @@ public class DateConverter {
         return date;
     }
 
+    public static Date convertFromWowAce(String wowAceFormat){
+        return convertFromCurse(wowAceFormat);
+    }
+
 }

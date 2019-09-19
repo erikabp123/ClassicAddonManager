@@ -50,6 +50,10 @@ public abstract class Scraper {
     }
 
     public HtmlPage scrape() throws ScrapeException {
+        return scrape(url);
+    }
+
+    public HtmlPage scrape(String targetUrl) throws ScrapeException {
         WebClient client = new WebClient();
         client.getOptions().setJavaScriptEnabled(js);
         client.getOptions().setCssEnabled(css);
@@ -58,13 +62,13 @@ public abstract class Scraper {
         HtmlPage page;
 
         try {
-            page = client.getPage(url);
+            page = client.getPage(targetUrl);
         } catch (FailingHttpStatusCodeException e){
             Log.verbose("Scrape resulted in " + e.getStatusCode());
 
             switch (e.getStatusCode()){
                 case 503:
-                    return scrapeJS();
+                    return scrapeJS(targetUrl);
                 default:
                     throw new ScrapeException(source, e);
             }
@@ -75,7 +79,7 @@ public abstract class Scraper {
         return page;
     }
 
-    private HtmlPage scrapeJS() throws ScrapeException {
+    private HtmlPage scrapeJS(String targetUrl) throws ScrapeException {
         Log.verbose("Attempting JS scrape ...");
         WebClient client = new WebClient();
         client.getOptions().setJavaScriptEnabled(true);
@@ -85,7 +89,7 @@ public abstract class Scraper {
         HtmlPage page;
 
         try {
-            page = client.getPage(url);
+            page = client.getPage(targetUrl);
             client.waitForBackgroundJavaScript(10_000);
         } catch (FailingHttpStatusCodeException e){
             Log.verbose("JS scrape resulted in " + e.getStatusCode());
@@ -133,4 +137,6 @@ public abstract class Scraper {
     }
 
     public abstract boolean isValidLink() throws ScrapeException;
+
+    public abstract AddonSource getAddonSource();
 }
