@@ -8,7 +8,7 @@ import com.gargoylesoftware.htmlunit.html.*;
 import java.util.Date;
 import java.util.List;
 
-public class CurseForgeScraper extends Scraper {
+public class CurseForgeScraper extends Scraper implements TwitchSite {
 
     private final static String gameVersion = "1738749986%3A67408"; //TODO: change to non-final and support automatic scraping of gameVersion in case it changes
     private final static String officialSuffix = "/files/all?filter-game-version=" + gameVersion;
@@ -153,6 +153,7 @@ public class CurseForgeScraper extends Scraper {
         return fileAnchor;
     }
 
+    @Override
     public boolean isClassicSupported(){
         HtmlTableRow row = findFirstDownloadRow(getScrapedPage());
         if(row == null){

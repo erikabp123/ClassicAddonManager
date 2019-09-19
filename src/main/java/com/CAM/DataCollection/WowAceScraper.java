@@ -8,7 +8,7 @@ import com.gargoylesoftware.htmlunit.html.*;
 import java.util.Date;
 import java.util.List;
 
-public class WowAceScraper extends Scraper {
+public class WowAceScraper extends Scraper implements TwitchSite {
 
     private final static String gameVersion = "1738749986%3A67408"; //TODO: change to non-final and support automatic scraping of gameVersion in case it changes
     private final static String officialSuffix = "/files?filter-game-version=" + gameVersion;
@@ -50,7 +50,7 @@ public class WowAceScraper extends Scraper {
         HtmlAnchor downloadAnchor = findDownloadAnchor(row);
         String downloadSuffix = downloadAnchor.getAttribute("href");
 
-        return getBaseUrl() + downloadSuffix;
+        return websiteUrl + downloadSuffix;
     }
 
     @Override
@@ -164,6 +164,7 @@ public class WowAceScraper extends Scraper {
         return fileAnchor;
     }
 
+    @Override
     public boolean isClassicSupported(){
         HtmlTableRow row = findFirstDownloadRow(getScrapedPage());
         if(row == null){

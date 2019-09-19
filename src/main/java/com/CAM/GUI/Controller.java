@@ -4,10 +4,7 @@ import com.CAM.AddonManagement.Addon;
 import com.CAM.AddonManagement.AddonManager;
 import com.CAM.AddonManagement.AddonRequest;
 import com.CAM.AddonManagement.UpdateProgressListener;
-import com.CAM.DataCollection.CurseForgeScraper;
-import com.CAM.DataCollection.FileDownloader;
-import com.CAM.DataCollection.GitHubScraper;
-import com.CAM.DataCollection.ScrapeException;
+import com.CAM.DataCollection.*;
 import com.CAM.HelperTools.*;
 import com.CAM.Updating.SelfUpdater;
 import com.CAM.Updating.VersionInfo;
@@ -195,6 +192,9 @@ public class Controller implements Initializable {
                         break;
                     case TUKUI:
                         startAddonAddThread(origin);
+                        break;
+                    case WOWACE:
+                        checkIfProceedClassic(origin);
                         break;
                 }
             } catch (ScrapeException e) {
@@ -727,17 +727,28 @@ public class Controller implements Initializable {
     }
 
     private void checkIfProceedClassic(String origin) throws ScrapeException {
-        String trimmedOrigin = UrlInfo.trimCurseForgeUrl(origin);
-        CurseForgeScraper scraper = CurseForgeScraper.getOfficialScraper(trimmedOrigin, false);
+        AddonSource addonSource = UrlInfo.getAddonSource(origin);
+        String trimmedOrigin = UrlInfo.trimString(origin, addonSource);
+        TwitchSite scraper = null;
+
+        if(addonSource == AddonSource.CURSEFORGE){
+            scraper = CurseForgeScraper.getOfficialScraper(trimmedOrigin, false);
+        } else if(addonSource == AddonSource.WOWACE){
+            scraper = WowAceScraper.getOfficialScraper(trimmedOrigin, false);
+        }
+
         if (scraper.isClassicSupported()) {
             startAddonAddThread(null);
             return;
         }
+        Scraper scraperConvert = (Scraper) scraper;
+
+        String name = scraperConvert.getName();
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Non-Classic addon");
             alert.setHeaderText("This addon does not seem to have an official classic release!");
-            alert.setContentText(scraper.getName() + " does not seem to have an official classic release. " +
+            alert.setContentText(name + " does not seem to have an official classic release. " +
                     "Do you wish to add it anyway? This will result in downloading non-classic updates until classic ones are released.\n" +
                     "NOTE: There is no guarantee this addon will work with classic!");
 
@@ -786,7 +797,8 @@ public class Controller implements Initializable {
     }
 
     private boolean isValidRequest(AddonRequest request) {
-        if (request.origin.contains("curseforge.com") || request.origin.contains("wowinterface.com") || request.origin.contains("tukui.org")) {
+        if (request.origin.contains("curseforge.com") || request.origin.contains("wowinterface.com")
+                || request.origin.contains("tukui.org") || request.origin.contains("wowace.com")) {
             return true;
         }
         if (request.releases) {

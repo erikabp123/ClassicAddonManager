@@ -4,6 +4,7 @@ import com.CAM.DataCollection.*;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
 import com.CAM.HelperTools.Log;
+import com.CAM.HelperTools.UrlInfo;
 
 import java.util.Date;
 
@@ -56,7 +57,6 @@ public class Addon implements Comparable<Addon> {
             response = new UpdateResponse(scraper, true);
 
             // Check if addon has ever been updated through this program
-            // TODO: consider whether redundant, could be useful later for determining if addon was installed manually though
             if(lastUpdated == null){
                 return response;
             }
@@ -78,35 +78,15 @@ public class Addon implements Comparable<Addon> {
 
     private Scraper getScraper(boolean updatingAddon) throws ScrapeException {
         try {
-            switch (getAddonSource()){
-                case CURSEFORGE:
-                    return CurseForgeScraper.makeScraper(origin, updatingAddon);
-                case GITHUB:
-                    return new GitHubScraper(origin, branch, releases, updatingAddon);
-                case WOWINTERFACE:
-                    return new WowInterfaceScraper(origin, updatingAddon);
-                case TUKUI:
-                    return new TukuiScraper(origin, updatingAddon);
-            }
+           return UrlInfo.getCorrespondingScraper(getAddonSource(), origin, updatingAddon, branch, releases);
         } catch (ScrapeException e){
             e.setAddon(this);
             throw e;
         }
-
-        return null;
     }
 
     public AddonSource getAddonSource(){
-        if(origin.contains("curseforge.com")){
-            return AddonSource.CURSEFORGE;
-        } if(origin.contains("github.com")){
-            return AddonSource.GITHUB;
-        } if(origin.contains("wowinterface.com")){
-            return AddonSource.WOWINTERFACE;
-        } if(origin.contains("tukui.org")){
-            return AddonSource.TUKUI;
-        }
-        return null;
+        return UrlInfo.getAddonSource(origin);
     }
 
     @Override

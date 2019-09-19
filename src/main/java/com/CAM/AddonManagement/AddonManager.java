@@ -88,21 +88,7 @@ public class AddonManager {
             Log.log("Could not track addon!");
             return false;
         }
-        String trimmedOrigin = "";
-        switch (urlInfo.addonSource) {
-            case CURSEFORGE:
-                trimmedOrigin = UrlInfo.trimCurseForgeUrl(request.origin);
-                break;
-            case GITHUB:
-                trimmedOrigin = UrlInfo.trimGitHubUrl(request.origin);
-                break;
-            case WOWINTERFACE:
-                trimmedOrigin = UrlInfo.trimWowInterfaceUrl(request.origin);
-                break;
-            case TUKUI:
-                trimmedOrigin = UrlInfo.trimTukuiUrl(request.origin);
-                break;
-        }
+        String trimmedOrigin = UrlInfo.trimString(request.origin, urlInfo.addonSource);
 
         for (Addon addon : managedAddons) {
             if (!addon.getOrigin().equals(trimmedOrigin)) {
@@ -112,22 +98,7 @@ public class AddonManager {
             return false;
         }
 
-        Scraper scraper = null;
-
-        switch (urlInfo.addonSource) {
-            case CURSEFORGE:
-                scraper = CurseForgeScraper.makeScraper(trimmedOrigin, false);
-                break;
-            case GITHUB:
-                scraper = new GitHubScraper(trimmedOrigin, request.branch, request.releases, false);
-                break;
-            case WOWINTERFACE:
-                scraper = new WowInterfaceScraper(trimmedOrigin, false);
-                break;
-            case TUKUI:
-                scraper = new TukuiScraper(trimmedOrigin, false);
-                break;
-        }
+        Scraper scraper = UrlInfo.getCorrespondingScraper(urlInfo.addonSource, trimmedOrigin, false, request.branch, request.releases);
 
         String name = scraper.getName();
         String author = scraper.getAuthor();
@@ -142,11 +113,10 @@ public class AddonManager {
     }
 
     public boolean removeAddon(int addonNum) {
-        //TODO: Make it actually delete the folders
         Log.log("Attempting to remove addon ...");
 
         if (addonNum > managedAddons.size()) {
-            Log.log("com.CAM.AddonManagement.Addon #" + addonNum + " was not found!");
+            Log.log("Addon #" + addonNum + " was not found!");
             return false;
         }
 

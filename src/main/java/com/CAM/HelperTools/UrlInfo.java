@@ -1,6 +1,6 @@
 package com.CAM.HelperTools;
 
-import com.CAM.DataCollection.TukuiScraper;
+import com.CAM.DataCollection.*;
 
 import java.net.URL;
 
@@ -11,7 +11,7 @@ public class UrlInfo {
     public boolean isValid;
     public AddonSource addonSource;
 
-    public UrlInfo(Boolean isValid, AddonSource addonSource){
+    public UrlInfo(boolean isValid, AddonSource addonSource){
         this.isValid = isValid;
         this.addonSource = addonSource;
     }
@@ -43,13 +43,32 @@ public class UrlInfo {
             urlInfo.addonSource = TUKUI;
             urlInfo.isValid = isValidTukuiUrl(origin);
             return urlInfo;
+        } if(origin.contains("wowace.com")){
+            Log.verbose("WowAce link detected!");
+            urlInfo.addonSource = WOWACE;
+            urlInfo.isValid = isValidWowAceUrl(origin);
+            return urlInfo;
         }
         Log.verbose("Invalid website choice!");
         return urlInfo;
     }
 
-    public static Boolean isValidCurseForgeUrl(String origin){
-        //TODO: Change to regex?
+    public static boolean isValidWowAceUrl(String origin) {
+        String wowAcePrefix = "https://www.wowace.com/projects/";
+        int prefixLength = wowAcePrefix.length();
+        if(!isValidURL(origin)){
+            return false;
+        }
+        if(!origin.startsWith(wowAcePrefix)){
+            return false;
+        }
+        if(origin.length() == prefixLength){
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean isValidCurseForgeUrl(String origin){
         String curseforgePrefix = "https://www.curseforge.com/wow/addons/";
         int prefixLength = curseforgePrefix.length();
         if(!isValidURL(origin)){
@@ -122,6 +141,18 @@ public class UrlInfo {
         return frankenstein;
     }
 
+    public static String trimWowAceUrl(String origin){
+        String[] parts = origin.split("/");
+        if(parts.length < 6){
+            return origin;
+        }
+        String frankenstein = parts[0];
+        for(int i=1; i<5; i++){
+            frankenstein =  frankenstein + "/" + parts[i];
+        }
+        return frankenstein;
+    }
+
     public static String trimGitHubUrl(String origin){
         String[] parts = origin.split("/");
         if(parts.length < 5){
@@ -145,4 +176,56 @@ public class UrlInfo {
         return prefix + addonNumber;
     }
 
+    public static AddonSource getAddonSource(String origin){
+        if(origin.contains("curseforge.com")){
+            return AddonSource.CURSEFORGE;
+        } if(origin.contains("github.com")){
+            return AddonSource.GITHUB;
+        } if(origin.contains("wowinterface.com")){
+            return AddonSource.WOWINTERFACE;
+        } if(origin.contains("tukui.org")){
+            return AddonSource.TUKUI;
+        } if(origin.contains("wowace.com")){
+            return AddonSource.WOWACE;
+        }
+        return null;
+    }
+
+    public static Scraper getCorrespondingScraper(AddonSource addonSource, String origin, boolean updatingAddon, String branch, boolean releases) throws ScrapeException{
+        switch (addonSource){
+            case CURSEFORGE:
+                return CurseForgeScraper.makeScraper(origin, updatingAddon);
+            case GITHUB:
+                return new GitHubScraper(origin, branch, releases, updatingAddon);
+            case WOWINTERFACE:
+                return new WowInterfaceScraper(origin, updatingAddon);
+            case TUKUI:
+                return new TukuiScraper(origin, updatingAddon);
+            case WOWACE:
+                return WowAceScraper.makeScraper(origin, updatingAddon);
+        }
+        return null;
+    }
+
+    public static String trimString(String origin, AddonSource addonSource){
+        String trimmedOrigin = null;
+        switch (addonSource) {
+            case CURSEFORGE:
+                trimmedOrigin = UrlInfo.trimCurseForgeUrl(origin);
+                break;
+            case GITHUB:
+                trimmedOrigin = UrlInfo.trimGitHubUrl(origin);
+                break;
+            case WOWINTERFACE:
+                trimmedOrigin = UrlInfo.trimWowInterfaceUrl(origin);
+                break;
+            case TUKUI:
+                trimmedOrigin = UrlInfo.trimTukuiUrl(origin);
+                break;
+            case WOWACE:
+                trimmedOrigin = UrlInfo.trimWowAceUrl(origin);
+                break;
+        }
+        return trimmedOrigin;
+    }
 }
