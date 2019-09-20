@@ -1,0 +1,84 @@
+v0.7: Tukui and WowAce support
+	- Tukui Support
+	- WowAce Support
+	- Changelog added, will now display once after each update
+	- UI Changes
+	- List of supported websites and automatic redirects for fast searching for adds
+	- Behind the scenes cleanup
+	
+v0.65: Additional Error Information
+    	- Small bug fixes
+        - UI now displays custom error for 503 errors explaining what it means
+
+v0.64: Filtering and Update Feedback
+    - Slight UI changes
+    - Now shows icon next to addons during update process
+    - Errors shown at end, will update all it can even if one addon fails
+    - Can now search through managed addons
+
+v0.62: Improved updater system, New .exe file
+    - New .exe file that shouldn't get flagged as malware
+    - Improved updater system, allows for a lot more flexibility on my part
+    - The program should now restart after update instead of just closing
+
+    NOTE: This update will require 2 downloads/restart cycles to apply the update, this is because of the format of the new updating system... Anyone updating from a previous version to this version or future versions will need to do 2 restarts, but any updates from this version and forward will be 1 update cycle as usual.
+
+v0.6: Error pop-ups, major UI fixes, Editing of managed addons
+    - Editing of managed addons (BE CAREFUL)
+    - Pop-ups for ALL errors, no more UI freezing (fingers crossed)
+    - Miscellaneous bug fixes
+
+v0.5 Github limit handling and toggle of github downloads
+    - This version features a couple small bug fixes as well as pop-up that will inform the user if they hit the github request limit.
+    - It also features a toggle for github downloads if you wish to continue downloading other addons while you wait for the request to reset.
+
+v0.49: Import/Export addon list and bug fixes
+    - Added feature to import and export your managed addons list
+    - Fixed various bugs, specifically a bug relating to addons that had sub-folders
+
+v0.47: Bug fixes
+    - Various bug fixes
+
+v0.46: Branch auto-detection, Bug fixes
+    - Removed the need to manually type branch names, instead, the manager will now automatically determine which branches are available and let you pick one of them.
+
+v0.42: Bug fixes and UI improvements
+    - Various bug fixes and UI improvements
+
+v0.4: Preliminary WowInterface support, bug fix related to setup
+    - Wowinterface SHOULD work, but needs proper testing
+    - Fixed a bug where setup would not select the proper installation folder
+
+v0.35: Auto-Updater, More responsive UI, General UI improvements
+    IMPORTANT:
+    - To update, just overwrite the old files. You NEED the contents of your old 'data' folder or you will lose the tracking you've set up already.
+
+    - This should be the last version that will need a manual download. From now on the addon manager should check for a new update when you open it.
+    - Added fixes for ui hanging
+    - Added a bunch of misc improvements to the UI.
+
+V0.3: GitHub support
+    - Added github support in this version.
+    - Next version will fix the hanging UI, the way you select branches, and the recurring pop-up bug.
+
+#############
+Pre-Releases:
+#############
+
+v0.25: FIRST STANDALONE - Improved GUI
+    - Improved GUI and appearance, now also with Output log and various bug fixes.
+    - This version does not require you to have java installed, it comes bundled with the program.
+    - Run the Classic Addon Manager.exe
+
+v0.2: First GUI
+    - Now with a semi-functional UI.
+    - File and Help menus don't work properly, coming soon.
+    - Will still probably crash if you supply invalid addon link.
+
+v0.1:
+    - VERY EARLY VERSION
+    - No GUI, currently CLI based
+    - CurseForge addon installation
+    - Addon uninstall
+    - CurseForge addon update and automatic installation
+

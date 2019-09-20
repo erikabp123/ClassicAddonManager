@@ -6,6 +6,7 @@ import com.CAM.AddonManagement.AddonRequest;
 import com.CAM.AddonManagement.UpdateProgressListener;
 import com.CAM.DataCollection.*;
 import com.CAM.HelperTools.*;
+import com.CAM.Starter;
 import com.CAM.Updating.SelfUpdater;
 import com.CAM.Updating.VersionInfo;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -32,6 +33,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
@@ -40,9 +42,7 @@ import javafx.stage.Stage;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -392,8 +392,38 @@ public class Controller implements Initializable {
 
     @FXML
     private void patreonRedirectAction() {
-        String discord = "https://www.patreon.com/ClassicAddonManager";
-        openUrl(discord);
+        String patreon = "https://www.patreon.com/ClassicAddonManager";
+        openUrl(patreon);
+    }
+
+    @FXML
+    private void curseRedirectAction() {
+        String curse = "https://www.curseforge.com/wow/addons?filter-game-version=1738749986%3A67408";
+        openUrl(curse);
+    }
+
+    @FXML
+    private void githubExploreRedirectAction() {
+        String githubExplore = "https://github.com/search?q=classic+wow+addon";
+        openUrl(githubExplore);
+    }
+
+    @FXML
+    private void tukuiRedirectAction() {
+        String tukui = "https://www.tukui.org/classic-addons.php";
+        openUrl(tukui);
+    }
+
+    @FXML
+    private void wowAceRedirectAction() {
+        String wowAce = "https://www.wowace.com/addons?filter-game-version=1738749986%3A67408";
+        openUrl(wowAce);
+    }
+
+    @FXML
+    private void wowInterfaceRedirectAction() {
+        String wowInterface = "https://www.wowinterface.com/downloads/index.php?cid=160";
+        openUrl(wowInterface);
     }
 
     private void openUrl(String url) {
@@ -428,6 +458,9 @@ public class Controller implements Initializable {
         Log.listen(new GUILogListener(textAreaOutputLog));
         progressBarListen();
         setupOutputLogContextMenu();
+        if(Starter.showWhatsNew){
+            showWhatsNew();
+        }
     }
 
     //================================================================================
@@ -819,6 +852,58 @@ public class Controller implements Initializable {
         } catch (ScrapeException e) {
             Platform.runLater(() -> handleUnknownException(e));
         }
+    }
+
+    @FXML
+    public void showWhatsNew(){
+        Thread whatsNewThread = new Thread(() -> {
+            String changeLog = getChangeLogAsString();
+
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("What's New?");
+                alert.setHeaderText("Changelog for the new update");
+                alert.setContentText(null);
+
+                TextArea textArea = new TextArea();
+                textArea.setEditable(false);
+                textArea.setWrapText(true);
+                textArea.setText(changeLog);
+                textArea.setPrefWidth(500);
+                textArea.setPrefHeight(300);
+                alert.getDialogPane().setContent(textArea);
+                alert.getDialogPane().setMinWidth(Region.USE_PREF_SIZE);
+                alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+
+                alert.showAndWait();
+            });
+        });
+
+        whatsNewThread.start();
+    }
+
+    private String getChangeLogAsString(){
+        String fileName = "system/CHANGELOG.txt";
+        String line = null;
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            FileReader fileReader = new FileReader(fileName);
+
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+            while((line = bufferedReader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+
+            bufferedReader.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return sb.toString();
     }
 
     //================================================================================

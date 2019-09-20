@@ -1,5 +1,6 @@
 package com.CAM.Updating;
 
+import com.CAM.DataCollection.CAMGithubScraper;
 import com.CAM.DataCollection.FileDownloader;
 import com.CAM.DataCollection.GitHubScraper;
 import com.CAM.DataCollection.ScrapeException;
@@ -19,14 +20,24 @@ import java.util.Optional;
 
 public class SelfUpdater {
 
+    public static final boolean testing = false;
+
     public static final String REPO_LOCATION = "https://github.com/erikabp123/ClassicAddonManager";
+    public static final String TEST_REPO_LOCATION = "https://github.com/erikabp123/CAM_TESTER";
     public static final String AUTOUPDATER_REPO_LOCATION = "https://github.com/erikabp123/AutoUpdater";
     public static final String EXE_REPO_LOCATION = "";
     public static final int SLEEP_TIMER = 1000;
 
+    public static String getRepoLocation(){
+        if(testing){
+            return TEST_REPO_LOCATION;
+        }
+        return REPO_LOCATION;
+    }
+
     public static void selfUpdate(Controller controller) throws ScrapeException {
         Log.log("Running self updater ...");
-        GitHubScraper scraper = new GitHubScraper(REPO_LOCATION, null, true, true);
+        CAMGithubScraper scraper = new CAMGithubScraper(getRepoLocation());
         HashMap<String, String> filesToDownload = determineDownloads(scraper);
         if(filesToDownload.isEmpty()){
             Log.log("Self Updater finished without finding any new updates!");
@@ -71,7 +82,7 @@ public class SelfUpdater {
         }
     }
 
-    private static HashMap<String, String> determineDownloads(GitHubScraper scraper) throws ScrapeException {
+    private static HashMap<String, String> determineDownloads(CAMGithubScraper scraper) throws ScrapeException {
         HashMap<String, String> filesToDownload = new HashMap<>();
         VersionInfo versionInfo = VersionInfo.readVersioningFile();
         boolean newTag = getTag(scraper) > VersionInfo.CAM_VERSION;
@@ -82,10 +93,12 @@ public class SelfUpdater {
             downloader.downloadFile(manifestLink, "VERSIONING");
             versionInfo = VersionInfo.readVersioningFile();
         }
-        GitHubScraper updaterScraper = new GitHubScraper(AUTOUPDATER_REPO_LOCATION, null, true, true);
+        CAMGithubScraper updaterScraper = new CAMGithubScraper(AUTOUPDATER_REPO_LOCATION);
         if(versionInfo.expectedCAM > VersionInfo.CAM_VERSION){
             String camLink = scraper.getReleaseJarDownload();
             filesToDownload.put(camLink, "ClassicAddonManager.jar");
+            String changelogLink = scraper.getChangelogDownload();
+            filesToDownload.put(changelogLink, "CHANGELOG.txt");
         }
         if(forceExtras || versionInfo.expectedAutoUpdate > VersionInfo.AUTOUPDATER_VERSION){
             String jarLink = updaterScraper.getReleaseJarDownload();

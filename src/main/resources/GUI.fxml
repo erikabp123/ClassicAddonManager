@@ -42,8 +42,19 @@
               <items>
                 <MenuItem fx:id="menuAboutVersion" disable="true" mnemonicParsing="false" text="Version" />
                   <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem fx:id="menuAboutChangelog" mnemonicParsing="false" onAction="#showWhatsNew" text="View Changelog" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem fx:id="menuAboutUpdates" mnemonicParsing="false" onAction="#checkForUpdatesAction" text="Check For Updates" />
               </items>
+            </Menu>
+            <Menu mnemonicParsing="false" text="Supported Sites">
+               <items>
+                  <MenuItem fx:id="menuSupportedCurse" mnemonicParsing="false" onAction="#curseRedirectAction" text="Curseforge" />
+                  <MenuItem fx:id="menuSupportedGithub" mnemonicParsing="false" onAction="#githubExploreRedirectAction" text="Github" />
+                  <MenuItem fx:id="menuSupportedTukui" mnemonicParsing="false" onAction="#tukuiRedirectAction" text="Tukui" />
+                  <MenuItem fx:id="menuSupportedWowAce" mnemonicParsing="false" onAction="#wowAceRedirectAction" text="WowAce" />
+                  <MenuItem fx:id="menuSupportedWowInterface" mnemonicParsing="false" onAction="#wowInterfaceRedirectAction" text="WowInterface" />
+               </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Donate">
                <items>
@@ -60,7 +71,7 @@
             <TextField fx:id="textFieldURL" layoutX="14.0" layoutY="401.0" prefHeight="32.0" prefWidth="556.0" promptText="Addon Url" />
             <Button fx:id="buttonAdd" layoutX="579.0" layoutY="400.0" mnemonicParsing="false" onAction="#addAction" prefHeight="26.0" prefWidth="104.0" text="Add" />
             <Button fx:id="buttonUpdate" layoutX="393.0" layoutY="314.0" mnemonicParsing="false" onAction="#updateAction" prefHeight="134.0" prefWidth="189.0" text="Update Addons" />
-            <TextArea fx:id="textAreaOutputLog" editable="false" focusTraversable="false" layoutX="291.0" layoutY="38.0" prefHeight="265.0" prefWidth="392.0" />
+            <TextArea fx:id="textAreaOutputLog" editable="false" focusTraversable="false" layoutX="291.0" layoutY="38.0" prefHeight="265.0" prefWidth="392.0" wrapText="true" />
             <Text fx:id="textOutputLogLabel" layoutX="292.0" layoutY="26.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Output Log" textAlignment="CENTER" wrappingWidth="392.0" />
             <TextField fx:id="filterAddonsTextField" layoutX="14.0" layoutY="38.0" prefWidth="262.0" promptText="Search Addons" />
             <ImageView fx:id="imageViewAdd" fitHeight="13.0" fitWidth="104.0" layoutX="564.0" layoutY="380.0" pickOnBounds="true" preserveRatio="true" visible="false" />
