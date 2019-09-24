@@ -142,13 +142,17 @@ public class CurseForgeScraper extends Scraper implements TwitchSite {
 
     private HtmlAnchor findDownloadAnchor(HtmlTableRow row){
         HtmlTableCell downloadCell = row.getCell(6);
+        /*
         HtmlDivision containerDiv = (HtmlDivision) downloadCell.getChildren().iterator().next();
         HtmlAnchor downloadAnchor = (HtmlAnchor) containerDiv.getChildren().iterator().next();
+         */
+        HtmlAnchor downloadAnchor = (HtmlAnchor) downloadCell.getByXPath(".//a[@class='button button--hollow mr-2 button--icon-only']").get(0);
         return downloadAnchor;
     }
 
     private HtmlAnchor findFileAnchor(HtmlTableRow row){
         HtmlTableCell fileCell = row.getCell(1);
+        //HtmlAnchor fileAnchor = (HtmlAnchor) fileCell.getChildren().iterator().next();
         HtmlAnchor fileAnchor = (HtmlAnchor) fileCell.getChildren().iterator().next();
         return fileAnchor;
     }

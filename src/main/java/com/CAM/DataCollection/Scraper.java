@@ -2,6 +2,7 @@ package com.CAM.DataCollection;
 
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.Log;
+import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -54,7 +55,7 @@ public abstract class Scraper {
     }
 
     public HtmlPage scrape(String targetUrl) throws ScrapeException {
-        WebClient client = new WebClient();
+        WebClient client = new WebClient(BrowserVersion.CHROME);
         client.getOptions().setJavaScriptEnabled(js);
         client.getOptions().setCssEnabled(css);
         client.getOptions().setUseInsecureSSL(insecureSSL);
@@ -81,7 +82,7 @@ public abstract class Scraper {
 
     private HtmlPage scrapeJS(String targetUrl) throws ScrapeException {
         Log.verbose("Attempting JS scrape ...");
-        WebClient client = new WebClient();
+        WebClient client = new WebClient(BrowserVersion.CHROME);
         client.getOptions().setJavaScriptEnabled(true);
         client.getOptions().setCssEnabled(css);
         client.getOptions().setUseInsecureSSL(insecureSSL);
@@ -90,7 +91,7 @@ public abstract class Scraper {
 
         try {
             page = client.getPage(targetUrl);
-            client.waitForBackgroundJavaScript(10_000);
+            client.waitForBackgroundJavaScript(10000);
         } catch (FailingHttpStatusCodeException e){
             Log.verbose("JS scrape resulted in " + e.getStatusCode());
             throw new ScrapeException(source, e);
