@@ -461,6 +461,7 @@ public class Controller implements Initializable {
         if(Starter.showWhatsNew){
             showWhatsNew();
         }
+        showEmergencyBroadcast();
     }
 
     //================================================================================
@@ -880,6 +881,45 @@ public class Controller implements Initializable {
         });
 
         whatsNewThread.start();
+    }
+
+    @FXML
+    public void showEmergencyBroadcast(){
+        Thread whatsNewThread = new Thread(() -> {
+            String broadcast = null;
+            try {
+                broadcast = getBroadCastMessage();
+            } catch (IOException e) {
+                return;
+            }
+
+            String finalBroadcast = broadcast;
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Status Update");
+                alert.setHeaderText("IMPORTANT INFORMATION!");
+                alert.setContentText(null);
+
+                TextArea textArea = new TextArea();
+                textArea.setEditable(false);
+                textArea.setWrapText(true);
+                textArea.setText(finalBroadcast);
+                textArea.setPrefWidth(500);
+                textArea.setPrefHeight(300);
+                alert.getDialogPane().setContent(textArea);
+                alert.getDialogPane().setMinWidth(Region.USE_PREF_SIZE);
+                alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+
+                alert.showAndWait();
+            });
+        });
+
+        whatsNewThread.start();
+    }
+
+    private String getBroadCastMessage() throws IOException {
+        BroadcastFetcher fetcher = new BroadcastFetcher();
+        return fetcher.fetchBroadcastMessage();
     }
 
     private String getChangeLogAsString(){

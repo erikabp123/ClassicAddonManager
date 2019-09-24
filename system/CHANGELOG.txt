@@ -1,3 +1,7 @@
+v0.71:
+    - Fixed 403 errors
+    -
+
 v0.7: Tukui and WowAce support
 	- Tukui Support
 	- WowAce Support

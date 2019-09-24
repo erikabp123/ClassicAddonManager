@@ -3,9 +3,11 @@ package com.CAM.DataCollection;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.Log;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.util.Cookie;
 
 import java.io.IOException;
 import java.util.Date;
@@ -59,6 +61,8 @@ public abstract class Scraper {
         client.getOptions().setJavaScriptEnabled(js);
         client.getOptions().setCssEnabled(css);
         client.getOptions().setUseInsecureSSL(insecureSSL);
+        client.setCookieManager(new CookieManager());
+        client.getOptions().setRedirectEnabled(true);
 
         HtmlPage page;
 
@@ -86,6 +90,8 @@ public abstract class Scraper {
         client.getOptions().setJavaScriptEnabled(true);
         client.getOptions().setCssEnabled(css);
         client.getOptions().setUseInsecureSSL(insecureSSL);
+        client.setCookieManager(new CookieManager());
+        client.getOptions().setRedirectEnabled(true);
 
         HtmlPage page;
 
