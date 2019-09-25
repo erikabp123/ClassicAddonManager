@@ -5,6 +5,10 @@ import com.CAM.AddonManagement.AddonManager;
 import com.CAM.AddonManagement.AddonRequest;
 import com.CAM.AddonManagement.UpdateProgressListener;
 import com.CAM.DataCollection.*;
+import com.CAM.DataCollection.Github.GitHubScraper;
+import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeScraper;
+import com.CAM.DataCollection.TwitchOwned.TwitchSite;
+import com.CAM.DataCollection.TwitchOwned.WowAce.WowAceScraper;
 import com.CAM.HelperTools.*;
 import com.CAM.Settings.SessionOnlySettings;
 import com.CAM.Starter;
@@ -52,7 +56,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.stream.IntStream;
 
 public class Controller implements Initializable {
 

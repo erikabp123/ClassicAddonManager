@@ -1,6 +1,11 @@
 package com.CAM.HelperTools;
 
 import com.CAM.DataCollection.*;
+import com.CAM.DataCollection.Github.GitHubScraper;
+import com.CAM.DataCollection.Tukui.TukuiScraper;
+import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeScraper;
+import com.CAM.DataCollection.TwitchOwned.WowAce.WowAceScraper;
+import com.CAM.DataCollection.WowInterface.WowInterfaceScraper;
 
 import java.net.URL;
 

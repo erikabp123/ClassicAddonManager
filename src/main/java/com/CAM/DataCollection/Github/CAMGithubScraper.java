@@ -1,5 +1,7 @@
-package com.CAM.DataCollection;
+package com.CAM.DataCollection.Github;
 
+import com.CAM.DataCollection.Github.GitHubScraper;
+import com.CAM.DataCollection.ScrapeException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 

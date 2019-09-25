@@ -1,4 +1,4 @@
-package com.CAM.DataCollection;
+package com.CAM.DataCollection.TwitchOwned;
 
 public interface TwitchSite  {
 

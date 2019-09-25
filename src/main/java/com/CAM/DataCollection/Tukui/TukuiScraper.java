@@ -1,5 +1,7 @@
-package com.CAM.DataCollection;
+package com.CAM.DataCollection.Tukui;
 
+import com.CAM.DataCollection.ScrapeException;
+import com.CAM.DataCollection.Scraper;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
 import com.CAM.HelperTools.Log;

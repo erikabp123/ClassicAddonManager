@@ -1,8 +1,8 @@
 package com.CAM.Updating;
 
-import com.CAM.DataCollection.CAMGithubScraper;
+import com.CAM.DataCollection.Github.CAMGithubScraper;
 import com.CAM.DataCollection.FileDownloader;
-import com.CAM.DataCollection.GitHubScraper;
+import com.CAM.DataCollection.Github.GitHubScraper;
 import com.CAM.DataCollection.ScrapeException;
 import com.CAM.GUI.Controller;
 import com.CAM.HelperTools.Log;
