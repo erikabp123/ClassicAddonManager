@@ -1,22 +1,12 @@
 package com.CAM.HelperTools;
 
+import com.CAM.Settings.SessionOnlySettings;
+
 import java.util.ArrayList;
 
 public class Log {
 
-    public static boolean logging = false;
-    public static ArrayList<LogListener> listeners = new ArrayList<>();
-    public static boolean skipGithubDownloads = false;
-
-    public static void toggleLogging(){
-        logging = !logging;
-        Log.log("Set debug to " + logging);
-    }
-
-    public static void toggleGithubDownloads(){
-        skipGithubDownloads = !skipGithubDownloads;
-        Log.log("Set skip github downloads to " + skipGithubDownloads);
-    }
+    private static ArrayList<LogListener> listeners = new ArrayList<>();
 
     public static void log(String text){
         System.out.println(text);
@@ -24,7 +14,7 @@ public class Log {
     }
 
     public static void verbose(String text){
-        if(!logging){
+        if(!SessionOnlySettings.isLogging()){
             return;
         }
         System.out.println(text);
@@ -35,7 +25,7 @@ public class Log {
         listeners.add(listener);
     }
 
-    public static void notifyListeners(String text){
+    private static void notifyListeners(String text){
         for(LogListener listener : listeners){
             listener.notify(text);
         }

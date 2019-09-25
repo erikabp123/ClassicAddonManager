@@ -6,6 +6,7 @@ import com.CAM.AddonManagement.AddonRequest;
 import com.CAM.AddonManagement.UpdateProgressListener;
 import com.CAM.DataCollection.*;
 import com.CAM.HelperTools.*;
+import com.CAM.Settings.SessionOnlySettings;
 import com.CAM.Starter;
 import com.CAM.Updating.SelfUpdater;
 import com.CAM.Updating.VersionInfo;
@@ -289,12 +290,17 @@ public class Controller implements Initializable {
     //region Toggleable Settings
     @FXML
     private void toggleDebugAction() {
-        Log.toggleLogging();
+        SessionOnlySettings.toggleLogging();
     }
 
     @FXML
     private void toggleGithubDownloadsAction() {
-        Log.toggleGithubDownloads();
+        SessionOnlySettings.toggleGithubDownloads();
+    }
+
+    @FXML
+    private void toggleForceUpdatesAction() {
+        SessionOnlySettings.toggleForceUpdates();
     }
     //endregion
 

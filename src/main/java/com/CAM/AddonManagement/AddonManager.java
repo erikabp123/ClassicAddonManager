@@ -2,6 +2,7 @@ package com.CAM.AddonManagement;
 
 import com.CAM.DataCollection.*;
 import com.CAM.HelperTools.*;
+import com.CAM.Settings.SessionOnlySettings;
 import com.google.gson.Gson;
 import net.lingala.zip4j.model.FileHeader;
 
@@ -10,7 +11,7 @@ import java.util.*;
 
 public class AddonManager {
 
-    private String version = "1.0";
+    private String version = "2.0";
     private List<Addon> managedAddons;
     private String installLocation;
 
@@ -39,15 +40,37 @@ public class AddonManager {
     }
 
     public ArrayList<Exception> updateAddons(UpdateProgressListener listener) {
+        int UPDATE_MIN_WAIT = 1800000; //30 min in ms
         ArrayList<Exception> exceptions = new ArrayList<>();
         Log.log("Updating addons ...");
         int position = 0;
         int statusCode;
+        AddonSource lastAddonSource = null;
         for (Addon addon : managedAddons) {
             statusCode = 1;
             listener.informStart(position);
             try{
-                if(Log.skipGithubDownloads && addon.getOrigin().contains("github.com")){
+                if(!SessionOnlySettings.isForceUpdates()
+                        && addon.getLastUpdateCheck() != null
+                        && System.currentTimeMillis() < addon.getLastUpdateCheck().getTime() + UPDATE_MIN_WAIT
+                ){
+                    Log.log("Checked addon " + addon.getName() + " by " + addon.getAuthor() + " recently! Skipping!");
+                    statusCode = 1;
+                    listener.informFinish(position, statusCode);
+                    position++;
+                    continue;
+                }
+
+                if(addon.getAddonSource() == lastAddonSource){
+                    try {
+                        Thread.sleep(getSleepDelay());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                lastAddonSource = addon.getAddonSource();
+
+                if(SessionOnlySettings.isSkipGithubDownloads() && addon.getOrigin().contains("github.com")){
                     Log.log("Skipping github addon " + addon.getName() + " by " + addon.getAuthor());
                     statusCode = 2;
                     listener.informFinish(position, statusCode);
@@ -65,7 +88,6 @@ public class AddonManager {
                 Log.log("update available for: " + addon.getName() + " by " + addon.getAuthor() + "!");
                 addon.fetchUpdate(response.getScraper());
                 install(addon);
-                saveToFile();
             } catch (ScrapeException e){
                 exceptions.add(e);
                 statusCode = 0;
@@ -75,9 +97,17 @@ public class AddonManager {
             }
             listener.informFinish(position, statusCode);
             position++;
+            addon.setLastUpdateCheck(new Date());
+            saveToFile();
         }
         Log.log("Finished updating!");
         return exceptions;
+    }
+
+    private int getSleepDelay() {
+        int DELAY_RANGE = 401; // range is 300-700, 101 instead of 100 since 600 is included
+        int MIN_DELAY = 300;
+        return (new Random()).nextInt(DELAY_RANGE) + MIN_DELAY;
     }
 
     public boolean addNewAddon(AddonRequest request) throws ScrapeException {

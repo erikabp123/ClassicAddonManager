@@ -16,6 +16,7 @@ public class Addon implements Comparable<Addon> {
     private String lastFileName;
     private String branch;
     private boolean releases;
+    private Date lastUpdateCheck;
 
     public Addon(String name, String author, String origin, String branch, boolean releases){
         this.name = name;
@@ -38,6 +39,7 @@ public class Addon implements Comparable<Addon> {
             downloader.downloadFileMonitored(downloadLink, fileName);
             lastUpdated = scraper.getLastUpdated();
             lastFileName = fileName;
+            lastUpdateCheck = new Date();
         } catch (ScrapeException e){
             e.setAddon(this);
             throw e;
@@ -137,5 +139,13 @@ public class Addon implements Comparable<Addon> {
 
     public void setOrigin(String origin){
         this.origin = origin;
+    }
+
+    public Date getLastUpdateCheck() {
+        return lastUpdateCheck;
+    }
+
+    public void setLastUpdateCheck(Date lastUpdateCheck) {
+        this.lastUpdateCheck = lastUpdateCheck;
     }
 }
