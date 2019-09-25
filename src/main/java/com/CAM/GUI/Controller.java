@@ -5,7 +5,7 @@ import com.CAM.AddonManagement.AddonManager;
 import com.CAM.AddonManagement.AddonRequest;
 import com.CAM.AddonManagement.UpdateProgressListener;
 import com.CAM.DataCollection.*;
-import com.CAM.DataCollection.Github.GitHubScraper;
+import com.CAM.DataCollection.Github.GitHubAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeScraper;
 import com.CAM.DataCollection.TwitchOwned.TwitchSite;
 import com.CAM.DataCollection.TwitchOwned.WowAce.WowAceScraper;
@@ -815,7 +815,7 @@ public class Controller implements Initializable {
 
     private void determineBranch(String origin) throws ScrapeException {
         String trimmedOrigin = UrlInfo.trimGitHubUrl(origin);
-        ArrayList<String> names = GitHubScraper.getBranches(trimmedOrigin);
+        ArrayList<String> names = GitHubAPI.getBranches(trimmedOrigin);
         Platform.runLater(() -> {
             ChoiceDialog<String> dialog = new ChoiceDialog<>();
             dialog.getItems().addAll(names);

@@ -12,6 +12,7 @@ public class AddonListCell<T> extends ListCell<T> {
     private Image successImage;
     private Image failureImage;
     private Image pendingImage;
+    private Image skippedImage;
 
     public AddonListCell(){
         statusView = new ImageView();
@@ -21,6 +22,7 @@ public class AddonListCell<T> extends ListCell<T> {
         successImage = new Image(this.getClass().getClassLoader().getResource("success.png").toExternalForm());
         failureImage = new Image(this.getClass().getClassLoader().getResource("failure.png").toExternalForm());
         pendingImage = new Image(this.getClass().getClassLoader().getResource("pending.png").toExternalForm());
+        skippedImage = new Image(this.getClass().getClassLoader().getResource("skip.png").toExternalForm());
     }
 
     @Override
@@ -43,6 +45,8 @@ public class AddonListCell<T> extends ListCell<T> {
             statusView.setImage(successImage);
         } else if(itemStr.startsWith("F:")){
             statusView.setImage(failureImage);
+        } else if(itemStr.startsWith("T:")){
+            statusView.setImage(skippedImage);;
         } else {
             text = itemStr;
             statusView.setImage(pendingImage);

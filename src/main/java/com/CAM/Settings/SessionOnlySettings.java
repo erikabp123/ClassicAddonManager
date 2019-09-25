@@ -27,7 +27,7 @@ public class SessionOnlySettings {
     }
 
     public static boolean isSkipGithubDownloads(){
-        return logging;
+        return skipGithubDownloads;
     }
 
     public static boolean isForceUpdates(){

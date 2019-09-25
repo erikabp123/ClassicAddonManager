@@ -38,7 +38,7 @@ public class WowAceScraper extends Scraper implements TwitchSite {
     }
 
     public WowAceScraper(String url, String suffix, boolean updatingAddon) throws ScrapeException {
-        super(url + suffix, false, false, true, AddonSource.WOWACE);
+        super(url + suffix, AddonSource.WOWACE);
         this.baseUrl = url;
         if(!updatingAddon && !isValidLink()){
             throw new ScrapeException(getAddonSource(), "Invalid WowAce url!");
@@ -47,7 +47,7 @@ public class WowAceScraper extends Scraper implements TwitchSite {
 
     @Override
     public String getDownloadLink(){
-        HtmlPage page = getScrapedPage();
+        HtmlPage page = getFetchedPage();
 
         HtmlTableRow row = findFirstDownloadRow(page);
         HtmlAnchor downloadAnchor = findDownloadAnchor(row);
@@ -58,7 +58,7 @@ public class WowAceScraper extends Scraper implements TwitchSite {
 
     @Override
     public Date getLastUpdated(){
-        HtmlPage page = getScrapedPage();
+        HtmlPage page = getFetchedPage();
         HtmlTableRow row = findFirstDownloadRow(page);
         Date date = DateConverter.convertFromWowAce(findDateAbbr(row).getAttribute("title"));
         return date;
@@ -67,7 +67,7 @@ public class WowAceScraper extends Scraper implements TwitchSite {
     @Override
     public String getName(){
         Log.verbose("Fetching addon name!");
-        HtmlPage page = getScrapedPage();
+        HtmlPage page = getFetchedPage();
         HtmlSpan nameSpan = (HtmlSpan) page.getByXPath("//span[@class='overflow-tip']").get(0);
         String name = nameSpan.asText();
         Log.verbose("Found addon name: " + name);
@@ -96,7 +96,7 @@ public class WowAceScraper extends Scraper implements TwitchSite {
 
     @Override
     public String getFileName(){
-        HtmlPage page = getScrapedPage();
+        HtmlPage page = getFetchedPage();
         HtmlTableRow row = findFirstDownloadRow(page);
         String fileName = findFileAnchor(row).asText();
         return sanatizeInput(fileName);
@@ -108,7 +108,7 @@ public class WowAceScraper extends Scraper implements TwitchSite {
         if(getUrl().endsWith(officialSuffix)){
             scraper = getNonOfficialScraper(baseUrl, false);
         }
-        HtmlPage page = scraper.getScrapedPage();
+        HtmlPage page = scraper.getFetchedPage();
         if(page == null){
             return false;
         }
@@ -117,11 +117,6 @@ public class WowAceScraper extends Scraper implements TwitchSite {
             return false;
         }
         return true;
-    }
-
-    @Override
-    public AddonSource getAddonSource() {
-        return AddonSource.WOWACE;
     }
 
     //HELPER METHODS
@@ -169,7 +164,7 @@ public class WowAceScraper extends Scraper implements TwitchSite {
 
     @Override
     public boolean isClassicSupported(){
-        HtmlTableRow row = findFirstDownloadRow(getScrapedPage());
+        HtmlTableRow row = findFirstDownloadRow(getFetchedPage());
         if(row == null){
             return false;
         }

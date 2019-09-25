@@ -37,7 +37,7 @@ public class CurseForgeScraper extends Scraper implements TwitchSite {
     }
 
     public CurseForgeScraper(String url, String suffix, boolean updatingAddon) throws ScrapeException {
-        super(url + suffix, false, false, true, AddonSource.CURSEFORGE);
+        super(url + suffix, AddonSource.CURSEFORGE);
         this.baseUrl = url;
         if(!updatingAddon && !isValidLink()){
             throw new ScrapeException(getAddonSource(), "Invalid CurseForge url!");
@@ -46,7 +46,7 @@ public class CurseForgeScraper extends Scraper implements TwitchSite {
 
     @Override
     public String getDownloadLink(){
-        HtmlPage page = getScrapedPage();
+        HtmlPage page = getFetchedPage();
 
         HtmlTableRow row = findFirstDownloadRow(page);
         HtmlAnchor downloadAnchor = findDownloadAnchor(row);
@@ -57,7 +57,7 @@ public class CurseForgeScraper extends Scraper implements TwitchSite {
 
     @Override
     public Date getLastUpdated(){
-        HtmlPage page = getScrapedPage();
+        HtmlPage page = getFetchedPage();
         HtmlTableRow row = findFirstDownloadRow(page);
         Date date = DateConverter.convertFromCurse(findDateAbbr(row).getAttribute("title"));
         return date;
@@ -66,7 +66,7 @@ public class CurseForgeScraper extends Scraper implements TwitchSite {
     @Override
     public String getName(){
         Log.verbose("Fetching addon name!");
-        HtmlPage page = getScrapedPage();
+        HtmlPage page = getFetchedPage();
         HtmlHeading2 nameHeading = (HtmlHeading2) page.getByXPath("//h2").get(0);
         String name = nameHeading.asText();
         Log.verbose("Found addon name: " + name);
@@ -76,7 +76,7 @@ public class CurseForgeScraper extends Scraper implements TwitchSite {
     @Override
     public String getAuthor(){
         Log.verbose("Fetching author name!");
-        HtmlPage page = getScrapedPage();
+        HtmlPage page = getFetchedPage();
         HtmlAnchor authorAnchor = (HtmlAnchor) page.getByXPath("//a[contains(@href, '/members/')]").get(1);
         String author = authorAnchor.getChildren().iterator().next().asText();
         Log.verbose("Found author: " + author);
@@ -85,7 +85,7 @@ public class CurseForgeScraper extends Scraper implements TwitchSite {
 
     @Override
     public String getFileName(){
-        HtmlPage page = getScrapedPage();
+        HtmlPage page = getFetchedPage();
         HtmlTableRow row = findFirstDownloadRow(page);
         String fileName = findFileAnchor(row).asText();
         return sanatizeInput(fileName);
@@ -97,7 +97,7 @@ public class CurseForgeScraper extends Scraper implements TwitchSite {
         if(getUrl().endsWith(officialSuffix)){
             scraper = getNonOfficialScraper(baseUrl, false);
         }
-        HtmlPage page = scraper.getScrapedPage();
+        HtmlPage page = scraper.getFetchedPage();
         if(page == null){
             return false;
         }
@@ -106,11 +106,6 @@ public class CurseForgeScraper extends Scraper implements TwitchSite {
             return false;
         }
         return true;
-    }
-
-    @Override
-    public AddonSource getAddonSource() {
-        return AddonSource.CURSEFORGE;
     }
 
     //HELPER METHODS
@@ -162,7 +157,7 @@ public class CurseForgeScraper extends Scraper implements TwitchSite {
 
     @Override
     public boolean isClassicSupported(){
-        HtmlTableRow row = findFirstDownloadRow(getScrapedPage());
+        HtmlTableRow row = findFirstDownloadRow(getFetchedPage());
         if(row == null){
             return false;
         }

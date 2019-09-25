@@ -1,8 +1,8 @@
 package com.CAM.Updating;
 
-import com.CAM.DataCollection.Github.CAMGithubScraper;
+import com.CAM.DataCollection.Github.CAMGithubAPI;
 import com.CAM.DataCollection.FileDownloader;
-import com.CAM.DataCollection.Github.GitHubScraper;
+import com.CAM.DataCollection.Github.GitHubAPI;
 import com.CAM.DataCollection.ScrapeException;
 import com.CAM.GUI.Controller;
 import com.CAM.HelperTools.Log;
@@ -37,7 +37,7 @@ public class SelfUpdater {
 
     public static void selfUpdate(Controller controller) throws ScrapeException {
         Log.log("Running self updater ...");
-        CAMGithubScraper scraper = new CAMGithubScraper(getRepoLocation());
+        CAMGithubAPI scraper = new CAMGithubAPI(getRepoLocation());
         HashMap<String, String> filesToDownload = determineDownloads(scraper);
         if(filesToDownload.isEmpty()){
             Log.log("Self Updater finished without finding any new updates!");
@@ -82,7 +82,7 @@ public class SelfUpdater {
         }
     }
 
-    private static HashMap<String, String> determineDownloads(CAMGithubScraper scraper) throws ScrapeException {
+    private static HashMap<String, String> determineDownloads(CAMGithubAPI scraper) throws ScrapeException {
         HashMap<String, String> filesToDownload = new HashMap<>();
         VersionInfo versionInfo = VersionInfo.readVersioningFile();
         boolean newTag = getTag(scraper) > VersionInfo.CAM_VERSION;
@@ -93,7 +93,7 @@ public class SelfUpdater {
             downloader.downloadFile(manifestLink, "VERSIONING");
             versionInfo = VersionInfo.readVersioningFile();
         }
-        CAMGithubScraper updaterScraper = new CAMGithubScraper(AUTOUPDATER_REPO_LOCATION);
+        CAMGithubAPI updaterScraper = new CAMGithubAPI(AUTOUPDATER_REPO_LOCATION);
         if(versionInfo.expectedCAM > VersionInfo.CAM_VERSION){
             String camLink = scraper.getReleaseJarDownload();
             filesToDownload.put(camLink, "ClassicAddonManager.jar");
@@ -139,7 +139,7 @@ public class SelfUpdater {
         }
     }
 
-    public static double getTag(GitHubScraper scraper) throws ScrapeException {
+    public static double getTag(GitHubAPI scraper) throws ScrapeException {
         String cleaned = scraper.getTag().replace("v", "");
         double tagAsNum = Double.parseDouble(cleaned);
         return tagAsNum;

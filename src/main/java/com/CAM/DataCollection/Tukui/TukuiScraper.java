@@ -1,5 +1,6 @@
 package com.CAM.DataCollection.Tukui;
 
+import com.CAM.DataCollection.API;
 import com.CAM.DataCollection.ScrapeException;
 import com.CAM.DataCollection.Scraper;
 import com.CAM.HelperTools.AddonSource;
@@ -20,13 +21,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class TukuiScraper extends Scraper {
+public class TukuiScraper extends API {
 
     private JsonObject repoObject;
     private int addonNumber;
 
     public TukuiScraper(String url, boolean updatingAddon) throws ScrapeException {
-        super(url);
+        super(url, AddonSource.TUKUI);
         this.repoObject = null;
         this.addonNumber = extractAddonNumber(url);
         if (!updatingAddon && !isValidLink()) {
@@ -52,25 +53,6 @@ public class TukuiScraper extends Scraper {
         String downloadPrefix = "https://www.tukui.org/classic-addons.php?download=";
         String downloadSuffix = addonNumber + ".zip";
         return downloadPrefix + downloadSuffix;
-    }
-
-    public Page jsonScrape(String url) throws ScrapeException {
-        WebClient client = new WebClient();
-        client.getOptions().setJavaScriptEnabled(false);
-        client.getOptions().setCssEnabled(false);
-        client.getOptions().setUseInsecureSSL(true);
-
-        Page page = null;
-
-        try {
-            page = client.getPage(url);
-        } catch (FailingHttpStatusCodeException e) {
-            Log.verbose("Scrape resulted in " + e.getStatusCode());
-            throw new ScrapeException(getAddonSource(), e);
-        } catch (IOException e) {
-            throw new ScrapeException(getAddonSource(), e);
-        }
-        return page;
     }
 
     @Override
@@ -133,7 +115,8 @@ public class TukuiScraper extends Scraper {
         return AddonSource.TUKUI;
     }
 
-    private boolean apiFound() throws ScrapeException {
+    @Override
+    protected boolean apiFound() throws ScrapeException {
         String api = "https://www.tukui.org/api.php?classic-addon=" + addonNumber;
         Page response = jsonScrape(api);
         if (response == null || response.getWebResponse().getContentAsString().equals("")) {

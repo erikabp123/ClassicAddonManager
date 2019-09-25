@@ -12,25 +12,23 @@ import java.util.List;
 
 public class WowInterfaceScraper extends Scraper {
 
-    public static final AddonSource addonSource = AddonSource.WOWINTERFACE;
-
     public WowInterfaceScraper(String url, boolean updatingAddon) throws ScrapeException {
-        super(url, false, false, true, AddonSource.WOWINTERFACE);
+        super(url, AddonSource.WOWINTERFACE);
 
         if(!updatingAddon && !isValidLink()){
-            throw new ScrapeException(AddonSource.WOWINTERFACE, "Invalid WowInterface url!");
+            throw new ScrapeException(getAddonSource(), "Invalid WowInterface url!");
         }
     }
 
     @Override
     public String getDownloadLink() throws ScrapeException {
-        HtmlPage page = getScrapedPage();
+        HtmlPage page = getFetchedPage();
         HtmlDivision downloadDiv = (HtmlDivision) page.getByXPath("//div[@id='download']").get(0);
         HtmlAnchor downloadAnchor= (HtmlAnchor) downloadDiv.getByXPath(".//a").get(0);
         String relative = downloadAnchor.getHrefAttribute();
         String fullPath = "https://www.wowinterface.com" + relative;
         Scraper scraper = new WowInterfaceScraper(fullPath, true);
-        HtmlPage downloadPage = scraper.getScrapedPage();
+        HtmlPage downloadPage = scraper.getFetchedPage();
         HtmlDivision manualDiv = (HtmlDivision) downloadPage.getByXPath("//div[@class='manuallink']").get(0);
         HtmlAnchor manualAnchor= (HtmlAnchor) manualDiv.getByXPath(".//a").get(0);
         String downloadLink = manualAnchor.getHrefAttribute();
@@ -39,7 +37,7 @@ public class WowInterfaceScraper extends Scraper {
 
     @Override
     public Date getLastUpdated() {
-        HtmlPage page = getScrapedPage();
+        HtmlPage page = getFetchedPage();
         HtmlDivision updatedDiv = (HtmlDivision) page.getByXPath("//div[@id='safe']").get(0);
         String updated = updatedDiv.asText();
         String trimmed = updated.replace("Updated: ", "");
@@ -50,7 +48,7 @@ public class WowInterfaceScraper extends Scraper {
     @Override
     public String getName() {
         Log.verbose("Fetching author name!");
-        HtmlPage page = getScrapedPage();
+        HtmlPage page = getFetchedPage();
         HtmlHeading1 nameHeading = (HtmlHeading1) page.getByXPath("//h1").get(0);
         String name = nameHeading.asText();
         String trimmed = name.replace("&nbsp; ", "");
@@ -61,7 +59,7 @@ public class WowInterfaceScraper extends Scraper {
     @Override
     public String getAuthor() {
         Log.verbose("Fetching author name!");
-        HtmlPage page = getScrapedPage();
+        HtmlPage page = getFetchedPage();
         HtmlDivision authorDiv = (HtmlDivision) page.getByXPath("//div[@id='author']").get(0);
         HtmlAnchor authorAnchor = (HtmlAnchor) authorDiv.getByXPath(".//a").get(0);
         String author = authorAnchor.getTextContent().replace("<b>", "").replace("<\\b>", "");
@@ -71,7 +69,7 @@ public class WowInterfaceScraper extends Scraper {
 
     @Override
     public String getFileName() {
-        HtmlPage page = getScrapedPage();
+        HtmlPage page = getFetchedPage();
         HtmlDivision fileNameDiv = (HtmlDivision) page.getByXPath("//div[@id='version']").get(0);
         String fileName = fileNameDiv.getTextContent().replace("Version: ", "");
         return sanatizeInput(fileName);
@@ -79,7 +77,7 @@ public class WowInterfaceScraper extends Scraper {
 
     @Override
     public boolean isValidLink() {
-        HtmlPage page = getScrapedPage();
+        HtmlPage page = getFetchedPage();
         List<?> downloadDivList =  page.getByXPath("//div[@id='download']");
         if(downloadDivList.isEmpty()){
             return false;
@@ -87,8 +85,4 @@ public class WowInterfaceScraper extends Scraper {
         return true;
     }
 
-    @Override
-    public AddonSource getAddonSource() {
-        return AddonSource.WOWINTERFACE;
-    }
 }

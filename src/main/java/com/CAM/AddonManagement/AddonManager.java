@@ -55,7 +55,7 @@ public class AddonManager {
                         && System.currentTimeMillis() < addon.getLastUpdateCheck().getTime() + UPDATE_MIN_WAIT
                 ){
                     Log.log("Checked addon " + addon.getName() + " by " + addon.getAuthor() + " recently! Skipping!");
-                    statusCode = 1;
+                    statusCode = 2;
                     listener.informFinish(position, statusCode);
                     position++;
                     continue;
@@ -83,10 +83,12 @@ public class AddonManager {
                     statusCode = 1;
                     listener.informFinish(position, statusCode);
                     position++;
+                    addon.setLastUpdateCheck(new Date());
+                    saveToFile();
                     continue;
                 }
                 Log.log("update available for: " + addon.getName() + " by " + addon.getAuthor() + "!");
-                addon.fetchUpdate(response.getScraper());
+                addon.fetchUpdate(response.getRetriever());
                 install(addon);
             } catch (ScrapeException e){
                 exceptions.add(e);
@@ -128,10 +130,10 @@ public class AddonManager {
             return false;
         }
 
-        Scraper scraper = UrlInfo.getCorrespondingScraper(urlInfo.addonSource, trimmedOrigin, false, request.branch, request.releases);
+        AddonInfoRetriever retriever = UrlInfo.getCorrespondingInfoRetriever(urlInfo.addonSource, trimmedOrigin, false, request.branch, request.releases);
 
-        String name = scraper.getName();
-        String author = scraper.getAuthor();
+        String name = retriever.getName();
+        String author = retriever.getAuthor();
         Addon newAddon = new Addon(name, author, trimmedOrigin, request.branch, request.releases);
 
         managedAddons.add(newAddon);

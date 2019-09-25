@@ -1,7 +1,7 @@
 package com.CAM.HelperTools;
 
 import com.CAM.DataCollection.*;
-import com.CAM.DataCollection.Github.GitHubScraper;
+import com.CAM.DataCollection.Github.GitHubAPI;
 import com.CAM.DataCollection.Tukui.TukuiScraper;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeScraper;
 import com.CAM.DataCollection.TwitchOwned.WowAce.WowAceScraper;
@@ -196,12 +196,12 @@ public class UrlInfo {
         return null;
     }
 
-    public static Scraper getCorrespondingScraper(AddonSource addonSource, String origin, boolean updatingAddon, String branch, boolean releases) throws ScrapeException{
+    public static AddonInfoRetriever getCorrespondingInfoRetriever(AddonSource addonSource, String origin, boolean updatingAddon, String branch, boolean releases) throws ScrapeException{
         switch (addonSource){
             case CURSEFORGE:
                 return CurseForgeScraper.makeScraper(origin, updatingAddon);
             case GITHUB:
-                return new GitHubScraper(origin, branch, releases, updatingAddon);
+                return new GitHubAPI(origin, branch, releases, updatingAddon);
             case WOWINTERFACE:
                 return new WowInterfaceScraper(origin, updatingAddon);
             case TUKUI:

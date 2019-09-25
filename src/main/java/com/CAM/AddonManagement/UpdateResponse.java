@@ -1,23 +1,24 @@
 package com.CAM.AddonManagement;
 
+import com.CAM.DataCollection.AddonInfoRetriever;
 import com.CAM.DataCollection.Scraper;
 
 public class UpdateResponse {
 
-    private Scraper scraper;
+    private AddonInfoRetriever retriever;
     private boolean updateAvailable;
 
     public UpdateResponse(Scraper scraper){
-        this.scraper = scraper;
+        this.retriever = scraper;
     }
 
-    public UpdateResponse(Scraper scraper, boolean updateAvailable){
-        this.scraper = scraper;
+    public UpdateResponse(AddonInfoRetriever retriever, boolean updateAvailable){
+        this.retriever = retriever;
         this.updateAvailable = updateAvailable;
     }
 
-    public Scraper getScraper() {
-        return scraper;
+    public AddonInfoRetriever getRetriever() {
+        return retriever;
     }
 
     public boolean isUpdateAvailable() {

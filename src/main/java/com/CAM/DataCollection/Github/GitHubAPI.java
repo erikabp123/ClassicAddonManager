@@ -1,31 +1,27 @@
 package com.CAM.DataCollection.Github;
 
+import com.CAM.DataCollection.API;
 import com.CAM.DataCollection.ScrapeException;
-import com.CAM.DataCollection.Scraper;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
 import com.CAM.HelperTools.Log;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class GitHubScraper extends Scraper {
+public class GitHubAPI extends API {
 
     private String branch;
     private boolean releases;
     private JsonArray repoArray;
 
-    public GitHubScraper(String url, String branch, boolean releases, boolean updatingAddon) throws ScrapeException {
-        super(url, branch);
+    public GitHubAPI(String url, String branch, boolean releases, boolean updatingAddon) throws ScrapeException {
+        super(url, AddonSource.GITHUB);
         this.branch = branch;
         this.releases = releases;
         this.repoArray = null;
@@ -57,25 +53,6 @@ public class GitHubScraper extends Scraper {
     private String getBranchDownload(){
         String downloadSuffix = "/archive/" + getBranch() + ".zip";
         return getUrl() + downloadSuffix;
-    }
-
-    public Page jsonScrape(String url) throws ScrapeException {
-        WebClient client = new WebClient();
-        client.getOptions().setJavaScriptEnabled(false);
-        client.getOptions().setCssEnabled(false);
-        client.getOptions().setUseInsecureSSL(true);
-
-        Page page = null;
-
-        try {
-            page = client.getPage(url);
-        } catch (FailingHttpStatusCodeException e){
-            Log.verbose("Scrape resulted in " + e.getStatusCode());
-            throw new ScrapeException(getAddonSource(), e);
-        } catch (IOException e) {
-            throw new ScrapeException(getAddonSource(), e);
-        }
-        return page;
     }
 
     @Override
@@ -122,22 +99,6 @@ public class GitHubScraper extends Scraper {
         return tag;
     }
 
-    public String getUpdateManifestLink() throws ScrapeException {
-        JsonArray jsonArray = getRepoArray();
-        JsonArray assets = ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets"));
-        int assetIndex = 0;
-        for(int i=0; i<assets.size(); i++){
-            String fileName = ((JsonObject) assets.get(i)).get("name").getAsString();
-            if(!fileName.equals("VERSIONING")){
-                continue;
-            }
-            assetIndex = i;
-            break;
-        }
-        String downloadLink = ((JsonObject) ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets")).get(assetIndex)).get("browser_download_url").getAsString();
-        return downloadLink;
-    }
-
     public JsonArray getRepoArray() throws ScrapeException {
         if(repoArray != null){
             return repoArray;
@@ -170,7 +131,7 @@ public class GitHubScraper extends Scraper {
 
     public static ArrayList<String> getBranches(String repo) throws ScrapeException {
         ArrayList<String> branches = new ArrayList<>();
-        GitHubScraper scraper = new GitHubScraper(repo, null, false, false);
+        GitHubAPI scraper = new GitHubAPI(repo, null, false, false);
         String author = scraper.getAuthor();
         String name = scraper.getName();
         String branchesApi = "https://api.github.com/repos/" + author + "/" + name + "/branches";
@@ -181,12 +142,10 @@ public class GitHubScraper extends Scraper {
         return branches;
     }
 
-    @Override
     public String getBranch() {
         return branch;
     }
 
-    @Override
     public void setBranch(String branch) {
         this.branch = branch;
     }
@@ -197,28 +156,21 @@ public class GitHubScraper extends Scraper {
         if(parts.length < 5){
             return false;
         }
-        if(releases){
-            if(!apiFound("releases")){
-                return false;
-            }
-            if(getRepoArray().size() == 0){
-                Log.log("The provided link does not have any releases!");
-                throw new ScrapeException(getAddonSource(), "The provided link does not have any releases!");
-            }
-            return true;
-        }
-        if(!apiFound("branches")){
+        if(!apiFound()){
             return false;
+        }
+        if(releases && getRepoArray().size() == 0){
+            Log.log("The provided link does not have any releases!");
+            throw new ScrapeException(getAddonSource(), "The provided link does not have any releases!");
         }
         return true;
     }
 
     @Override
-    public AddonSource getAddonSource() {
-        return AddonSource.GITHUB;
-    }
-
-    private boolean apiFound(String suffix) throws ScrapeException {
+    protected boolean apiFound() throws ScrapeException {
+        String suffix = releases
+                ? "releases"
+                : "branches";
         String author = getAuthor();
         String name = getName();
         String api = "https://api.github.com/repos/" + author + "/" + name + "/" + suffix;

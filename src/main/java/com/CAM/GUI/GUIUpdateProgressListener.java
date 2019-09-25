@@ -39,6 +39,7 @@ public class GUIUpdateProgressListener implements UpdateProgressListener {
                     updatedText = "S:";
                     break;
                 case 2:
+                    updatedText = "T:";
                     break;
             }
             updatedText = updatedText + curText;

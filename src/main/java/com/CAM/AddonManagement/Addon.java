@@ -30,14 +30,14 @@ public class Addon implements Comparable<Addon> {
         return new Addon(name, author, origin, branch, releases);
     }
 
-    public boolean fetchUpdate(Scraper scraper) throws ScrapeException {
+    public boolean fetchUpdate(AddonInfoRetriever retriever) throws ScrapeException {
         try {
             Log.verbose("Attempting to fetch update ...");
-            String downloadLink = scraper.getDownloadLink();
+            String downloadLink = retriever.getDownloadLink();
             FileDownloader downloader = new FileDownloader("downloads");
-            String fileName = name + "_" + author + "_(" + scraper.getFileName() + ").zip";
+            String fileName = name + "_" + author + "_(" + retriever.getFileName() + ").zip";
             downloader.downloadFileMonitored(downloadLink, fileName);
-            lastUpdated = scraper.getLastUpdated();
+            lastUpdated = retriever.getLastUpdated();
             lastFileName = fileName;
             lastUpdateCheck = new Date();
         } catch (ScrapeException e){
@@ -55,15 +55,15 @@ public class Addon implements Comparable<Addon> {
     public UpdateResponse checkForUpdate() throws ScrapeException {
         UpdateResponse response;
         try {
-            Scraper scraper = getScraper(true);
-            response = new UpdateResponse(scraper, true);
+            AddonInfoRetriever retriever = getInfoRetriever(true);
+            response = new UpdateResponse(retriever, true);
 
             // Check if addon has ever been updated through this program
             if(lastUpdated == null){
                 return response;
             }
             // Get the date of the last update as seen by scrape
-            Date lastUpdateScrape = scraper.getLastUpdated();
+            Date lastUpdateScrape = retriever.getLastUpdated();
             // Check if scrape has seen a newer update
             if(DateConverter.isNewerDate(lastUpdateScrape, lastUpdated)){
                 return response;
@@ -78,9 +78,9 @@ public class Addon implements Comparable<Addon> {
         return response;
     }
 
-    private Scraper getScraper(boolean updatingAddon) throws ScrapeException {
+    private AddonInfoRetriever getInfoRetriever(boolean updatingAddon) throws ScrapeException {
         try {
-           return UrlInfo.getCorrespondingScraper(getAddonSource(), origin, updatingAddon, branch, releases);
+           return UrlInfo.getCorrespondingInfoRetriever(getAddonSource(), origin, updatingAddon, branch, releases);
         } catch (ScrapeException e){
             e.setAddon(this);
             throw e;
