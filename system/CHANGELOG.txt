@@ -1,6 +1,9 @@
 v0.72:
     - added randomized delay to consecutive downloads from same source. Addons will potentially take 300-700 ms longer to download, but should make updating appear less like a DOS attack from the perspective of the addon host.
     - added a 30 min cooldown period between downloading addons from the same source, this can be bypassed by toggling force downloads from the file menu. This should reduce the spamminess of downloading updates/installing new addons several times in one session.
+    - *TECHNICAL*
+    - Massive restructuring of code
+    - Proper separation of API and Scrapers
 
 v0.715:
     - Pop-up for important messages
