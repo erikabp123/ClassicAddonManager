@@ -4,14 +4,13 @@ import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.Log;
 import com.CAM.HelperTools.Tools;
 import com.gargoylesoftware.htmlunit.*;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import java.io.IOException;
 import java.util.Date;
 
 public abstract class API implements AddonInfoRetriever {
 
-    private final String url;
+    private String url;
     private final boolean js;
     private final boolean css;
     private final boolean insecureSSL;
@@ -45,6 +44,10 @@ public abstract class API implements AddonInfoRetriever {
     @Override
     public String getUrl(){
         return url;
+    }
+
+    public void setUrl(String url){
+        this.url = url;
     }
 
     @Override
