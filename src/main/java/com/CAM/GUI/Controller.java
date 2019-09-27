@@ -1,9 +1,6 @@
 package com.CAM.GUI;
 
-import com.CAM.AddonManagement.Addon;
-import com.CAM.AddonManagement.AddonManager;
-import com.CAM.AddonManagement.AddonRequest;
-import com.CAM.AddonManagement.UpdateProgressListener;
+import com.CAM.AddonManagement.*;
 import com.CAM.DataCollection.*;
 import com.CAM.DataCollection.Github.GitHubAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeScraper;

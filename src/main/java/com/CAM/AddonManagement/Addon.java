@@ -17,6 +17,7 @@ public class Addon implements Comparable<Addon> {
     private String branch;
     private boolean releases;
     private Date lastUpdateCheck;
+    private int projectId;
 
     public Addon(String name, String author, String origin, String branch, boolean releases){
         this.name = name;
@@ -24,6 +25,13 @@ public class Addon implements Comparable<Addon> {
         this.origin = origin;
         this.branch = branch;
         this.releases = releases;
+    }
+
+    public Addon(String name, String author, String origin, int projectId){
+        this.name = name;
+        this.author = author;
+        this.origin = origin;
+        this.projectId = projectId;
     }
 
     public Addon export(){
@@ -80,7 +88,7 @@ public class Addon implements Comparable<Addon> {
 
     private AddonInfoRetriever getInfoRetriever(boolean updatingAddon) throws ScrapeException {
         try {
-           return UrlInfo.getCorrespondingInfoRetriever(getAddonSource(), origin, updatingAddon, branch, releases);
+           return UrlInfo.getCorrespondingInfoRetriever(getAddonSource(), origin, updatingAddon, branch, releases, projectId);
         } catch (ScrapeException e){
             e.setAddon(this);
             throw e;
@@ -147,5 +155,13 @@ public class Addon implements Comparable<Addon> {
 
     public void setLastUpdateCheck(Date lastUpdateCheck) {
         this.lastUpdateCheck = lastUpdateCheck;
+    }
+
+    public int getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(int projectId) {
+        this.projectId = projectId;
     }
 }

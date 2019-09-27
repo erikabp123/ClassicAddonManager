@@ -4,75 +4,106 @@ import com.CAM.DataCollection.API;
 import com.CAM.DataCollection.ScrapeException;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseFile;
+import com.CAM.DataCollection.TwitchOwned.TwitchSite;
 import com.CAM.HelperTools.AddonSource;
+import com.CAM.HelperTools.DateConverter;
 import com.gargoylesoftware.htmlunit.Page;
 import com.google.gson.Gson;
 
 import java.util.Date;
 
-public class CurseForgeAPI extends API {
+public class CurseForgeAPI extends API implements TwitchSite {
 
     private final String addonBaseUrl = "https://addons-ecs.forgesvc.net/api/v2/addon/";
     private int projectID;
     private CurseAddonResponse response;
     private CurseFile latestClassicFile;
+    private CurseFile latestRetailFile;
+    private CurseFile fileToUse;
 
     public CurseForgeAPI(int projectID, AddonSource source) throws ScrapeException {
         super(null, source);
         this.projectID = projectID;
         response = fetchAddonInfo();
-        latestClassicFile = determineLatestClassicFile();
+        latestClassicFile = determineLatestFileByFlavor("wow_classic");
+        latestRetailFile = determineLatestFileByFlavor("wow_retail");
+        fileToUse = isClassicSupported()
+                ? latestClassicFile
+                : latestRetailFile;
+    }
+
+    @Override
+    public boolean isClassicSupported(){
+        return latestClassicFile != null;
     }
 
     private CurseAddonResponse fetchAddonInfo() throws ScrapeException {
         String url = addonBaseUrl + projectID;
+        System.out.println(url);
         Page page = jsonScrape(url);
         String jsonResponse = page.getWebResponse().getContentAsString();
         Gson gson = new Gson();
         return gson.fromJson(jsonResponse, CurseAddonResponse.class);
     }
 
-    private CurseFile determineLatestClassicFile(){
+    private CurseFile determineLatestFileByFlavor(String flavor){
+        CurseFile latestFile = null;
         for(CurseFile file : response.latestFiles){
-            if(file.gameVersionFlavor.equals("wow_classic")){
-                return file;
+            if(!file.gameVersionFlavor.equals(flavor)){
+                continue;
+            }
+            if(latestFile == null){
+                latestFile = file;
+                continue;
+            }
+            Date curFileDate = DateConverter.convertFromCurseAPI(latestFile.fileDate);
+            Date fileDate = DateConverter.convertFromCurseAPI(file.fileDate);
+            if(DateConverter.isNewerDate(fileDate, curFileDate)){
+                latestFile = file;
             }
         }
-        return null;
+        return latestFile;
     }
 
     @Override
-    public String getDownloadLink() throws ScrapeException {
-        return latestClassicFile.downloadUrl;
+    public String getDownloadLink() {
+        return fileToUse.downloadUrl;
     }
 
     @Override
-    public Date getLastUpdated() throws ScrapeException {
-        return null;
+    public Date getLastUpdated() {
+        return DateConverter.convertFromCurseAPI(fileToUse.fileDate);
     }
 
     @Override
-    public String getName() throws ScrapeException {
-        return null;
+    public String getName() {
+        return response.name;
     }
 
     @Override
-    public String getAuthor() throws ScrapeException {
-        return null;
+    public String getAuthor() {
+        return response.authors.get(0).name;
     }
 
     @Override
-    public String getFileName() throws ScrapeException {
-        return null;
+    public String getFileName() {
+        return fileToUse.fileName;
     }
 
     @Override
-    public boolean isValidLink() throws ScrapeException {
+    public String getUrl(){
+        return response.websiteUrl;
+    }
+
+    // These aren't actually necessary for this API
+
+    @Override
+    public boolean isValidLink() {
         return false;
     }
 
     @Override
-    protected boolean apiFound() throws ScrapeException {
+    protected boolean apiFound() {
         return false;
     }
 }

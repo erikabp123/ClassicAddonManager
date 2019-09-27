@@ -22,9 +22,20 @@ public class DateConverter {
         return date;
     }
 
-    public static boolean isNewerDate(Date date1, Date date2){
-        Log.verbose("Checking if " + date1.toString() + " is a newer date than " + date2.toString());
+    public static Date convertFromCurseAPI(String curseAPIFormat){
+        Date date = null;
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'");
+            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+            date = dateFormat.parse(curseAPIFormat);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
+        return date;
+    }
+
+    public static boolean isNewerDate(Date date1, Date date2){
         if(date1.compareTo(date2) > 0){
             return true;
         }

@@ -130,11 +130,36 @@ public class AddonManager {
             return false;
         }
 
-        AddonInfoRetriever retriever = UrlInfo.getCorrespondingInfoRetriever(urlInfo.addonSource, trimmedOrigin, false, request.branch, request.releases);
+        AddonInfoRetriever retriever = UrlInfo.getCorrespondingInfoRetriever(urlInfo.addonSource, trimmedOrigin, false, request.branch, request.releases, -1);
 
         String name = retriever.getName();
         String author = retriever.getAuthor();
         Addon newAddon = new Addon(name, author, trimmedOrigin, request.branch, request.releases);
+
+        managedAddons.add(newAddon);
+        Collections.sort(managedAddons);
+        saveToFile();
+
+        Log.log("Successfully tracking new addon!");
+        return true;
+    }
+
+    public boolean addNewSearchedAddon(AddonSearchRequest request) throws ScrapeException {
+        Log.log("Attempting to track new addon ...");
+
+        for (Addon addon : managedAddons) {
+            if (addon.getProjectId() == request.projectId) {
+                Log.log(addon.getName() + " already being tracked!");
+                return false;
+            }
+        }
+
+        AddonInfoRetriever retriever = UrlInfo.getCorrespondingInfoRetriever(request.addonSource, null, false, null, false, request.projectId);
+
+        String name = retriever.getName();
+        String author = retriever.getAuthor();
+        String origin = retriever.getUrl();
+        Addon newAddon = new Addon(name, author, origin, request.projectId);
 
         managedAddons.add(newAddon);
         Collections.sort(managedAddons);

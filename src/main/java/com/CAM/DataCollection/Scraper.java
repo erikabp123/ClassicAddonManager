@@ -22,7 +22,7 @@ public abstract class Scraper implements AddonInfoRetriever {
         this.url = url;
         this.js = false;
         this.css = false;
-        this.insecureSSL = true;
+        this.insecureSSL = false;
         this.source = source;
         this.fetchedPage = scrape(this.url);
     }
