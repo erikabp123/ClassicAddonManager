@@ -1,4 +1,4 @@
-V0.731:
+V0.74:
     - Bug fix (proper saving of update timestamps)
 
 v0.73:
