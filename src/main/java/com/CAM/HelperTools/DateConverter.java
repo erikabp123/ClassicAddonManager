@@ -25,7 +25,13 @@ public class DateConverter {
     public static Date convertFromCurseAPI(String curseAPIFormat){
         Date date = null;
         try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'");
+            SimpleDateFormat dateFormat = null;
+            if(curseAPIFormat.contains(".")){
+                dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'");
+            } else {
+                dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'");
+            }
+
             dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
             date = dateFormat.parse(curseAPIFormat);
         } catch (ParseException e) {

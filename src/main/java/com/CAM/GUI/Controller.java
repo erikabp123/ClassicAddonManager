@@ -3,6 +3,9 @@ package com.CAM.GUI;
 import com.CAM.AddonManagement.*;
 import com.CAM.DataCollection.*;
 import com.CAM.DataCollection.Github.GitHubAPI;
+import com.CAM.DataCollection.Tukui.TukuiAddonResponse.TukuiAddonResponse;
+import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
+import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPISearcher;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeScraper;
 import com.CAM.DataCollection.TwitchOwned.TwitchSite;
 import com.CAM.DataCollection.TwitchOwned.WowAce.WowAceScraper;
@@ -19,6 +22,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -53,6 +58,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Controller implements Initializable {
 
@@ -62,6 +68,7 @@ public class Controller implements Initializable {
     private static Controller controller;
     final ObservableList<String> listItems = FXCollections.observableArrayList();
     private AddonManager addonManager;
+    private final AtomicReference<String> lastSearchQuery = new AtomicReference<>("");
 
     //================================================================================
     // FXML - Fields
@@ -108,6 +115,12 @@ public class Controller implements Initializable {
 
     @FXML
     public Button buttonEdit;
+
+    @FXML
+    public Button buttonClearSelection;
+
+    @FXML
+    public Button buttonSearchAdd;
     //endregion
 
     //region Checkboxes
@@ -130,6 +143,25 @@ public class Controller implements Initializable {
 
     @FXML
     private TextField filterAddonsTextField;
+
+    @FXML
+    private Text textConverting;
+
+    @FXML
+    private Text textConvertingProgress;
+    //endregion
+
+    //region ComboBoxes
+    @FXML
+    private ComboBox comboBoxSearch;
+    //endregion
+
+    //region Tabs
+    @FXML
+    private Tab tabSearch;
+
+    @FXML
+    private Tab tabManual;
     //endregion
 
     //region Loading Images
@@ -137,7 +169,15 @@ public class Controller implements Initializable {
     private ImageView imageViewAdd;
 
     @FXML
+    private ImageView imageViewAddSearch;
+
+    @FXML
     public ImageView imageViewUpdate;
+    //endregion
+
+    //region choice boxes
+    @FXML
+    public ChoiceBox choiceBoxSource;
     //endregion
 
     //region Progress Bars
@@ -210,6 +250,127 @@ public class Controller implements Initializable {
     }
 
     @FXML
+    private void addSearchedAction() {
+        Thread precheckThread = new Thread(() -> {
+            Platform.runLater(() -> {
+                disableAll();
+                imageViewAddSearch.setVisible(true);
+            });
+
+            Object addon = comboBoxSearch.getValue();
+            Class addonSource = addon.getClass();
+
+            try {
+                if (addonSource.equals(CurseAddonResponse.class)) {
+                    CurseAddonResponse response = (CurseAddonResponse) addon;
+                    checkIfProceedClassicSearch(response);
+                    return;
+                }
+                if (addonSource.equals(TukuiAddonResponse.class)) {
+                    //TODO: Handle searches for TUKUI
+                }
+
+            } catch (ScrapeException e) {
+                handleAddScrapeException(e);
+                cleanUpAfterAddAction();
+            } catch (Exception e) {
+                handleUnknownException(e);
+                cleanUpAfterAddAction();
+            }
+        });
+        precheckThread.start();
+    }
+
+    @FXML
+    private void clearSearchSelectionAction() {
+        buttonClearSelection.setVisible(false);
+        buttonClearSelection.setDisable(true);
+        buttonClearSelection.setFocusTraversable(false);
+        comboBoxSearch.valueProperty().set(null);
+        comboBoxSearch.getEditor().clear();
+        comboBoxSearch.setDisable(false);
+        comboBoxSearch.setEditable(true);
+        comboBoxSearch.setFocusTraversable(true);
+        choiceBoxSource.setDisable(false);
+        choiceBoxSource.setFocusTraversable(true);
+        choiceBoxSource.requestFocus();
+        comboBoxSearch.requestFocus();
+        buttonSearchAdd.setDisable(true);
+        buttonSearchAdd.setFocusTraversable(false);
+        comboBoxSearch.getStyleClass().remove("combo-search-disable");
+        choiceBoxSource.getStyleClass().remove("combo-search-disable");
+    }
+
+    @FXML
+    private void searchEnterAction(ActionEvent event) {
+        Object selectedVal = comboBoxSearch.getValue();
+        if (selectedVal == null) {
+            return;
+        }
+        if (selectedVal.getClass().equals(CurseAddonResponse.class)) {
+            selectSearchedAddon(selectedVal);
+            return;
+        }
+
+        Thread searchThread = new Thread(() -> {
+            try {
+                String userQuery = comboBoxSearch.getEditor().getText();
+                String lastQuery = lastSearchQuery.get();
+
+                if (userQuery.length() < 1 || userQuery.equals(lastQuery) || !comboBoxSearch.isEditable()) {
+                    return;
+                }
+                if (choiceBoxSource.getValue().equals(AddonSource.CURSEFORGE)) {
+                    curseSearch(userQuery);
+                } else if(choiceBoxSource.getValue().equals(AddonSource.TUKUI)){
+                    tukuiSearch(userQuery);
+                }
+
+                boolean success = false;
+                while (!success) {
+                    success = lastSearchQuery.compareAndSet(lastQuery, userQuery);
+                }
+            } catch (ScrapeException e) {
+                handleUnknownException(e);
+            }
+
+
+        });
+        searchThread.setDaemon(true);
+        searchThread.start();
+    }
+
+    private void tukuiSearch(String userQuery) {
+        //TODO: Implement tukui search
+    }
+
+    private void curseSearch(String userQuery) throws ScrapeException {
+        CurseForgeAPISearcher apiSearcher = new CurseForgeAPISearcher();
+        ArrayList<CurseAddonResponse> results = apiSearcher.search(userQuery);
+        ObservableList<CurseAddonResponse> observableList = FXCollections.observableList(results);
+        Platform.runLater(() -> {
+            comboBoxSearch.show();
+            comboBoxSearch.setItems(observableList);
+        });
+    }
+
+    private void selectSearchedAddon(Object object) {
+        comboBoxSearch.setEditable(false);
+        comboBoxSearch.setValue(object);
+        comboBoxSearch.setDisable(true);
+        comboBoxSearch.setFocusTraversable(false);
+        buttonClearSelection.setDisable(false);
+        buttonClearSelection.setVisible(true);
+        buttonClearSelection.setFocusTraversable(true);
+        buttonSearchAdd.setDisable(false);
+        buttonSearchAdd.setFocusTraversable(true);
+        comboBoxSearch.getStyleClass().add("combo-search-disable");
+        choiceBoxSource.getStyleClass().add("combo-search-disable");
+        choiceBoxSource.setDisable(true);
+        choiceBoxSource.setFocusTraversable(false);
+    }
+
+    @FXML
     private void updateAction() {
         filterAddonsTextField.setText(null);
         Thread updateThread = new Thread(() -> {
@@ -237,6 +398,29 @@ public class Controller implements Initializable {
 
         });
         updateThread.start();
+    }
+
+    public void updateManagedListToLatestFormat(){
+        disableAll();
+        try {
+            imageViewUpdate.setImage(new Image(this.getClass().getClassLoader().getResource("gears_load.gif").toExternalForm()));
+            imageViewUpdate.setVisible(true);
+            textConverting.setVisible(true);
+            textConverting.setDisable(false);
+            textConvertingProgress.setVisible(true);
+            textConvertingProgress.setDisable(false);
+            getAddonManager().updateToLatestFormat(progress -> textConvertingProgress.setText(progress + "/" + getAddonManager().getManagedAddons().size()));
+        } catch (ScrapeException e) {
+            e.printStackTrace();
+        } finally {
+            imageViewUpdate.setImage(null);
+            textConverting.setVisible(false);
+            textConverting.setDisable(true);
+            textConvertingProgress.setVisible(false);
+            textConvertingProgress.setDisable(true);
+            imageViewUpdate.setVisible(false);
+            enableAll();
+        }
     }
 
     @FXML
@@ -458,16 +642,28 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         menuAboutVersion.setText("Version " + VersionInfo.CAM_VERSION);
-        imageViewAdd.setImage(new Image(this.getClass().getClassLoader().getResource("adding.gif").toExternalForm()));
+        Image addingImage = new Image(this.getClass().getClassLoader().getResource("adding.gif").toExternalForm());
+        imageViewAdd.setImage(addingImage);
+        imageViewAddSearch.setImage(addingImage);
         listViewAddons.setCellFactory(param -> new AddonListCell<>());
         setFilterList();
         Log.listen(new GUILogListener(textAreaOutputLog));
         progressBarListen();
         setupOutputLogContextMenu();
-        if(Starter.showWhatsNew){
+        setupSearchSourcesList();
+        if (Starter.showWhatsNew) {
             showWhatsNew();
         }
         showEmergencyBroadcast();
+
+    }
+
+    private void setupSearchSourcesList() {
+        ObservableList<AddonSource> sources = FXCollections.observableArrayList();
+        sources.add(AddonSource.CURSEFORGE);
+        //sources.add(AddonSource.TUKUI);
+        choiceBoxSource.setItems(sources);
+        choiceBoxSource.getSelectionModel().select(0);
     }
 
     //================================================================================
@@ -594,6 +790,31 @@ public class Controller implements Initializable {
                     case 503:
                         e.setMessage("The URL provided responded with an internal server error! \n" +
                                 "This is likely due to the website being down or experiencing issues. Try waiting 15-20 min!");
+                        showInvalidUrlAlert(e);
+                        return;
+                    default:
+                        handleUnknownException(e);
+                        return;
+                }
+            }
+
+            if (e.getType().equals(ScrapeException.class)) {
+                showInvalidUrlAlert(e);
+                return;
+            }
+        });
+    }
+
+    private void handleAddSearchedScrapeException(ScrapeException e) {
+        e.printStackTrace();
+        Platform.runLater(() -> {
+            if (e.getType().equals(FailingHttpStatusCodeException.class)) {
+                FailingHttpStatusCodeException exception = (FailingHttpStatusCodeException) e.getException();
+
+                switch (exception.getStatusCode()) {
+                    case 503:
+                        e.setMessage("The API responded with an internal server error! \n" +
+                                "This is likely due to the API being down or experiencing issues. Try waiting 15-20 min!");
                         showInvalidUrlAlert(e);
                         return;
                     default:
@@ -766,14 +987,31 @@ public class Controller implements Initializable {
         addAddonThread.start();
     }
 
+    private void startAddonAddSearchedThread(CurseAddonResponse response) {
+        Thread addAddonThread = new Thread(() -> {
+            try {
+
+
+                addonManager.addNewSearchedAddon(response);
+            } catch (ScrapeException e) {
+                handleAddSearchedScrapeException(e);
+            } catch (Exception e) {
+                handleUnknownException(e);
+            } finally {
+                cleanUpAfterAddSearchAction();
+            }
+        });
+        addAddonThread.start();
+    }
+
     private void checkIfProceedClassic(String origin) throws ScrapeException {
         AddonSource addonSource = UrlInfo.getAddonSource(origin);
         String trimmedOrigin = UrlInfo.trimString(origin, addonSource);
         TwitchSite scraper = null;
 
-        if(addonSource == AddonSource.CURSEFORGE){
+        if (addonSource == AddonSource.CURSEFORGE) {
             scraper = CurseForgeScraper.getOfficialScraper(trimmedOrigin, false);
-        } else if(addonSource == AddonSource.WOWACE){
+        } else if (addonSource == AddonSource.WOWACE) {
             scraper = WowAceScraper.getOfficialScraper(trimmedOrigin, false);
         }
 
@@ -798,6 +1036,33 @@ public class Controller implements Initializable {
                 return;
             }
             startAddonAddThread(null);
+        });
+    }
+
+    private void checkIfProceedClassicSearch(CurseAddonResponse response) throws ScrapeException {
+
+        if (response.isClassicSupported()) {
+            startAddonAddSearchedThread(response);
+            Platform.runLater(() -> clearSearchSelectionAction());
+            return;
+        }
+
+        String name = response.name;
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Non-Classic addon");
+            alert.setHeaderText("This addon does not seem to have an official classic release!");
+            alert.setContentText(name + " does not seem to have an official classic release. " +
+                    "Do you wish to add it anyway? This will result in downloading non-classic updates until classic ones are released.\n" +
+                    "NOTE: There is no guarantee this addon will work with classic!");
+
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get() != ButtonType.OK) {
+                cleanUpAfterAddSearchAction();
+                return;
+            }
+            startAddonAddSearchedThread(response);
+            clearSearchSelectionAction();
         });
     }
 
@@ -862,7 +1127,7 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    public void showWhatsNew(){
+    public void showWhatsNew() {
         Thread whatsNewThread = new Thread(() -> {
             String changeLog = getChangeLogAsString();
 
@@ -890,12 +1155,16 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    public void showEmergencyBroadcast(){
+    public void showEmergencyBroadcast() {
         Thread whatsNewThread = new Thread(() -> {
             String broadcast = null;
             try {
                 broadcast = getBroadCastMessage();
             } catch (IOException e) {
+                return;
+            }
+
+            if(broadcast == null || broadcast.isBlank()){
                 return;
             }
 
@@ -928,7 +1197,7 @@ public class Controller implements Initializable {
         return fetcher.fetchBroadcastMessage();
     }
 
-    private String getChangeLogAsString(){
+    private String getChangeLogAsString() {
         String fileName = "system/CHANGELOG.txt";
         String line = null;
         StringBuilder sb = new StringBuilder();
@@ -938,7 +1207,7 @@ public class Controller implements Initializable {
 
             BufferedReader bufferedReader = new BufferedReader(fileReader);
 
-            while((line = bufferedReader.readLine()) != null) {
+            while ((line = bufferedReader.readLine()) != null) {
                 sb.append(line).append("\n");
             }
 
@@ -992,6 +1261,8 @@ public class Controller implements Initializable {
         textFieldURL.setDisable(true);
         checkboxReleases.setDisable(true);
         filterAddonsTextField.setDisable(true);
+        tabManual.setDisable(true);
+        tabSearch.setDisable(true);
     }
 
     public void enableAll() {
@@ -1002,6 +1273,8 @@ public class Controller implements Initializable {
         textFieldURL.setDisable(false);
         checkboxReleases.setDisable(false);
         filterAddonsTextField.setDisable(false);
+        tabManual.setDisable(false);
+        tabSearch.setDisable(false);
     }
 
     public void cleanUpAfterAddAction() {
@@ -1009,6 +1282,14 @@ public class Controller implements Initializable {
             updateListView();
             enableAll();
             imageViewAdd.setVisible(false);
+        });
+    }
+
+    public void cleanUpAfterAddSearchAction() {
+        Platform.runLater(() -> {
+            updateListView();
+            enableAll();
+            imageViewAddSearch.setVisible(false);
         });
     }
 
@@ -1067,15 +1348,14 @@ public class Controller implements Initializable {
 
     //region Filtering List View
 
-    private void setFilterList(){
+    private void setFilterList() {
         listViewAddons.setItems(listItems);
-        filterAddonsTextField.textProperty().addListener(obs->{
+        filterAddonsTextField.textProperty().addListener(obs -> {
             FilteredList<String> filteredData = new FilteredList<>(listItems, s -> true);
             String filter = filterAddonsTextField.getText();
-            if(filter == null || filter.length() == 0) {
+            if (filter == null || filter.length() == 0) {
                 filteredData.setPredicate(s -> true);
-            }
-            else {
+            } else {
                 filteredData.setPredicate(s -> s.toLowerCase().contains(filter.toLowerCase()));
             }
             listViewAddons.setItems(filteredData);
@@ -1084,23 +1364,23 @@ public class Controller implements Initializable {
         listItems.addListener((ListChangeListener<String>) c -> filterAddonsTextField.setText(null));
     }
 
-    private int getNonFilteredIndex(){
+    private int getNonFilteredIndex() {
         ObservableList<Integer> selected = listViewAddons.getSelectionModel().getSelectedIndices();
         if (selected.size() == 0) {
             return -1;
         }
         int selectedIndex = selected.get(0);
         // Not filtered
-        if(listViewAddons.getItems().size() == listItems.size()){
+        if (listViewAddons.getItems().size() == listItems.size()) {
             return selectedIndex;
         }
         // Filtered
-        List<Addon> addons =  getAddonManager().getManagedAddons();
+        List<Addon> addons = getAddonManager().getManagedAddons();
         String[] selectedName = listViewAddons.getItems().get(selectedIndex).split(":");
         String selectedNameStripped = selectedName[selectedName.length - 1];
         int trueIndex = 0;
-        for(Addon addon : addons){
-            if(addon.getName().equals(selectedNameStripped)){
+        for (Addon addon : addons) {
+            if (addon.getName().equals(selectedNameStripped)) {
                 return trueIndex;
             }
             trueIndex++;
@@ -1108,8 +1388,6 @@ public class Controller implements Initializable {
         // should never reach this, will only happen if the names are different in the displayed list and the actual storage
         return -1;
     }
-
-
 
 
     //endregion

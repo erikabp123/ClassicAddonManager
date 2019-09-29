@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'ClassicAddonManager'
-version '0.72'
+version '0.73'
 sourceCompatibility = 12
 
 repositories {
@@ -23,6 +23,7 @@ dependencies {
     compile 'net.sourceforge.htmlunit:htmlunit:2.13'
     compile group: 'com.google.code.gson', name: 'gson', version: '2.7'
     compile group: 'net.lingala.zip4j', name: 'zip4j', version: '1.2.4'
+    compile group: 'org.controlsfx', name: 'controlsfx', version: '11.0.0'
 }
 
 jar {

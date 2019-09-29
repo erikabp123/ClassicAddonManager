@@ -22,6 +22,7 @@ public class CurseForgeAPISearcher {
     private String baseUrl = "https://addons-ecs.forgesvc.net/api/v2/addon/search?categoryId=0&gameId=1&pageSize=0&searchFilter=";
 
     public ArrayList<CurseAddonResponse> search(String searchFilter) throws ScrapeException {
+        System.out.println("Searching...");
         String encodedSearchFilter = encodeValue(searchFilter);
         String url = baseUrl + encodedSearchFilter;
         Page page = jsonScrape(url);

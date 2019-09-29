@@ -32,21 +32,12 @@ public class Main extends Application {
         Controller controller = loader.getController();
         controller.setAddonManager(addonManager);
         controller.updateListView();
+        Thread updateAddonFormatThread = new Thread(() -> controller.updateManagedListToLatestFormat());
+        updateAddonFormatThread.start();
         Thread updateThread = new Thread(() -> controller.checkForUpdate());
         updateThread.start();
 
         stage.show();
-
-
-
-
-        //Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("com.CAM.GUI.fxml"));
-
-
-        //primaryStage.setTitle("WoW Classic Addon Manager");
-        //primaryStage.setScene(new Scene(root, 758, 433));
-
-        //primaryStage.show();
     }
 
 

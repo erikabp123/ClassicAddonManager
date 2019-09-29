@@ -13,6 +13,10 @@
 	-fx-effect: none;
 }
 
+.combo-search-disable {
+	-fx-opacity: 1;
+}
+
 .button,.menu-button,.toggle-button,.split-menu-button {
 	-fx-font-size: 14;
 	-fx-background-radius: 4;

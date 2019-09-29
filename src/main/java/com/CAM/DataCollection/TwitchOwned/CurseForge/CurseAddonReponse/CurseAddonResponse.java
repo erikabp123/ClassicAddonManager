@@ -1,8 +1,13 @@
 package com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse;
 
-import java.util.ArrayList;
+import com.CAM.DataCollection.SearchedAddonRequest;
+import com.CAM.HelperTools.AddonSource;
+import com.CAM.HelperTools.DateConverter;
 
-public class CurseAddonResponse {
+import java.util.ArrayList;
+import java.util.Date;
+
+public class CurseAddonResponse implements SearchedAddonRequest {
     public int id;
     public String name;
     public ArrayList<CurseAuthor> authors;
@@ -30,5 +35,44 @@ public class CurseAddonResponse {
     public String dateReleased;
     public boolean isAvailable;
     public boolean isExperiemental;
+
+    @Override
+    public String toString(){
+        return name + " by " + authors.get(0).name;
+    }
+
+    public boolean isClassicSupported(){
+        for(CurseFile file : latestFiles){
+            if(file.gameVersionFlavor.equals("wow_classic")){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public AddonSource getAddonSource() {
+        return AddonSource.CURSEFORGE;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getAuthor() {
+        return authors.get(0).name;
+    }
+
+    @Override
+    public String getOrigin() {
+        return websiteUrl;
+    }
+
+    @Override
+    public int getProjectId() {
+        return id;
+    }
 }
 

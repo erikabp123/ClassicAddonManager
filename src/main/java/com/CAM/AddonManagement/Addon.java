@@ -1,6 +1,9 @@
 package com.CAM.AddonManagement;
 
 import com.CAM.DataCollection.*;
+import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
+import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPI;
+import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPISearcher;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
 import com.CAM.HelperTools.Log;
@@ -97,6 +100,22 @@ public class Addon implements Comparable<Addon> {
 
     public AddonSource getAddonSource(){
         return UrlInfo.getAddonSource(origin);
+    }
+
+    public boolean updateToLatestFormat() throws ScrapeException {
+        if(getAddonSource() != AddonSource.CURSEFORGE){
+            return false;
+        }
+        if(projectId > 0){
+            return false;
+        }
+        CurseForgeAPISearcher searcher = new CurseForgeAPISearcher();
+        CurseAddonResponse response = searcher.findCorrespondingAddon(this);
+        if(response == null){
+            System.out.println("request user input");
+        }
+        setProjectId(response.id);
+        return true;
     }
 
     @Override

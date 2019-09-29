@@ -1,6 +1,8 @@
 package com.CAM.AddonManagement;
 
 import com.CAM.DataCollection.*;
+import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
+import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPISearcher;
 import com.CAM.HelperTools.*;
 import com.CAM.Settings.SessionOnlySettings;
 import com.google.gson.Gson;
@@ -106,6 +108,20 @@ public class AddonManager {
         return exceptions;
     }
 
+    public void updateToLatestFormat(UpdateListener listener) throws ScrapeException {
+        int i = 1;
+        for(Addon addon : getManagedAddons()){
+            listener.notifyProgress(i);
+            System.out.println("processing addon " + i + "/" + getManagedAddons().size());
+            boolean result = addon.updateToLatestFormat();
+            if(result){
+                saveToFile();
+            }
+            System.out.println("Finished addon " + i + "/" + getManagedAddons().size());
+            i++;
+        }
+    }
+
     private int getSleepDelay() {
         int DELAY_RANGE = 401; // range is 300-700, 101 instead of 100 since 600 is included
         int MIN_DELAY = 300;
@@ -144,22 +160,21 @@ public class AddonManager {
         return true;
     }
 
-    public boolean addNewSearchedAddon(AddonSearchRequest request) throws ScrapeException {
+    public boolean addNewSearchedAddon(SearchedAddonRequest request) throws ScrapeException {
         Log.log("Attempting to track new addon ...");
 
+        int projectId = request.getProjectId();
         for (Addon addon : managedAddons) {
-            if (addon.getProjectId() == request.projectId) {
+            if (addon.getProjectId() == projectId) {
                 Log.log(addon.getName() + " already being tracked!");
                 return false;
             }
         }
 
-        AddonInfoRetriever retriever = UrlInfo.getCorrespondingInfoRetriever(request.addonSource, null, false, null, false, request.projectId);
-
-        String name = retriever.getName();
-        String author = retriever.getAuthor();
-        String origin = retriever.getUrl();
-        Addon newAddon = new Addon(name, author, origin, request.projectId);
+        String name = request.getName();
+        String author = request.getAuthor();
+        String origin = request.getOrigin();
+        Addon newAddon = new Addon(name, author, origin, projectId);
 
         managedAddons.add(newAddon);
         Collections.sort(managedAddons);
