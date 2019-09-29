@@ -79,6 +79,7 @@ public class AddonManager {
                     position++;
                     continue;
                 }
+                addon.setLastUpdateCheck(new Date());
                 UpdateResponse response = addon.checkForUpdate();
                 if (!response.isUpdateAvailable()) {
                     Log.verbose(addon.getName() + " by " + addon.getAuthor() + " is up to date!");
@@ -101,7 +102,7 @@ public class AddonManager {
             }
             listener.informFinish(position, statusCode);
             position++;
-            addon.setLastUpdateCheck(new Date());
+            addon.setLastUpdated(new Date());
             saveToFile();
         }
         Log.log("Finished updating!");
