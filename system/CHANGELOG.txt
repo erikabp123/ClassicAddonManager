@@ -1,3 +1,6 @@
+v0.76
+    - Bug fix (added conversion for old Tukui addons)
+
 v0.75
     - Added in-app search support for Tukui
     - Bug fix (fixed problem with search field)
