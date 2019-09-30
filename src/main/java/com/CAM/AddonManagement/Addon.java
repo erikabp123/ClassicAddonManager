@@ -105,7 +105,7 @@ public class Addon implements Comparable<Addon> {
 
     public boolean updateToLatestFormat() throws ScrapeException {
         if(getAddonSource() != AddonSource.CURSEFORGE
-                || getAddonSource() != AddonSource.TUKUI){
+                && getAddonSource() != AddonSource.TUKUI){
             return false;
         }
         if(projectId > 0){
