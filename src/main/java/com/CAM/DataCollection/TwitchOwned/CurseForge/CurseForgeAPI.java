@@ -21,8 +21,8 @@ public class CurseForgeAPI extends API implements TwitchSite {
     private CurseFile latestRetailFile;
     private CurseFile fileToUse;
 
-    public CurseForgeAPI(int projectID, AddonSource source) throws ScrapeException {
-        super(null, source);
+    public CurseForgeAPI(int projectID) throws ScrapeException {
+        super(null, AddonSource.CURSEFORGE);
         this.projectID = projectID;
         response = fetchAddonInfo();
         latestClassicFile = determineLatestFileByFlavor("wow_classic");

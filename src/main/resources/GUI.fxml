@@ -92,7 +92,7 @@
             </Text>
             <TabPane layoutX="14.0" layoutY="348.0" prefHeight="150.0" prefWidth="672.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
-                <Tab fx:id="tabSearch" text="Search (Curse)">
+                <Tab fx:id="tabSearch" text="Search (Curse/Tukui)">
                   <content>
                     <AnchorPane layoutX="14.0" minHeight="0.0" minWidth="0.0" prefHeight="163.0" prefWidth="600.0">
                            <children>
@@ -105,7 +105,7 @@
                         </AnchorPane>
                   </content>
                 </Tab>
-                <Tab fx:id="tabManual" text="Manual (WowInterface/Github/Tukui)">
+                <Tab fx:id="tabManual" text="Manual (WowInterface/Github)">
                   <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                            <children>

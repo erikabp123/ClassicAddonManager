@@ -1,9 +1,5 @@
 package com.CAM;
 
-import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPI;
-import com.CAM.HelperTools.AddonSource;
-import com.CAM.Updating.VersionInfo;
-
 public class Starter {
 
     public static boolean showWhatsNew = false;

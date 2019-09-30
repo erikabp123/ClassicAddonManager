@@ -2,37 +2,31 @@ package com.CAM.DataCollection.Tukui;
 
 import com.CAM.DataCollection.API;
 import com.CAM.DataCollection.ScrapeException;
-import com.CAM.DataCollection.Scraper;
+import com.CAM.DataCollection.Tukui.TukuiAddonResponse.TukuiAddonResponse;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
-import com.CAM.HelperTools.Log;
 import com.CAM.HelperTools.UrlInfo;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import java.awt.desktop.SystemEventListener;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 
-public class TukuiScraper extends API {
+public class TukuiAPI extends API {
 
     private JsonObject repoObject;
     private int addonNumber;
+    private String baseUrl = "https://www.tukui.org/api.php?classic-addon=";
+    private TukuiAddonResponse latestResponse;
 
-    public TukuiScraper(String url, boolean updatingAddon) throws ScrapeException {
-        super(url, AddonSource.TUKUI);
+    public TukuiAPI(int addonNumber) throws ScrapeException {
+        super(null, AddonSource.TUKUI);
         this.repoObject = null;
-        this.addonNumber = extractAddonNumber(url);
-        if (!updatingAddon && !isValidLink()) {
-            throw new ScrapeException(getAddonSource(), "Invalid Tukui URL!");
-        }
+        this.addonNumber = addonNumber;
+        Gson gson = new Gson();
+        latestResponse = gson.fromJson(getRepoObject(), TukuiAddonResponse.class);
+        super.setUrl(latestResponse.getOrigin());
     }
 
     public static int extractAddonNumber(String url) {
@@ -50,17 +44,12 @@ public class TukuiScraper extends API {
 
     @Override
     public String getDownloadLink() {
-        String downloadPrefix = "https://www.tukui.org/classic-addons.php?download=";
-        String downloadSuffix = addonNumber + ".zip";
-        return downloadPrefix + downloadSuffix;
+        return latestResponse.url;
     }
 
     @Override
-    public Date getLastUpdated() throws ScrapeException {
-        JsonObject jsonObject = getRepoObject();
-        String tukuiDate = jsonObject.get("lastupdate").getAsString();
-        Date date = DateConverter.convertFromTukui(tukuiDate);
-        return date;
+    public Date getLastUpdated() {
+        return DateConverter.convertFromTukui(latestResponse.lastupdate);
     }
 
     private JsonObject getJsonObject(Page page) {
@@ -73,28 +62,24 @@ public class TukuiScraper extends API {
         if (repoObject != null) {
             return repoObject;
         }
-        String prefix = "https://www.tukui.org/api.php?classic-addon=";
-        String url = prefix + addonNumber;
+
+        String url = baseUrl + addonNumber;
         repoObject = getJsonObject(jsonScrape(url));
         return repoObject;
     }
 
     @Override
-    public String getName() throws ScrapeException {
-        JsonObject jsonObject = getRepoObject();
-        String name = jsonObject.get("name").getAsString();
-        return name;
+    public String getName() { ;
+        return latestResponse.getName();
     }
 
     @Override
-    public String getAuthor() throws ScrapeException {
-        JsonObject jsonObject = getRepoObject();
-        String author = jsonObject.get("author").getAsString();
-        return author;
+    public String getAuthor() {
+        return latestResponse.getAuthor();
     }
 
     @Override
-    public String getFileName() throws ScrapeException {
+    public String getFileName() {
         String fileName = getName() + "-" + "tukui";
         return fileName;
     }
@@ -122,6 +107,7 @@ public class TukuiScraper extends API {
         if (response == null || response.getWebResponse().getContentAsString().equals("")) {
             return false;
         }
+        repoObject = getJsonObject(response);
         return true;
     }
 

@@ -2,9 +2,8 @@ package com.CAM.HelperTools;
 
 import com.CAM.DataCollection.*;
 import com.CAM.DataCollection.Github.GitHubAPI;
-import com.CAM.DataCollection.Tukui.TukuiScraper;
+import com.CAM.DataCollection.Tukui.TukuiAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPI;
-import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeScraper;
 import com.CAM.DataCollection.TwitchOwned.WowAce.WowAceScraper;
 import com.CAM.DataCollection.WowInterface.WowInterfaceScraper;
 
@@ -178,7 +177,7 @@ public class UrlInfo {
 
     public static String trimTukuiUrl(String origin){
         String prefix = "https://www.tukui.org/classic-addons.php?id=";
-        int addonNumber = TukuiScraper.extractAddonNumber(origin);
+        int addonNumber = TukuiAPI.extractAddonNumber(origin);
         return prefix + addonNumber;
     }
 
@@ -200,14 +199,13 @@ public class UrlInfo {
     public static AddonInfoRetriever getCorrespondingInfoRetriever(AddonSource addonSource, String origin, boolean updatingAddon, String branch, boolean releases, int projectId) throws ScrapeException{
         switch (addonSource){
             case CURSEFORGE:
-                return new CurseForgeAPI(projectId, addonSource);
-                //return CurseForgeScraper.makeScraper(origin, updatingAddon);
+                return new CurseForgeAPI(projectId);
             case GITHUB:
                 return new GitHubAPI(origin, branch, releases, updatingAddon);
             case WOWINTERFACE:
                 return new WowInterfaceScraper(origin, updatingAddon);
             case TUKUI:
-                return new TukuiScraper(origin, updatingAddon);
+                return new TukuiAPI(projectId);
             case WOWACE:
                 return WowAceScraper.makeScraper(origin, updatingAddon);
         }

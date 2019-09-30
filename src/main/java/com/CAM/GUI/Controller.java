@@ -3,6 +3,7 @@ package com.CAM.GUI;
 import com.CAM.AddonManagement.*;
 import com.CAM.DataCollection.*;
 import com.CAM.DataCollection.Github.GitHubAPI;
+import com.CAM.DataCollection.Tukui.TukuiAPISearcher;
 import com.CAM.DataCollection.Tukui.TukuiAddonResponse.TukuiAddonResponse;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPISearcher;
@@ -18,12 +19,12 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -267,7 +268,9 @@ public class Controller implements Initializable {
                     return;
                 }
                 if (addonSource.equals(TukuiAddonResponse.class)) {
-                    //TODO: Handle searches for TUKUI
+                    startAddonAddSearchedThread((TukuiAddonResponse) addon);
+                    Platform.runLater(() -> clearSearchSelectionAction());
+                    return;
                 }
 
             } catch (ScrapeException e) {
@@ -303,11 +306,12 @@ public class Controller implements Initializable {
 
     @FXML
     private void searchEnterAction(ActionEvent event) {
+
         Object selectedVal = comboBoxSearch.getValue();
         if (selectedVal == null) {
             return;
         }
-        if (selectedVal.getClass().equals(CurseAddonResponse.class)) {
+        if (selectedVal instanceof  SearchedAddonRequest) {
             selectSearchedAddon(selectedVal);
             return;
         }
@@ -328,7 +332,7 @@ public class Controller implements Initializable {
 
                 boolean success = false;
                 while (!success) {
-                    success = lastSearchQuery.compareAndSet(lastQuery, userQuery);
+                    success = lastSearchQuery.compareAndSet(lastSearchQuery.get(), userQuery);
                 }
             } catch (ScrapeException e) {
                 handleUnknownException(e);
@@ -340,8 +344,14 @@ public class Controller implements Initializable {
         searchThread.start();
     }
 
-    private void tukuiSearch(String userQuery) {
-        //TODO: Implement tukui search
+    private void tukuiSearch(String userQuery) throws ScrapeException {
+        TukuiAPISearcher apiSearcher = new TukuiAPISearcher();
+        ArrayList<TukuiAddonResponse> results = apiSearcher.search(userQuery);
+        ObservableList<TukuiAddonResponse> observableList = FXCollections.observableList(results);
+        Platform.runLater(() -> {
+            comboBoxSearch.show();
+            comboBoxSearch.setItems(observableList);
+        });
     }
 
     private void curseSearch(String userQuery) throws ScrapeException {
@@ -385,6 +395,7 @@ public class Controller implements Initializable {
             ArrayList<Exception> exceptions = addonManager.updateAddons(progressListener);
             for (Exception e : exceptions) {
                 if (e.getClass() == ScrapeException.class) {
+                    ((ScrapeException) e).getException().printStackTrace();
                     handleUpdateScrapeException((ScrapeException) e);
                 } else {
                     handleUnknownException(e);
@@ -661,9 +672,24 @@ public class Controller implements Initializable {
     private void setupSearchSourcesList() {
         ObservableList<AddonSource> sources = FXCollections.observableArrayList();
         sources.add(AddonSource.CURSEFORGE);
-        //sources.add(AddonSource.TUKUI);
+        sources.add(AddonSource.TUKUI);
         choiceBoxSource.setItems(sources);
         choiceBoxSource.getSelectionModel().select(0);
+        choiceBoxSource.getSelectionModel()
+                .selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    clearSearchSelectionAction();
+                    comboBoxSearch.setItems(null);
+                    resetLastSearchQuery();
+                });
+    }
+
+    private void resetLastSearchQuery(){
+        boolean success = false;
+        while(!success){
+            String prev = lastSearchQuery.get();
+            success = lastSearchQuery.compareAndSet(prev, "");
+        }
     }
 
     //================================================================================
@@ -987,12 +1013,10 @@ public class Controller implements Initializable {
         addAddonThread.start();
     }
 
-    private void startAddonAddSearchedThread(CurseAddonResponse response) {
+    private void startAddonAddSearchedThread(SearchedAddonRequest request) {
         Thread addAddonThread = new Thread(() -> {
             try {
-
-
-                addonManager.addNewSearchedAddon(response);
+                addonManager.addNewSearchedAddon(request);
             } catch (ScrapeException e) {
                 handleAddSearchedScrapeException(e);
             } catch (Exception e) {
