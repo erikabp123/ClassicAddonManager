@@ -403,23 +403,29 @@ public class Controller implements Initializable {
     public void updateManagedListToLatestFormat(){
         disableAll();
         try {
-            imageViewUpdate.setImage(new Image(this.getClass().getClassLoader().getResource("gears_load.gif").toExternalForm()));
-            imageViewUpdate.setVisible(true);
-            textConverting.setVisible(true);
-            textConverting.setDisable(false);
-            textConvertingProgress.setVisible(true);
-            textConvertingProgress.setDisable(false);
-            getAddonManager().updateToLatestFormat(progress -> textConvertingProgress.setText(progress + "/" + getAddonManager().getManagedAddons().size()));
+            Platform.runLater(() -> {
+                    imageViewUpdate.setImage(new Image(this.getClass().getClassLoader().getResource("gears_load.gif").toExternalForm()));
+                    imageViewUpdate.setVisible(true);
+                    textConverting.setVisible(true);
+                    textConverting.setDisable(false);
+                    textConvertingProgress.setVisible(true);
+                    textConvertingProgress.setDisable(false);
+            });
+            getAddonManager().updateToLatestFormat(progress -> Platform.runLater(() ->
+                    textConvertingProgress.setText(progress + "/" + getAddonManager().getManagedAddons().size())));
         } catch (ScrapeException e) {
             e.printStackTrace();
         } finally {
-            imageViewUpdate.setImage(null);
-            textConverting.setVisible(false);
-            textConverting.setDisable(true);
-            textConvertingProgress.setVisible(false);
-            textConvertingProgress.setDisable(true);
-            imageViewUpdate.setVisible(false);
-            enableAll();
+            Platform.runLater(() -> {
+                imageViewUpdate.setImage(null);
+                textConverting.setVisible(false);
+                textConverting.setDisable(true);
+                textConvertingProgress.setVisible(false);
+                textConvertingProgress.setDisable(true);
+                imageViewUpdate.setVisible(false);
+                enableAll();
+            });
+
         }
     }
 
@@ -1275,6 +1281,10 @@ public class Controller implements Initializable {
         filterAddonsTextField.setDisable(false);
         tabManual.setDisable(false);
         tabSearch.setDisable(false);
+        // necessary to prevent bug with search field for addons
+        textManagedLabel.requestFocus(); //drop focus from combobox
+        comboBoxSearch.requestFocus(); //focus combobox
+        textManagedLabel.requestFocus(); //invisible focus on element so search field isnt selected
     }
 
     public void cleanUpAfterAddAction() {
