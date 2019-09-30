@@ -1,6 +1,7 @@
 v0.75
     - Added in-app search support for Tukui
     - Bug fix (fixed problem with search field)
+    - Bug fix (fixed issue with URL matching)
 
 V0.74:
     - Bug fix (proper saving of update timestamps)

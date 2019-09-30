@@ -120,6 +120,13 @@ public class AddonManager {
             }
             System.out.println("Finished addon " + i + "/" + getManagedAddons().size());
             i++;
+            if(result){
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

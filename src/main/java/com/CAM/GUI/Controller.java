@@ -305,6 +305,12 @@ public class Controller implements Initializable {
     }
 
     @FXML
+    private void convertAddonsAction(){
+        Thread updateAddonFormatThread = new Thread(() -> updateManagedListToLatestFormat());
+        updateAddonFormatThread.start();
+    }
+
+    @FXML
     private void searchEnterAction(ActionEvent event) {
 
         Object selectedVal = comboBoxSearch.getValue();
@@ -412,9 +418,9 @@ public class Controller implements Initializable {
     }
 
     public void updateManagedListToLatestFormat(){
-        disableAll();
         try {
             Platform.runLater(() -> {
+                    disableAll();
                     imageViewUpdate.setImage(new Image(this.getClass().getClassLoader().getResource("gears_load.gif").toExternalForm()));
                     imageViewUpdate.setVisible(true);
                     textConverting.setVisible(true);

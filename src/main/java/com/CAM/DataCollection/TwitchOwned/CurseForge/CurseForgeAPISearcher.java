@@ -34,7 +34,7 @@ public class CurseForgeAPISearcher {
     public CurseAddonResponse findCorrespondingAddon(Addon addon) throws ScrapeException {
         ArrayList<CurseAddonResponse> addons = search(addon.getName());
         for(CurseAddonResponse response : addons){
-            if(addon.getOrigin().equals(response.websiteUrl)) {
+            if(addon.getOrigin().startsWith(response.websiteUrl)) {
                 return response;
             }
         }
