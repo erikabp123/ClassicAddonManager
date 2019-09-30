@@ -1,6 +1,7 @@
 package com.CAM.AddonManagement;
 
 import com.CAM.DataCollection.*;
+import com.CAM.DataCollection.Tukui.TukuiAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPISearcher;
@@ -103,18 +104,27 @@ public class Addon implements Comparable<Addon> {
     }
 
     public boolean updateToLatestFormat() throws ScrapeException {
-        if(getAddonSource() != AddonSource.CURSEFORGE){
+        if(getAddonSource() != AddonSource.CURSEFORGE
+                || getAddonSource() != AddonSource.TUKUI){
             return false;
         }
         if(projectId > 0){
             return false;
         }
-        CurseForgeAPISearcher searcher = new CurseForgeAPISearcher();
-        CurseAddonResponse response = searcher.findCorrespondingAddon(this);
-        if(response == null){
-            System.out.println("request user input");
+
+        int projectId = 0;
+        if(getAddonSource() == AddonSource.CURSEFORGE){
+            CurseForgeAPISearcher searcher = new CurseForgeAPISearcher();
+            CurseAddonResponse response = searcher.findCorrespondingAddon(this);
+            if(response == null){
+                System.out.println("request user input");
+            }
+            projectId = response.id;
+        } else if(getAddonSource() == AddonSource.TUKUI){
+            projectId = TukuiAPI.extractAddonNumber(this.origin);
         }
-        setProjectId(response.id);
+
+        setProjectId(projectId);
         return true;
     }
 
