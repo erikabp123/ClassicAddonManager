@@ -46,6 +46,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.apache.xpath.operations.Bool;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -70,6 +71,7 @@ public class Controller implements Initializable {
     final ObservableList<String> listItems = FXCollections.observableArrayList();
     private AddonManager addonManager;
     private final AtomicReference<String> lastSearchQuery = new AtomicReference<>("");
+    private final AtomicReference<Boolean> lastSearchQueryCheckbox = new AtomicReference<>(false);
 
     //================================================================================
     // FXML - Fields
@@ -127,6 +129,9 @@ public class Controller implements Initializable {
     //region Checkboxes
     @FXML
     private CheckBox checkboxReleases;
+
+    @FXML
+    private CheckBox checkboxClassicSearch;
 
     //endregion
 
@@ -326,8 +331,13 @@ public class Controller implements Initializable {
             try {
                 String userQuery = comboBoxSearch.getEditor().getText();
                 String lastQuery = lastSearchQuery.get();
+                boolean isLastQueryClassicSpecific = lastSearchQueryCheckbox.get();
 
-                if (userQuery.length() < 1 || userQuery.equals(lastQuery) || !comboBoxSearch.isEditable()) {
+                boolean isLastQuerySameCheckboxValue = isLastQueryClassicSpecific == checkboxClassicSearch.isSelected();
+
+                if (userQuery.length() < 1
+                        || (userQuery.equals(lastQuery) && isLastQuerySameCheckboxValue)
+                        || !comboBoxSearch.isEditable()) {
                     return;
                 }
                 if (choiceBoxSource.getValue().equals(AddonSource.CURSEFORGE)) {
@@ -339,6 +349,10 @@ public class Controller implements Initializable {
                 boolean success = false;
                 while (!success) {
                     success = lastSearchQuery.compareAndSet(lastSearchQuery.get(), userQuery);
+                }
+                success = false;
+                while (!success){
+                    success = lastSearchQueryCheckbox.compareAndSet(lastSearchQueryCheckbox.get(), checkboxClassicSearch.isSelected());
                 }
             } catch (ScrapeException e) {
                 handleUnknownException(e);
@@ -363,7 +377,19 @@ public class Controller implements Initializable {
     private void curseSearch(String userQuery) throws ScrapeException {
         CurseForgeAPISearcher apiSearcher = new CurseForgeAPISearcher();
         ArrayList<CurseAddonResponse> results = apiSearcher.search(userQuery);
-        ObservableList<CurseAddonResponse> observableList = FXCollections.observableList(results);
+        ArrayList<CurseAddonResponse> classicResults = new ArrayList<>();
+        for(CurseAddonResponse response : results){
+            if(response.isClassicSupported()){
+                classicResults.add(response);
+            }
+        }
+
+        ObservableList<CurseAddonResponse> observableList = null;
+        if(checkboxClassicSearch.isSelected()){
+            FXCollections.observableList(classicResults);
+        } else {
+            FXCollections.observableList(results);
+        }
         Platform.runLater(() -> {
             comboBoxSearch.show();
             comboBoxSearch.setItems(observableList);
