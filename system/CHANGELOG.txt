@@ -1,3 +1,7 @@
+v0.77
+    - Added option for classic only filtering for curseforge searches
+    - Will now down-prioritize 'alternate' versions of addon when updating
+
 v0.76
     - Bug fix (added conversion for old Tukui addons)
 

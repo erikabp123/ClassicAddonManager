@@ -59,6 +59,11 @@ public class CurseForgeAPI extends API implements TwitchSite {
             Date curFileDate = DateConverter.convertFromCurseAPI(latestFile.fileDate);
             Date fileDate = DateConverter.convertFromCurseAPI(file.fileDate);
             if(DateConverter.isNewerDate(fileDate, curFileDate)){
+                if(!latestFile.isAlternate && file.isAlternate){
+                    continue;
+                }
+                latestFile = file;
+            } else if(latestFile.isAlternate && !file.isAlternate){
                 latestFile = file;
             }
         }

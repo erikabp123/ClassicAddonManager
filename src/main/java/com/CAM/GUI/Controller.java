@@ -384,12 +384,10 @@ public class Controller implements Initializable {
             }
         }
 
-        ObservableList<CurseAddonResponse> observableList = null;
-        if(checkboxClassicSearch.isSelected()){
-            FXCollections.observableList(classicResults);
-        } else {
-            FXCollections.observableList(results);
-        }
+        ObservableList<CurseAddonResponse> observableList;
+        observableList = checkboxClassicSearch.isSelected()
+                ? FXCollections.observableList(classicResults)
+                : FXCollections.observableList(results);
         Platform.runLater(() -> {
             comboBoxSearch.show();
             comboBoxSearch.setItems(observableList);
