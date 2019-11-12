@@ -542,28 +542,37 @@ public class Controller implements Initializable {
                 addons.add(addon.export());
             }
             Gson gson = new Gson();
-            String exportString = gson.toJson(addons);
+            try {
+                String exportString = CompressionUtil.compress(gson.toJson(addons));
 
-            Platform.runLater(() -> {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Exported Addon List");
-                alert.setHeaderText("Send this to you friend!");
-                alert.setContentText(null);
+                Platform.runLater(() -> {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Exported Addon List");
+                    alert.setHeaderText("Send this to you friend!");
+                    alert.setContentText(null);
 
-                SplitPane splitPane = new SplitPane();
-                alert.getDialogPane().setContent(splitPane);
+                    SplitPane splitPane = new SplitPane();
+                    alert.getDialogPane().setContent(splitPane);
 
-                TextArea textArea = new TextArea();
-                textArea.setText(exportString);
+                    TextArea textArea = new TextArea();
+                    textArea.setText(exportString);
 
-                Button  exportButton = new Button();
-                exportButton.setText("Export to file");
+                    Button  exportButton = new Button();
+                    exportButton.setText("Export to file");
 
-                splitPane.setOrientation(Orientation.VERTICAL);
-                splitPane.getItems().addAll(textArea, exportButton);
+                    splitPane.setOrientation(Orientation.VERTICAL);
+                    splitPane.getItems().addAll(textArea, exportButton);
 
-                alert.showAndWait();
-            });
+                    alert.showAndWait();
+                });
+            } catch (IOException e) {
+                Platform.runLater(() -> {
+                    Alert exceptionAlert = new Alert(Alert.AlertType.ERROR);
+                    exceptionAlert.setTitle("An error occurred");
+                    exceptionAlert.setHeaderText("Couldn't convert your addons to a list");
+                    exceptionAlert.showAndWait();
+                });
+            }
         });
         exportThread.start();
     }
@@ -587,7 +596,7 @@ public class Controller implements Initializable {
             Gson gson = new Gson();
             ArrayList<Addon> imported = null;
             try {
-                imported = gson.fromJson(textArea.getText(), new TypeToken<ArrayList<Addon>>() {
+                imported = gson.fromJson(CompressionUtil.decompress(textArea.getText()), new TypeToken<ArrayList<Addon>>() {
                 }.getType());
             } catch (Exception e) {
                 Platform.runLater(() -> {
