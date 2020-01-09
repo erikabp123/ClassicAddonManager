@@ -1,5 +1,5 @@
 v0.78
-    - Added compression to addon exporting, should help with sharing lists (compression done by 'Lilin Enyo#8397' from the Discord)
+    - Added compression to addon exporting, should help with sharing lists (compression done by 'robthemonster#5738' from the Discord)
     - Fixed issue with selecting wow.exe, Blizzard had renamed it from wow.exe to WowClassic.exe
 
 v0.77
