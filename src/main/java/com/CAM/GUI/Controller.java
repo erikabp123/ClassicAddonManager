@@ -557,11 +557,8 @@ public class Controller implements Initializable {
                     TextArea textArea = new TextArea();
                     textArea.setText(exportString);
 
-                    Button  exportButton = new Button();
-                    exportButton.setText("Export to file");
-
                     splitPane.setOrientation(Orientation.VERTICAL);
-                    splitPane.getItems().addAll(textArea, exportButton);
+                    splitPane.getItems().addAll(textArea);
 
                     alert.showAndWait();
                 });

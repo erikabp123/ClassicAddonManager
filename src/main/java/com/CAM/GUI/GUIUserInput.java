@@ -33,7 +33,7 @@ public class GUIUserInput implements UserInput {
     @Override
     public UserInputResponse getUserInput() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Please select the WoW Classic 'wow.exe' file");
+        fileChooser.setTitle("Please select the WoW Classic 'WowClassic.exe' file");
         FileChooser.ExtensionFilter exeFilter = new FileChooser.ExtensionFilter("Exectuable files", "*.exe");
         fileChooser.getExtensionFilters().add(exeFilter);
         File selectedFile = fileChooser.showOpenDialog(ownerWindow);
@@ -54,7 +54,7 @@ public class GUIUserInput implements UserInput {
     public boolean askToProceedPrompt() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Setup Install Path");
-        alert.setHeaderText("Please provide the path to your WoW Classic 'wow.exe' installation!");
+        alert.setHeaderText("Please provide the path to your WoW Classic 'WowClassic.exe' installation!");
         alert.setContentText("To proceed, Classic Addon Manager needs to know where WoW classic is installed. Do you wish to proceed?");
 
         Optional<ButtonType> result = alert.showAndWait();

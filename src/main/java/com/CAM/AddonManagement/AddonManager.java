@@ -465,7 +465,7 @@ public class AddonManager {
 
     public static boolean verifyInstallLocation(String path) {
         Log.verbose("Checking supplied path ...");
-        String exePath = path + "\\Wow.exe";
+        String exePath = path + "\\WowClassic.exe";
         if (!(new File(exePath).exists())) {
             Log.verbose("Wow.exe not found!");
             return false;
