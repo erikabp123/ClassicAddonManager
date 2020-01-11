@@ -62,7 +62,7 @@ Option B is a substantially smaller download, and can be recommended over *optio
 
 If you choose to update manually, make sure you 'data' folder is present. This folder contains all the manager's information about your managed addons.
 
-### Changing WoW installation folder
+## Changing WoW installation folder
 
 To change installation folder, simply press the 'File' menu at the top of the screen and select 'setup'. Please make sure to update your installation folder in the addon manager as is necessary. Failing to do so will cause issues.
 
