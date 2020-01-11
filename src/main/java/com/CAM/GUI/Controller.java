@@ -1391,6 +1391,7 @@ public class Controller implements Initializable {
 
         imageViewUpdate.setImage(new Image(this.getClass().getClassLoader().getResource("gears_load.gif").toExternalForm()));
         imageViewUpdate.setDisable(false);
+        imageViewUpdate.setVisible(true);
         progressBarUpdate.setVisible(true);
         progressBarUpdateTotal.setVisible(true);
     }
