@@ -89,7 +89,7 @@ For more on this, see the subsection on Github addons.
 
 ![Add-addon](https://user-images.githubusercontent.com/18148143/63619055-f5024b00-c5ed-11e9-9073-c59830562141.png)
 
-###Github Addons
+### Github Addons
 
 Github addons require you to specify whether the author wants you to download "*releases*" or if you need to just download a specific branch.
 Usually the author will specify which of the two they want you to use, but checking the github page by looking at the number of releases can usually tell you which to use if nothing is explicitly stated.
