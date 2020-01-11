@@ -16,7 +16,7 @@ https://www.youtube.com/watch?v=06WbVES4ZuU
 
 With the new standalone version, Java comes bundled with it. You therefore don't need to have anything else installed!
 
-### Running the program
+### Running The Program
 
 To start, simply double click the 'Classic Addon Manager.exe' file included in the .zip file.
 
@@ -34,7 +34,7 @@ Simply navigate to the location of your 'WowClassic.exe' file. e.g.
 
 ![Browsing To exe](https://user-images.githubusercontent.com/18148143/63517513-69a29000-c4ef-11e9-8e21-6b627a42ba73.png)
 
-### Updating to newer versions
+## Updating The Manager
 
 As of version 0.35 the addon manager features an auto-update feature.
 Each time the manager is launched it will look for an update and inform
@@ -62,7 +62,7 @@ Option B is a substantially smaller download, and can be recommended over *optio
 
 If you choose to update manually, make sure you 'data' folder is present. This folder contains all the manager's information about your managed addons.
 
-## Changing WoW installation folder
+## Changing WoW Installation Folder
 
 To change installation folder, simply press the 'File' menu at the top of the screen and select 'setup'. Please make sure to update your installation folder in the addon manager as is necessary. Failing to do so will cause issues.
 
@@ -70,7 +70,7 @@ To change installation folder, simply press the 'File' menu at the top of the sc
     File -> Setup
 ```
 
-## Adding a new addon
+## Adding A New Addon
 
 **If your addon is from *Curseforge* or *Tukui*:**
 
@@ -107,14 +107,14 @@ If you are ever in doubt, using the branch called '*master*' (if there is one) i
 ![Choosing branch](https://user-images.githubusercontent.com/18148143/63619058-f764a500-c5ed-11e9-977f-ce1429ef0ead.png)
 
 
-## Updating the addons
+## Updating Your Addons
 
 ![Downloading addon updates](https://user-images.githubusercontent.com/18148143/63517510-6909f980-c4ef-11e9-9ec3-c31f54327cb9.png)
 
 To update the addons, simply press the 'update addons' button and the manager will check each managed addon for updates and if there are any available it will download and install them.
 
 
-## How to support
+## How To Support
 
 If you like the program consider telling your friends about it!
 
