@@ -1,3 +1,8 @@
+v0.80
+    - removed some delays when updating, this should make updating addons a good bit faster. This delay was originally implemented to avoid getting the addon banned from different addon websites, but with the switch to the Twitch API, it shouldn't be necessary for ALL websites.
+    - Added preferences menu, currently only contains 1 item and isn't super pretty but the groundwork is laid now. It should be very easy to add additional preferences
+    - Added preference to only use "releases" of curseforge addons, previously installed addons will need to wait for a new release or reinstalled to change from alpha/beta builds to release builds
+
 v0.78
     - Added compression to addon exporting, should help with sharing lists (compression done by 'robthemonster#5738' from the Discord)
     - Fixed issue with selecting wow.exe, Blizzard had renamed it from wow.exe to WowClassic.exe
