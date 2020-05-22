@@ -7,6 +7,7 @@ import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseFile
 import com.CAM.DataCollection.TwitchOwned.TwitchSite;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
+import com.CAM.Settings.Preferences;
 import com.gargoylesoftware.htmlunit.Page;
 import com.google.gson.Gson;
 
@@ -56,6 +57,10 @@ public class CurseForgeAPI extends API implements TwitchSite {
                 latestFile = file;
                 continue;
             }
+            if(Preferences.getInstance().cfReleasesOnly && file.releaseType != 1) {
+                System.out.println("Not a release, skipping!");
+                continue;
+            } //skip non-releases if set in preferences
             Date curFileDate = DateConverter.convertFromCurseAPI(latestFile.fileDate);
             Date fileDate = DateConverter.convertFromCurseAPI(file.fileDate);
             if(DateConverter.isNewerDate(fileDate, curFileDate)){

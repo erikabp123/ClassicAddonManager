@@ -62,15 +62,15 @@ public class AddonManager {
                     position++;
                     continue;
                 }
-
-                if(addon.getAddonSource() == lastAddonSource){
+                AddonSource addonSource = addon.getAddonSource();
+                if((addonSource == AddonSource.WOWINTERFACE || addonSource == AddonSource.WOWACE) && addonSource == lastAddonSource){
                     try {
                         Thread.sleep(getSleepDelay());
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
-                lastAddonSource = addon.getAddonSource();
+                lastAddonSource = addonSource;
 
                 if(SessionOnlySettings.isSkipGithubDownloads() && addon.getOrigin().contains("github.com")){
                     Log.log("Skipping github addon " + addon.getName() + " by " + addon.getAuthor());

@@ -74,5 +74,6 @@ public class CurseAddonResponse implements SearchedAddonRequest {
     public int getProjectId() {
         return id;
     }
+
 }
 

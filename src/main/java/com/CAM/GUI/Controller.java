@@ -91,6 +91,9 @@ public class Controller implements Initializable {
 
     @FXML
     public MenuItem menuAboutUpdates;
+
+    @FXML
+    public MenuItem menuPreferences;
     //endregion
 
     //region Text
@@ -530,6 +533,29 @@ public class Controller implements Initializable {
     @FXML
     private void toggleForceUpdatesAction() {
         SessionOnlySettings.toggleForceUpdates();
+    }
+
+    @FXML
+    public void preferencesAction() {
+
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("editPreferences.fxml"));
+        Parent parent = null;
+        try {
+            parent = fxmlLoader.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        EditPreferencesController dialogController = fxmlLoader.getController();
+        dialogController.createDialog();
+
+        Scene scene = new Scene(parent);
+        scene.getStylesheets().add(getClass().getClassLoader().getResource("bootstrap3.css").toExternalForm());
+        Stage stage = new Stage();
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setScene(scene);
+        stage.setTitle("Edit Preferences");
+        stage.getIcons().add(new Image(getClass().getClassLoader().getResource("program_icon.png").toExternalForm()));
+        stage.showAndWait();
     }
     //endregion
 
