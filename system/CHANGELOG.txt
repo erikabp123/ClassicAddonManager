@@ -1,5 +1,9 @@
+v0.81
+    - Added a feature to toggle forcing re-downloads. When this is enabled updating addons will force them to redownload regardless of whether you have the most up-to-date version. Useful if an addon got uninstalled but you still have the timestamp.
+    - Renamed the force updates toggle to force updates checking to better reflect its function. It ignores the built-in 30 min internal cooldown each addon has for checking for new updates.
+
 v0.80
-    - removed some delays when updating, this should make updating addons a good bit faster. This delay was originally implemented to avoid getting the addon banned from different addon websites, but with the switch to the Twitch API, it shouldn't be necessary for ALL websites.
+    - Removed some delays when updating, this should make updating addons a good bit faster. This delay was originally implemented to avoid getting the addon banned from different addon websites, but with the switch to the Twitch API, it shouldn't be necessary for ALL websites.
     - Added preferences menu, currently only contains 1 item and isn't super pretty but the groundwork is laid now. It should be very easy to add additional preferences
     - Added preference to only use "releases" of curseforge addons, previously installed addons will need to wait for a new release or reinstalled to change from alpha/beta builds to release builds
 

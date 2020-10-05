@@ -19,7 +19,6 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -44,7 +43,6 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import org.apache.xpath.operations.Bool;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -531,8 +529,13 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void toggleForceUpdatesAction() {
-        SessionOnlySettings.toggleForceUpdates();
+    private void toggleForceUpdateCheckingAction() {
+        SessionOnlySettings.toggleForceUpdateChecking();
+    }
+
+    @FXML
+    private void toggleForceReDownloadsAction() {
+        SessionOnlySettings.toggleForceReDownloads();
     }
 
     @FXML

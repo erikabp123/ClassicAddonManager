@@ -37,7 +37,8 @@
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem fx:id="menuToggleGithub" mnemonicParsing="false" onAction="#toggleGithubDownloadsAction" text="Toggle Github Downloads" />
                   <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem fx:id="menuToggleUpdates" mnemonicParsing="false" onAction="#toggleForceUpdatesAction" text="Toggle Force Updates" />
+                  <MenuItem fx:id="menuToggleUpdates" mnemonicParsing="false" onAction="#toggleForceUpdateCheckingAction" text="Toggle Force Update Checking" />
+                  <MenuItem fx:id="menuToggleReDownloads" mnemonicParsing="false" onAction="#toggleForceReDownloadsAction" text="Toggle Force Re-Downloads" />
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem fx:id="menuFileConvertAddons" mnemonicParsing="false" onAction="#convertAddonsAction" text="Convert Addons To New Format" />
           </items>

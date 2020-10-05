@@ -1,8 +1,6 @@
 package com.CAM.AddonManagement;
 
 import com.CAM.DataCollection.*;
-import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
-import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPISearcher;
 import com.CAM.HelperTools.*;
 import com.CAM.Settings.SessionOnlySettings;
 import com.google.gson.Gson;
@@ -52,7 +50,7 @@ public class AddonManager {
             statusCode = 1;
             listener.informStart(position);
             try{
-                if(!SessionOnlySettings.isForceUpdates()
+                if(!SessionOnlySettings.isForceUpdateChecking()
                         && addon.getLastUpdateCheck() != null
                         && System.currentTimeMillis() < addon.getLastUpdateCheck().getTime() + UPDATE_MIN_WAIT
                 ){
@@ -81,7 +79,7 @@ public class AddonManager {
                 }
                 addon.setLastUpdateCheck(new Date());
                 UpdateResponse response = addon.checkForUpdate();
-                if (!response.isUpdateAvailable()) {
+                if (!response.isUpdateAvailable() && !SessionOnlySettings.isForceReDownloads()) {
                     Log.verbose(addon.getName() + " by " + addon.getAuthor() + " is up to date!");
                     statusCode = 1;
                     listener.informFinish(position, statusCode);

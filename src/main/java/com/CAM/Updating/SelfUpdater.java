@@ -125,6 +125,7 @@ public class SelfUpdater {
         String pathToJava = curDir + "\\system\\jdk-12.0.2\\bin\\javaw.exe\" -jar";
         String pathToAutoUpdate = curDir + "\\system\\AutoUpdater.jar";
         String fullCommand = "cmd /c start " + "\"" + pathToElevate + "\" \"" + pathToJava + " \"" + pathToAutoUpdate + "\" " + SLEEP_TIMER;
+
         try {
             Runtime.getRuntime().exec(fullCommand);
         } catch (IOException e) {
