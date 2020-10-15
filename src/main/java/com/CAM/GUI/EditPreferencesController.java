@@ -16,7 +16,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.ResourceBundle;
 
-public class EditPreferencesController implements Initializable {
+public class EditPreferencesController implements Initializable, WindowController {
 
     @FXML
     private CheckBox cfReleases;
@@ -35,7 +35,8 @@ public class EditPreferencesController implements Initializable {
         closeStage(event);
     }
 
-    public void createDialog(){
+    @Override
+    public void initDialog(Object[] args){
         this.preferences = Preferences.getInstance();
         this.cfReleases.setSelected(preferences.cfReleasesOnly);
     }

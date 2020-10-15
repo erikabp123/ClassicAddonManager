@@ -2,8 +2,8 @@ package com.CAM.HelperTools;
 
 public interface UserInput {
 
-    UserInputResponse getUserInput();
+    UserInputResponse getUserInput(String title);
 
-    boolean askToProceedPrompt();
+    boolean askToProceedPrompt(String title, String header, String content);
 
 }

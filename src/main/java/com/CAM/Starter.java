@@ -1,5 +1,12 @@
 package com.CAM;
 
+import com.CAM.AddonManagement.AddonManager;
+import com.CAM.HelperTools.GameVersion;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 public class Starter {
 
     public static boolean showWhatsNew = false;
@@ -15,7 +22,10 @@ public class Starter {
             System.out.println("Already active.");
             System.exit(1);
         }
+
         com.CAM.GUI.Main.begin(args);
+
+
     }
 
 }

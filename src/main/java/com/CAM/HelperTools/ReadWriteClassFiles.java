@@ -35,6 +35,7 @@ public class ReadWriteClassFiles {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println(destinationObjectType.getClass());
         return fileObject;
     }
 

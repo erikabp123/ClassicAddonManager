@@ -20,7 +20,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox fx:id="vboxMainUI" prefHeight="550.0" prefWidth="697.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.CAM.GUI.Controller">
+<VBox fx:id="vboxMainUI" prefHeight="597.0" prefWidth="697.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.CAM.GUI.Controller">
   <children>
     <MenuBar fx:id="menuBar" prefHeight="29.0" prefWidth="719.0" VBox.vgrow="NEVER">
       <menus>
@@ -74,28 +74,28 @@
             </Menu>
       </menus>
     </MenuBar>
-    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="500.0" prefWidth="716.0" VBox.vgrow="ALWAYS">
+    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="500.0" prefWidth="697.0" VBox.vgrow="ALWAYS">
          <children>
-            <ListView fx:id="listViewAddons" layoutX="14.0" layoutY="72.0" prefHeight="231.0" prefWidth="262.0" />
-            <Text fx:id="textManagedLabel" layoutX="14.0" layoutY="26.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Managing 0 addons" textAlignment="CENTER" wrappingWidth="262.0" />
-            <Button fx:id="buttonRemove" layoutX="16.0" layoutY="312.0" mnemonicParsing="false" onAction="#removeAction" prefHeight="32.0" prefWidth="125.0" styleClass="danger" text="Remove" />
-            <Button fx:id="buttonUpdate" layoutX="393.0" layoutY="312.0" mnemonicParsing="false" onAction="#updateAction" prefHeight="32.0" prefWidth="189.0" text="Update Addons" />
-            <TextArea fx:id="textAreaOutputLog" editable="false" focusTraversable="false" layoutX="291.0" layoutY="38.0" prefHeight="265.0" prefWidth="392.0" wrapText="true" />
-            <Text fx:id="textOutputLogLabel" layoutX="292.0" layoutY="26.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Output Log" textAlignment="CENTER" wrappingWidth="392.0" />
-            <TextField fx:id="filterAddonsTextField" layoutX="14.0" layoutY="38.0" prefWidth="262.0" promptText="Search Addons" />
-            <Button fx:id="buttonEdit" layoutX="150.0" layoutY="312.0" mnemonicParsing="false" onAction="#editAction" prefHeight="32.0" prefWidth="125.0" text="Edit" />
-            <ProgressBar fx:id="progressBarDownload" disable="true" layoutX="291.0" layoutY="312.0" prefHeight="18.0" prefWidth="380.0" progress="0.0" visible="false" />
-            <ImageView fx:id="imageViewUpdate" disable="true" fitHeight="150.0" fitWidth="200.0" layoutX="223.0" layoutY="113.0" pickOnBounds="true" preserveRatio="true" />
-            <Text fx:id="textConverting" disable="true" layoutX="232.0" layoutY="93.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Converting Addons to new Format" visible="false" />
-            <Text fx:id="textConvertingProgress" disable="true" layoutX="306.0" layoutY="285.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0/0" visible="false" />
-            <ProgressBar fx:id="progressBarUpdateTotal" layoutX="14.0" layoutY="308.0" prefHeight="18.0" prefWidth="666.0" progress="0.0" visible="false" />
-            <ProgressBar fx:id="progressBarUpdate" layoutX="97.0" layoutY="337.0" prefHeight="18.0" prefWidth="500.0" progress="0.0" visible="false" />
-            <Text fx:id="updatingVersionLabel" disable="true" layoutX="178.0" layoutY="98.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Updating addon manager..." visible="false">
+            <ListView fx:id="listViewAddons" layoutX="14.0" layoutY="112.0" prefHeight="231.0" prefWidth="262.0" />
+            <Text fx:id="textManagedLabel" layoutX="14.0" layoutY="66.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Managing 0 addons" textAlignment="CENTER" wrappingWidth="262.0" />
+            <Button fx:id="buttonRemove" layoutX="16.0" layoutY="352.0" mnemonicParsing="false" onAction="#removeAction" prefHeight="32.0" prefWidth="125.0" styleClass="danger" text="Remove" />
+            <Button fx:id="buttonUpdate" layoutX="393.0" layoutY="352.0" mnemonicParsing="false" onAction="#updateAction" prefHeight="32.0" prefWidth="189.0" text="Update Addons" />
+            <TextArea fx:id="textAreaOutputLog" editable="false" focusTraversable="false" layoutX="291.0" layoutY="78.0" prefHeight="265.0" prefWidth="392.0" wrapText="true" />
+            <Text fx:id="textOutputLogLabel" layoutX="292.0" layoutY="66.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Output Log" textAlignment="CENTER" wrappingWidth="392.0" />
+            <TextField fx:id="filterAddonsTextField" layoutX="14.0" layoutY="78.0" prefWidth="262.0" promptText="Search Addons" />
+            <Button fx:id="buttonEdit" layoutX="150.0" layoutY="352.0" mnemonicParsing="false" onAction="#editAction" prefHeight="32.0" prefWidth="125.0" text="Edit" />
+            <ProgressBar fx:id="progressBarDownload" disable="true" layoutX="291.0" layoutY="352.0" prefHeight="18.0" prefWidth="380.0" progress="0.0" visible="false" />
+            <ImageView fx:id="imageViewUpdate" disable="true" fitHeight="150.0" fitWidth="200.0" layoutX="223.0" layoutY="153.0" pickOnBounds="true" preserveRatio="true" />
+            <Text fx:id="textConverting" disable="true" layoutX="232.0" layoutY="133.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Converting Addons to new Format" visible="false" />
+            <Text fx:id="textConvertingProgress" disable="true" layoutX="306.0" layoutY="325.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0/0" visible="false" />
+            <ProgressBar fx:id="progressBarUpdateTotal" layoutX="14.0" layoutY="348.0" prefHeight="18.0" prefWidth="666.0" progress="0.0" visible="false" />
+            <ProgressBar fx:id="progressBarUpdate" layoutX="97.0" layoutY="377.0" prefHeight="18.0" prefWidth="500.0" progress="0.0" visible="false" />
+            <Text fx:id="updatingVersionLabel" disable="true" layoutX="178.0" layoutY="138.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Updating addon manager..." visible="false">
                <font>
                   <Font size="24.0" />
                </font>
             </Text>
-            <TabPane layoutX="13.0" layoutY="357.0" prefHeight="150.0" prefWidth="672.0" tabClosingPolicy="UNAVAILABLE">
+            <TabPane layoutX="13.0" layoutY="397.0" prefHeight="150.0" prefWidth="672.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
                 <Tab fx:id="tabSearch" text="Search (Curse/Tukui)">
                   <content>
@@ -125,6 +125,7 @@
                 </Tab>
               </tabs>
             </TabPane>
+            <ChoiceBox fx:id="managedVersionChoiceBox" layoutX="18.0" layoutY="14.0" prefWidth="666.0" />
          </children>
     </AnchorPane>
   </children>

@@ -15,35 +15,35 @@ import java.util.Optional;
 
 public class GUIUserInput implements UserInput {
 
+
+    private static GUIUserInput baseContext;
+
     private Window ownerWindow;
-    private String promptText;
 
-    public GUIUserInput(String promptText){
-        this.promptText = promptText;
-        this.ownerWindow = null;
-    }
-
-    public GUIUserInput(String promptText, Window ownerWindow){
-        this.promptText = promptText;
+    public GUIUserInput(Window ownerWindow){
         this.ownerWindow = ownerWindow;
     }
 
+    public static void initBaseContext(Window ownerWindow){
+        baseContext = new GUIUserInput(ownerWindow);
+    }
 
+    public static GUIUserInput getBaseContext(){
+        return baseContext;
+    }
 
     @Override
-    public UserInputResponse getUserInput() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Please select the WoW Classic 'WowClassic.exe' file");
-        FileChooser.ExtensionFilter exeFilter = new FileChooser.ExtensionFilter("Exectuable files", "*.exe");
-        fileChooser.getExtensionFilters().add(exeFilter);
-        File selectedFile = fileChooser.showOpenDialog(ownerWindow);
-        if (selectedFile == null) {
+    public UserInputResponse getUserInput(String title) {
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle(title);
+        File selectedDirectory = chooser.showDialog(ownerWindow);
+
+        if (selectedDirectory == null) {
             return new UserInputResponse(null, true);
         }
         String path = null;
         try {
-            path = selectedFile.getCanonicalPath();
-            path = path.substring(0, path.lastIndexOf("\\"));
+            path = selectedDirectory.getCanonicalPath();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -51,11 +51,11 @@ public class GUIUserInput implements UserInput {
     }
 
     @Override
-    public boolean askToProceedPrompt() {
+    public boolean askToProceedPrompt(String title, String header, String content) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Setup Install Path");
-        alert.setHeaderText("Please provide the path to your WoW Classic 'WowClassic.exe' installation!");
-        alert.setContentText("To proceed, Classic Addon Manager needs to know where WoW classic is installed. Do you wish to proceed?");
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.get() != ButtonType.OK){

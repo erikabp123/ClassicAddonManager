@@ -19,6 +19,8 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -65,7 +67,7 @@ public class Controller implements Initializable {
     //================================================================================
     private static Controller controller;
     final ObservableList<String> listItems = FXCollections.observableArrayList();
-    private AddonManager addonManager;
+    private AddonManagerControl addonManagerControl;
     private final AtomicReference<String> lastSearchQuery = new AtomicReference<>("");
     private final AtomicReference<Boolean> lastSearchQueryCheckbox = new AtomicReference<>(false);
 
@@ -131,6 +133,13 @@ public class Controller implements Initializable {
 
     @FXML
     private CheckBox checkboxClassicSearch;
+
+    //endregion
+
+    //region ChoiceBoxes
+
+    @FXML
+    private ChoiceBox managedVersionChoiceBox;
 
     //endregion
 
@@ -202,12 +211,11 @@ public class Controller implements Initializable {
     //region General Functionality
     @FXML
     private void setupAction() {
-        UserInput userInput = new GUIUserInput("Please provide path to WoW Classic Installation");
-        String installLocation = AddonManager.specifyInstallLocation(userInput);
+        String installLocation = AddonManager.specifyInstallLocation(getAddonManager().getGameVersion());
         if (installLocation == null) {
             return;
         }
-        addonManager.setInstallLocation(installLocation);
+        getAddonManager().setInstallLocation(installLocation);
     }
 
     @FXML
@@ -421,7 +429,7 @@ public class Controller implements Initializable {
 
             UpdateProgressListener progressListener = new GUIUpdateProgressListener(this);
 
-            ArrayList<Exception> exceptions = addonManager.updateAddons(progressListener);
+            ArrayList<Exception> exceptions = getAddonManager().updateAddons(progressListener);
             for (Exception e : exceptions) {
                 if (e.getClass() == ScrapeException.class) {
                     ((ScrapeException) e).getException().printStackTrace();
@@ -475,7 +483,7 @@ public class Controller implements Initializable {
             Platform.runLater(() -> disableAll());
             int selectedIndex = getNonFilteredIndex();
             if (selectedIndex != -1) {
-                addonManager.removeAddon(selectedIndex);
+                getAddonManager().removeAddon(selectedIndex);
             }
             Platform.runLater(() -> {
                 updateListView();
@@ -500,7 +508,7 @@ public class Controller implements Initializable {
             e.printStackTrace();
         }
         EditAddonController dialogController = fxmlLoader.getController();
-        Addon selectedAddon = addonManager.getManagedAddons().get(selectedIndex);
+        Addon selectedAddon = getAddonManager().getManagedAddons().get(selectedIndex);
         dialogController.createDialog(selectedAddon);
 
         Scene scene = new Scene(parent);
@@ -512,7 +520,7 @@ public class Controller implements Initializable {
         stage.getIcons().add(new Image(getClass().getClassLoader().getResource("program_icon.png").toExternalForm()));
         stage.showAndWait();
         if (dialogController.buttonPress == EditAddonController.BUTTON_SAVE) {
-            addonManager.saveToFile();
+            getAddonManager().saveToFile();
         }
     }
     //endregion
@@ -540,26 +548,11 @@ public class Controller implements Initializable {
 
     @FXML
     public void preferencesAction() {
-
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("editPreferences.fxml"));
-        Parent parent = null;
-        try {
-            parent = fxmlLoader.load();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        EditPreferencesController dialogController = fxmlLoader.getController();
-        dialogController.createDialog();
-
-        Scene scene = new Scene(parent);
-        scene.getStylesheets().add(getClass().getClassLoader().getResource("bootstrap3.css").toExternalForm());
-        Stage stage = new Stage();
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.setScene(scene);
-        stage.setTitle("Edit Preferences");
-        stage.getIcons().add(new Image(getClass().getClassLoader().getResource("program_icon.png").toExternalForm()));
-        stage.showAndWait();
+        Window prefWindow = new Window("editPreferences.fxml", "Edit Preferences");
+        prefWindow.initDialog(null);
+        prefWindow.showAndWait();
     }
+
     //endregion
 
     //region Import/Export
@@ -567,7 +560,7 @@ public class Controller implements Initializable {
     private void exportAction() {
         Thread exportThread = new Thread(() -> {
             ArrayList<Addon> addons = new ArrayList<>();
-            for (Addon addon : addonManager.getManagedAddons()) {
+            for (Addon addon : getAddonManager().getManagedAddons()) {
                 addons.add(addon.export());
             }
             Gson gson = new Gson();
@@ -634,7 +627,7 @@ public class Controller implements Initializable {
                 });
                 return;
             }
-            addonManager.importAddonList(imported);
+            getAddonManager().importAddonList(imported);
             Platform.runLater(() -> updateListView());
         });
         importThread.start();
@@ -773,7 +766,7 @@ public class Controller implements Initializable {
     // Error Handling
     //================================================================================
     //region General
-    private Alert createExceptionAlert(String title, String header, String content, Exception e) {
+    public Alert createExceptionAlert(String title, String header, String content, Exception e) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setHeaderText(header);
@@ -1078,7 +1071,7 @@ public class Controller implements Initializable {
                     return;
                 }
 
-                addonManager.addNewAddon(request);
+                getAddonManager().addNewAddon(request);
             } catch (ScrapeException e) {
                 handleAddScrapeException(e);
             } catch (Exception e) {
@@ -1093,7 +1086,7 @@ public class Controller implements Initializable {
     private void startAddonAddSearchedThread(SearchedAddonRequest request) {
         Thread addAddonThread = new Thread(() -> {
             try {
-                addonManager.addNewSearchedAddon(request);
+                getAddonManager().addNewSearchedAddon(request);
             } catch (ScrapeException e) {
                 handleAddSearchedScrapeException(e);
             } catch (Exception e) {
@@ -1364,6 +1357,7 @@ public class Controller implements Initializable {
         filterAddonsTextField.setDisable(true);
         tabManual.setDisable(true);
         tabSearch.setDisable(true);
+        managedVersionChoiceBox.setDisable(true);
     }
 
     public void enableAll() {
@@ -1376,6 +1370,7 @@ public class Controller implements Initializable {
         filterAddonsTextField.setDisable(false);
         tabManual.setDisable(false);
         tabSearch.setDisable(false);
+        managedVersionChoiceBox.setDisable(false);
         // necessary to prevent bug with search field for addons
         textManagedLabel.requestFocus(); //drop focus from combobox
         comboBoxSearch.requestFocus(); //focus combobox
@@ -1428,7 +1423,7 @@ public class Controller implements Initializable {
 
     public void updateListView() {
         ArrayList<String> addonNames = new ArrayList<>();
-        for (Addon addon : addonManager.getManagedAddons()) {
+        for (Addon addon : getAddonManager().getManagedAddons()) {
             addonNames.add(addon.getName());
         }
         listItems.setAll(addonNames);
@@ -1436,7 +1431,7 @@ public class Controller implements Initializable {
     }
 
     private void updateListViewLabel() {
-        int managedCount = addonManager.getManagedAddons().size();
+        int managedCount = getAddonManager().getManagedAddons().size();
         String textSuffix = "addons";
         if (managedCount == 1) {
             textSuffix = "addon";
@@ -1502,11 +1497,34 @@ public class Controller implements Initializable {
     // Misc
     //================================================================================
     public AddonManager getAddonManager() {
-        return addonManager;
+        return addonManagerControl.getActiveManager();
     }
 
-    public void setAddonManager(AddonManager addonManager) {
-        this.addonManager = addonManager;
+    public void setAddonManagerControl(AddonManagerControl addonManagerControl){
+        this.addonManagerControl = addonManagerControl;
+        updateManagedVersionChoiceBox();
+        managedVersionChoiceBox.getSelectionModel().select(0);
+    }
+
+    public void updateManagedVersionChoiceBox(){
+        ObservableList<GameVersion> managed = FXCollections.observableArrayList(addonManagerControl.getManagedGames());
+        managedVersionChoiceBox.setItems(managed);
+    }
+
+    public void updateActiveManager(GameVersion gameVersion){
+        Platform.runLater(() -> {
+            addonManagerControl.setActiveManager(gameVersion);
+            updateListView();
+        });
+
+    }
+
+    public void setupListeners(){
+        managedVersionChoiceBox.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
+            GameVersion gameVersion = (GameVersion) managedVersionChoiceBox.getItems().get(newValue.intValue());
+            Log.verbose("Changing managed version to " +  gameVersion);
+            updateActiveManager(gameVersion);
+        });
     }
 
     public static Controller getInstance() {

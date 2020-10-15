@@ -1,9 +1,13 @@
 package com.CAM.AddonManagement;
 
 import com.CAM.DataCollection.*;
+import com.CAM.GUI.GUIUserInput;
+import com.CAM.GUI.Window;
 import com.CAM.HelperTools.*;
 import com.CAM.Settings.SessionOnlySettings;
 import com.google.gson.Gson;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import net.lingala.zip4j.model.FileHeader;
 
 import java.io.*;
@@ -11,18 +15,37 @@ import java.util.*;
 
 public class AddonManager {
 
-    private String version = "2.0";
+    private static final String DOWNLOAD_LOCATION = "downloads/";
+    private static final String DATA_LOCATION = "data/";
+    private static final String MANAGED_LOCATION = "data/";
+
+
+    private String version = "3.0";
     private List<Addon> managedAddons;
     private String installLocation;
+    private GameVersion gameVersion;
 
-    public AddonManager(String installLocation) {
+    public AddonManager(String installLocation, GameVersion gameVersion) {
         this.managedAddons = new ArrayList<>();
         this.installLocation = installLocation;
+        this.gameVersion = gameVersion;
     }
 
-    public void importAddonList(ArrayList<Addon> addons){
+    public GameVersion getGameVersion(){
+        return gameVersion;
+    }
+
+    private String getManagedLocation() {
+        return DATA_LOCATION + gameVersion + "/managed.json";
+    }
+
+    private String getAddonFoldersLocation() {
+        return DATA_LOCATION + gameVersion + "/managed/";
+    }
+
+    public void importAddonList(ArrayList<Addon> addons) {
         for (Addon addon : addons) {
-            if(listContainsAddon(addon)){
+            if (listContainsAddon(addon)) {
                 continue;
             }
             managedAddons.add(addon);
@@ -30,8 +53,8 @@ public class AddonManager {
         saveToFile();
     }
 
-    private boolean listContainsAddon(Addon addon){
-        for(Addon storedAddon : managedAddons){
+    private boolean listContainsAddon(Addon addon) {
+        for (Addon storedAddon : managedAddons) {
             if (addon.getOrigin().equals(storedAddon.getOrigin())) {
                 return true;
             }
@@ -49,11 +72,11 @@ public class AddonManager {
         for (Addon addon : managedAddons) {
             statusCode = 1;
             listener.informStart(position);
-            try{
-                if(!SessionOnlySettings.isForceUpdateChecking()
+            try {
+                if (!SessionOnlySettings.isForceUpdateChecking()
                         && addon.getLastUpdateCheck() != null
                         && System.currentTimeMillis() < addon.getLastUpdateCheck().getTime() + UPDATE_MIN_WAIT
-                ){
+                ) {
                     Log.log("Checked addon " + addon.getName() + " by " + addon.getAuthor() + " recently! Skipping!");
                     statusCode = 2;
                     listener.informFinish(position, statusCode);
@@ -61,7 +84,7 @@ public class AddonManager {
                     continue;
                 }
                 AddonSource addonSource = addon.getAddonSource();
-                if((addonSource == AddonSource.WOWINTERFACE || addonSource == AddonSource.WOWACE) && addonSource == lastAddonSource){
+                if ((addonSource == AddonSource.WOWINTERFACE || addonSource == AddonSource.WOWACE) && addonSource == lastAddonSource) {
                     try {
                         Thread.sleep(getSleepDelay());
                     } catch (InterruptedException e) {
@@ -70,7 +93,7 @@ public class AddonManager {
                 }
                 lastAddonSource = addonSource;
 
-                if(SessionOnlySettings.isSkipGithubDownloads() && addon.getOrigin().contains("github.com")){
+                if (SessionOnlySettings.isSkipGithubDownloads() && addon.getOrigin().contains("github.com")) {
                     Log.log("Skipping github addon " + addon.getName() + " by " + addon.getAuthor());
                     statusCode = 2;
                     listener.informFinish(position, statusCode);
@@ -91,7 +114,7 @@ public class AddonManager {
                 Log.log("update available for: " + addon.getName() + " by " + addon.getAuthor() + "!");
                 addon.fetchUpdate(response.getRetriever());
                 install(addon);
-            } catch (ScrapeException e){
+            } catch (ScrapeException e) {
                 exceptions.add(e);
                 statusCode = 0;
             } catch (Exception e) {
@@ -109,16 +132,16 @@ public class AddonManager {
 
     public void updateToLatestFormat(UpdateListener listener) throws ScrapeException {
         int i = 1;
-        for(Addon addon : getManagedAddons()){
+        for (Addon addon : getManagedAddons()) {
             listener.notifyProgress(i);
             System.out.println("processing addon " + i + "/" + getManagedAddons().size());
             boolean result = addon.updateToLatestFormat();
-            if(result){
+            if (result) {
                 saveToFile();
             }
             System.out.println("Finished addon " + i + "/" + getManagedAddons().size());
             i++;
-            if(result){
+            if (result) {
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
@@ -207,32 +230,57 @@ public class AddonManager {
         return true;
     }
 
-    public static AddonManager initialize(UserInput userInput) {
+    public static boolean noPreviousSetup(){
+        for(GameVersion gv: GameVersion.values()){
+            String path = "data/" + gv + "/managed.json";
+            File file = new File(path);
+            if(file.exists()) return false;
+        }
+        return true;
+    }
+
+    public static void selectInstallations(HashMap<GameVersion, AddonManager> managers){
+        Window window = new Window("selectAddonFolder.fxml", "Select Addon Installation Folder");
+        window.initDialog(new Object[]{managers});
+        window.showAndWait();
+    }
+
+    public static AddonManager initializeFromScanUI(GameVersion gameVersion, String installLocation) {
         Log.verbose("Looking for managed.json file ...");
-        if (!new File("data/managed.json").isFile()) {
+        String managedPath = "data/" + gameVersion + "/managed.json";
+
+        boolean existingManagedList = new File(managedPath).isFile();
+        if (!existingManagedList) {
             Log.verbose("No managed.json file found!");
-            String installLocation = specifyInstallLocation(userInput);
-            if (installLocation == null) {
-                return null;
-            }
-            AddonManager manager = new AddonManager(installLocation);
+
+            installLocation = installLocation + "Interface\\AddOns\\";
+
+            AddonManager manager = new AddonManager(installLocation, gameVersion);
             manager.saveToFile();
             Log.log("Setup complete!");
+
             return manager;
         }
-        AddonManager addonManager = null;
 
         Log.verbose("Loading managed.json ...");
+        AddonManager addonManager = (AddonManager) ReadWriteClassFiles.readFile(managedPath, new AddonManager(null, null));
+        Log.verbose("Successfully loaded managed.json!");
 
-        try {
-            Reader reader = new FileReader("data/managed.json");
-            Gson gson = new Gson();
-            addonManager = gson.fromJson(reader, AddonManager.class);
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        return addonManager;
+    }
+
+    public static AddonManager loadManagerFromFile(GameVersion gameVersion) {
+        Log.verbose("Looking for managed.json file ...");
+        String managedPath = "data/" + gameVersion + "/managed.json";
+
+        boolean existingManagedList = new File(managedPath).isFile();
+        if (!existingManagedList) {
+            Log.verbose("No managed.json file found!");
+            return null;
         }
 
+        Log.verbose("Loading managed.json ...");
+        AddonManager addonManager = (AddonManager) ReadWriteClassFiles.readFile(managedPath, new AddonManager(null, null));
         Log.verbose("Successfully loaded managed.json!");
 
         return addonManager;
@@ -240,17 +288,7 @@ public class AddonManager {
 
     public void saveToFile() {
         Log.verbose("Attempting to save to managed.json ...");
-        try {
-            Gson gson = new Gson();
-            File file = new File("data/managed.json");
-            file.getParentFile().mkdirs();
-            Writer writer = new FileWriter(file);
-            gson.toJson(this, writer);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ReadWriteClassFiles.saveFile(getManagedLocation(), this);
         Log.verbose("Successfully saved to managed.json!");
     }
 
@@ -258,38 +296,41 @@ public class AddonManager {
         // Uninstall old save for clean updating
         Log.verbose("Attempting install of addon " + addon.getName() + " ...");
         uninstall(addon);
-        String zipPath = "downloads/" + addon.getLastFileName();
+
+        String zipPath = DOWNLOAD_LOCATION + addon.getLastFileName();
         List<FileHeader> headers = FileOperations.unzip(zipPath, installLocation);
         logInstallation(addon, headers);
+
         FileOperations.deleteFile(zipPath);
+
         Set<String> directoriesFullPaths = new HashSet<>();
-        for(String directory : readInstallationLog(addon)){
+        for (String directory : readInstallationLog(addon)) {
             String fullPathToDirectory = installLocation + "\\" + directory;
             directoriesFullPaths.add(fullPathToDirectory);
         }
         Set<String> tocFolders = new HashSet<>();
         handleAllSubFolders(directoriesFullPaths, tocFolders);
         Set<String> newDirectories = new HashSet<>();
-        for(String fullPath : tocFolders){
+        for (String fullPath : tocFolders) {
             File file = new File(fullPath);
             newDirectories.add(file.getName());
         }
         logRename(addon, newDirectories);
-        if(addon.getOrigin().contains("github")) {
+        if (addon.getOrigin().contains("github")) {
             renameFolders(addon);
         }
         Log.verbose("Successfully installed addon!");
     }
 
-    private void handleAllSubFolders(Set<String> directories, Set<String> tocFolders){
-        for(String directory : directories){
+    private void handleAllSubFolders(Set<String> directories, Set<String> tocFolders) {
+        for (String directory : directories) {
             handleFolder(directory, tocFolders);
         }
     }
 
-    private void handleFolder(String directory, Set<String> tocFolders){
+    private void handleFolder(String directory, Set<String> tocFolders) {
         System.out.println("Handling: " + directory);
-        if(!containsSubFolders(directory)){
+        if (!containsSubFolders(directory)) {
             tocFolders.add(directory);
             return;
         }
@@ -307,8 +348,8 @@ public class AddonManager {
         Set<String> moved = new HashSet<>();
         File dir = new File(parentPath);
         File[] files = dir.listFiles();
-        for(int i=0; i<files.length; i++){
-            if(!files[i].isDirectory()){
+        for (int i = 0; i < files.length; i++) {
+            if (!files[i].isDirectory()) {
                 continue;
             }
             String curPath = null;
@@ -331,7 +372,7 @@ public class AddonManager {
         FileOperations.renameDirectory(path, newName);
         String[] pathParts = path.split("\\\\");
         String newPath = "";
-        for(int i=0; i<pathParts.length - 1; i++){
+        for (int i = 0; i < pathParts.length - 1; i++) {
             newPath = newPath + "\\" + pathParts[i];
         }
         newPath = newPath + "\\" + newName;
@@ -361,18 +402,7 @@ public class AddonManager {
 
     private void logRename(Addon addon, Set<String> directories) {
         Log.verbose("Attempting to log rename ...");
-
-        try {
-            Gson gson = new Gson();
-            File file = new File(getInstallationLogPath(addon));
-            file.getParentFile().mkdirs();
-            Writer writer = new FileWriter(file);
-            gson.toJson(directories, writer);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ReadWriteClassFiles.saveFile(getInstallationLogPath(addon), directories);
         Log.verbose("Successfully logged rename!");
     }
 
@@ -395,22 +425,9 @@ public class AddonManager {
         return tocName;
     }
 
-
     private void logInstallation(Addon addon, List<FileHeader> headers) {
         Log.verbose("Attempting to log installation ...");
-
-        try {
-            Gson gson = new Gson();
-            File file = new File(getInstallationLogPath(addon));
-            file.getParentFile().mkdirs();
-            Writer writer = new FileWriter(file);
-            Set<String> rootDirectories = getOnlyRootDirectories(headers);
-            gson.toJson(rootDirectories, writer);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ReadWriteClassFiles.saveFile(getInstallationLogPath(addon), getOnlyRootDirectories(headers));
         Log.verbose("Successfully logged installation!");
     }
 
@@ -434,25 +451,16 @@ public class AddonManager {
             Log.verbose("No installation log found!");
             return new HashSet<>();
         }
-        Set<String> directories = null;
 
         Log.verbose("Loading installation log ...");
 
-        try {
-            Reader reader = new FileReader(filePath);
-            Gson gson = new Gson();
-            directories = gson.fromJson(reader, HashSet.class);
-            reader.close();
-            Log.verbose("Directories: " + directories);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Set<String> directories = (Set<String>) ReadWriteClassFiles.readFile(filePath, new HashSet());
+        Log.verbose("Directories: " + directories);
 
-        Log.verbose("Successfully loaded managed.json!");
+        Log.verbose("Successfully loaded installation log!");
 
         return directories;
     }
-
 
     public List<Addon> getManagedAddons() {
         return managedAddons;
@@ -461,16 +469,25 @@ public class AddonManager {
 
     //HELPER METHODS
 
-    public static boolean verifyInstallLocation(String path) {
+    public static boolean verifyInstallLocation(String path, GameVersion gameVersion) {
         Log.verbose("Checking supplied path ...");
-        String exePath = path + "\\WowClassic.exe";
+
+        String exeName = gameVersion.getExeName();
+        String prefix = gameVersion.getPrefix();
+
+
+        String exePath = path + exeName;
         if (!(new File(exePath).exists())) {
-            Log.verbose("Wow.exe not found!");
+            Log.verbose(exeName + " not found!");
             return false;
         }
+        System.out.println("path: " + exePath);
         String version = FileOperations.getFileVersion(exePath);
-        if (!version.startsWith("1.")) {
-            Log.verbose("Non-classic client!");
+        System.out.println("Version: " + version);
+
+
+        if (!version.startsWith(prefix)) {
+            Log.verbose("Invalid game version!");
             return false;
         }
         Log.verbose("Path valid!");
@@ -478,7 +495,7 @@ public class AddonManager {
     }
 
     public String getInstallationLogPath(Addon addon) {
-        return "data/managed/" + addon.getName() + ".json";
+        return getAddonFoldersLocation() + addon.getName() + ".json";
     }
 
     private Set<String> getOnlyRootDirectories(List<FileHeader> headers) {
@@ -496,22 +513,100 @@ public class AddonManager {
         saveToFile();
     }
 
-    public static String specifyInstallLocation(UserInput userInput) {
+    public static String specifyInstallLocation(GameVersion gameVersion) {
         boolean validPath = false;
         String input = null;
-        boolean proceed = userInput.askToProceedPrompt();
-        if(!proceed){
+        UserInput userInput = GUIUserInput.getBaseContext();
+        
+        String title, header, content;
+        switch (gameVersion){
+            case RETAIL:
+                title = "Setup Install Path";
+                header = "Please provide the path to your WoW installation!";
+                content = "To proceed, Classic Addon Manager needs to know where WoW is installed. Do you wish to proceed?";
+                break;
+            case PTR_RETAIL:
+                title = "Setup Install Path";
+                header = "Please provide the path to your WoW PTR installation!";
+                content = "To proceed, Classic Addon Manager needs to know where WoW PTR is installed. Do you wish to proceed?";
+                break;
+            case CLASSIC:
+                title = "Setup Install Path";
+                header = "Please provide the path to your WoW Classic installation!";
+                content = "To proceed, Classic Addon Manager needs to know where WoW classic is installed. Do you wish to proceed?";
+                break;
+            case PTR_CLASSIC:
+                title = "Setup Install Path";
+                header = "Please provide the path to your WoW Classic PTR installation!";
+                content = "To proceed, Classic Addon Manager needs to know where WoW classic PTR is installed. Do you wish to proceed?";;
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + gameVersion);
+        }
+        
+        boolean proceed = userInput.askToProceedPrompt(title, header, content);
+        if (!proceed) {
             return null;
         }
+
+        String directoryChooserTitle;
+        switch (gameVersion){
+            case RETAIL:
+                directoryChooserTitle = "Navigate to the wow '_retail_' folder";
+                break;
+            case PTR_RETAIL:
+                directoryChooserTitle = "Navigate to the wow '_ptr_' folder";
+                break;
+            case CLASSIC:
+                directoryChooserTitle = "Navigate to the wow '_classic_' folder";
+                break;
+            case PTR_CLASSIC:
+                directoryChooserTitle = "Navigate to the wow '_classic_ptr_' folder";
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + gameVersion);
+        }
+
         while (!validPath) {
-            UserInputResponse response = userInput.getUserInput();
+            UserInputResponse response = userInput.getUserInput(directoryChooserTitle);
             input = response.getInput();
             if (response.isAbort()) {
                 return null;
             }
-            validPath = verifyInstallLocation(response.getInput());
+            System.out.println(response.getInput());
+            validPath = verifyInstallLocation(response.getInput(), gameVersion);
+            if(!validPath) showInvalidFolderAlert(gameVersion);
         }
         return input + "\\Interface\\AddOns";
+    }
+
+    private static void showInvalidFolderAlert(GameVersion gameVersion) {
+        Platform.runLater(() -> {
+            Alert exceptionAlert = new Alert(Alert.AlertType.WARNING);
+            exceptionAlert.setHeaderText("Invalid folder!");
+            exceptionAlert.setContentText("The supplied folder is invalid! Please select the folder containing the " + gameVersion.getExeName() + " file!");
+            exceptionAlert.showAndWait();
+        });
+    }
+
+    public static String scanForInstallLocation(GameVersion gameVersion) throws IOException {
+        String exeName = gameVersion.getExeName();
+
+        String[] commands = {"cmd.exe", "/c", "cd \\ & dir /s /b " + exeName + " & exit"};
+        Process p = Runtime.getRuntime().exec(commands);
+        BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        String line;
+
+        while (true) {
+            line = input.readLine();
+            if (line == null) break;
+
+            if (!line.contains("\\" + gameVersion.getPath() + "\\")) continue;
+            String substring = line.substring(0, line.length() - exeName.length());
+            if(verifyInstallLocation(substring, gameVersion)) return substring;
+        }
+
+        return null;
     }
 
 
