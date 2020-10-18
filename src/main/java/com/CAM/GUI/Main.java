@@ -47,7 +47,7 @@ public class Main extends Application {
         }
 
 
-        //AddonManager addonManager = AddonManager.initialize(GameVersion.CLASSIC);
+       //TODO: add support to transition from Addonmanager V2 to new V3 system
 
         if(managers.keySet().isEmpty()){
             return;
