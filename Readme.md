@@ -1,8 +1,8 @@
-# Classic Wow Addon Manager
+# Classic Addon Manager
 
-This is a WIP addon manager for classic wow which manages addons allowing  for easy updates from projects stored on Curseforge, Github and WowInterface. THIS IS ONLY FOR WINDOWS!
+This is a WIP addon manager, that despite the name NOW SUPPORT RETAIL, RETAIL/CLASSIC PTR AND CLASSIC. It manages your addons allowing  for easy updates from projects stored on Curseforge, Github and WowInterface. THIS IS ONLY FOR WINDOWS!
 
-![Classic Addon Manager](https://user-images.githubusercontent.com/18148143/63517528-6d361700-c4ef-11e9-838f-cb330e925700.png)
+![Classic Addon Manager](https://user-images.githubusercontent.com/18148143/96378250-f811b080-118a-11eb-9cfb-481753cf48ee.png)
 
 ## Getting Started
 
@@ -24,15 +24,10 @@ To start, simply double click the 'Classic Addon Manager.exe' file included in t
     Classic Addon Manager.exe
 ```
 
-The first time you run the program it will ask for your the path to your WoW classic 'WowClassic.exe' installation path. 
-Simply navigate to the location of your 'WowClassic.exe' file. e.g.
-```
-    C:\Program Files (x86)\World of Warcraft\_classic_
-```
+The first time you run the program it will attempt to scan for your wow installations. If your games are installed on another drive, or if there is some other problem with scanning. You will need to supply the path manually.
 
-![Setting Up Path](https://user-images.githubusercontent.com/18148143/63517516-6a3b2680-c4ef-11e9-92f6-3e6cca0081d3.png)
 
-![Browsing To exe](https://user-images.githubusercontent.com/18148143/63517513-69a29000-c4ef-11e9-8e21-6b627a42ba73.png)
+![Setting Up Path](https://user-images.githubusercontent.com/18148143/96378044-d82dbd00-1189-11eb-882b-73026e847d00.png)
 
 ## Updating The Manager
 
@@ -72,17 +67,17 @@ To change installation folder, simply press the 'File' menu at the top of the sc
 
 ## Adding A New Addon
 
-**If your addon is from *Curseforge* or *Tukui*:**
+**If your addon is from *Curseforge*, *Tukui*, or *WowInterface*:**
 
-Select the tab at the bottom of your screen that says '*Search (Curse/Tukui)*'.
-Then select, from the dropdown to the left of the search field, which of the two website to search, and start typing in your search term.
+Select the tab at the bottom of your screen that says '*Search (Curse/Tukui/WowInterface)*'.
+Then select, from the dropdown to the left of the search field, which of the websites to search, and start typing in your search term.
 Hitting enter will then search for the specified term and you can then select which addon you wish to download from the list.
 
-**If your addon is from *WowInterace* or *Github*:**
+**If your addon is from *Github*:**
 
-Select instead the '*Manual (WowInterface/Github)*' tab.
+Select instead the '*Manual (Github)*' tab.
 Simply type in the url in the box and press add. 
-If the addon is a Github addon you will additionally need to specify whether the addon uses Github Releases or if you need to download a specific branch.
+You will additionally need to specify whether the addon uses Github Releases or if you need to download a specific branch.
 For more on this, see the subsection on Github addons.
 
 ***NOTE:* An addon is not automatically downloaded when you add it, it will instead be downloaded automatically along with and addons updates the next time you press the button to update your addons.**
