@@ -42,10 +42,7 @@ public class DateConverter {
     }
 
     public static boolean isNewerDate(Date date1, Date date2){
-        if(date1.compareTo(date2) > 0){
-            return true;
-        }
-        return false;
+        return date1.compareTo(date2) > 0;
     }
 
     public static Date convertFromGithub(String githubFormat){

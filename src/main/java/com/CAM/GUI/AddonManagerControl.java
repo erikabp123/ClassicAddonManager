@@ -1,7 +1,6 @@
 package com.CAM.GUI;
 
 import com.CAM.AddonManagement.AddonManager;
-import com.CAM.HelperTools.FileOperations;
 import com.CAM.HelperTools.GameVersion;
 import com.CAM.HelperTools.Log;
 import com.CAM.HelperTools.ReadWriteClassFiles;
@@ -23,8 +22,18 @@ public class AddonManagerControl {
         activeManager = managers.keySet().iterator().next();
     }
 
+    public HashMap<GameVersion, AddonManager> getManagers(){
+        return managers;
+    }
+
+    public void addManagedGame(GameVersion gameVersion, AddonManager manager){
+        this.managers.put(gameVersion, manager);
+        saveToFile();
+    }
+
     public void setActiveManager(GameVersion gameVersion){
         this.activeManager = gameVersion;
+        saveToFile();
     }
 
     public AddonManager getActiveManager(){
@@ -65,6 +74,21 @@ public class AddonManagerControl {
 
     public Set<GameVersion> getManagedGames() {
         return managers.keySet();
+    }
+
+    public static boolean noPreviousSetup(){
+        for(GameVersion gv: GameVersion.values()){
+            String path = "data/" + gv + "/managed.json";
+            File file = new File(path);
+            if(file.exists()) return false;
+        }
+        return true;
+    }
+
+    public static void selectInstallations(HashMap<GameVersion, AddonManager> managers){
+        Window window = new Window("selectAddonFolder.fxml", "Select Addon Installation Folder");
+        window.initDialog(new Object[]{managers});
+        window.showAndWait();
     }
 
 

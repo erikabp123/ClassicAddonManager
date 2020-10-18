@@ -97,21 +97,21 @@
             </Text>
             <TabPane layoutX="13.0" layoutY="397.0" prefHeight="150.0" prefWidth="672.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
-                <Tab fx:id="tabSearch" text="Search (Curse/Tukui)">
+                <Tab fx:id="tabSearch" text="Search (Curse/Tukui/WowInterface)">
                   <content>
                     <AnchorPane layoutX="14.0" minHeight="0.0" minWidth="0.0" prefHeight="163.0" prefWidth="600.0">
                            <children>
-                              <ChoiceBox fx:id="choiceBoxSource" layoutX="3.0" layoutY="21.0" prefHeight="32.0" prefWidth="104.0" />
+                              <ChoiceBox fx:id="choiceBoxSource" layoutX="3.0" layoutY="21.0" prefHeight="32.0" prefWidth="137.0" />
                               <Button fx:id="buttonSearchAdd" disable="true" focusTraversable="false" layoutX="568.0" layoutY="20.0" mnemonicParsing="false" onAction="#addSearchedAction" prefHeight="26.0" prefWidth="104.0" text="Add" />
-                              <ComboBox fx:id="comboBoxSearch" editable="true" layoutX="108.0" layoutY="21.0" onAction="#searchEnterAction" prefHeight="32.0" prefWidth="454.0" promptText="Search by addon name or author" />
+                              <ComboBox fx:id="comboBoxSearch" editable="true" layoutX="145.0" layoutY="21.0" onAction="#searchEnterAction" prefHeight="32.0" prefWidth="417.0" promptText="Search by addon name or author" />
                               <ImageView fx:id="imageViewAddSearch" fitHeight="13.0" fitWidth="104.0" layoutX="568.0" layoutY="5.0" pickOnBounds="true" preserveRatio="true" visible="false" />
                               <Button fx:id="buttonClearSelection" disable="true" focusTraversable="false" layoutX="503.0" layoutY="20.0" mnemonicParsing="false" onAction="#clearSearchSelectionAction" prefHeight="32.0" prefWidth="59.0" text="X" visible="false" />
-                              <CheckBox fx:id="checkboxClassicSearch" layoutX="3.0" mnemonicParsing="false" text="Search only Classic addons" />
+                              <CheckBox fx:id="checkboxGameVersionSearch" layoutX="3.0" mnemonicParsing="false" text="Search only Gameversion addons" />
                            </children>
                         </AnchorPane>
                   </content>
                 </Tab>
-                <Tab fx:id="tabManual" text="Manual (WowInterface/Github)">
+                <Tab fx:id="tabManual" text="Manual (Github)">
                   <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                            <children>

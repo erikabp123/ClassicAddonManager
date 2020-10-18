@@ -5,10 +5,7 @@ import com.CAM.DataCollection.Tukui.TukuiAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPISearcher;
-import com.CAM.HelperTools.AddonSource;
-import com.CAM.HelperTools.DateConverter;
-import com.CAM.HelperTools.Log;
-import com.CAM.HelperTools.UrlInfo;
+import com.CAM.HelperTools.*;
 
 import java.util.Date;
 
@@ -64,10 +61,10 @@ public class Addon implements Comparable<Addon> {
         return true;
     }
 
-    public UpdateResponse checkForUpdate() throws ScrapeException {
+    public UpdateResponse checkForUpdate(GameVersion gameVersion) throws ScrapeException {
         UpdateResponse response;
         try {
-            AddonInfoRetriever retriever = getInfoRetriever(true);
+            AddonInfoRetriever retriever = getInfoRetriever(true, gameVersion);
             response = new UpdateResponse(retriever, true);
 
             // Check if addon has ever been updated through this program
@@ -90,9 +87,9 @@ public class Addon implements Comparable<Addon> {
         return response;
     }
 
-    private AddonInfoRetriever getInfoRetriever(boolean updatingAddon) throws ScrapeException {
+    private AddonInfoRetriever getInfoRetriever(boolean updatingAddon, GameVersion gameVersion) throws ScrapeException {
         try {
-           return UrlInfo.getCorrespondingInfoRetriever(getAddonSource(), origin, updatingAddon, branch, releases, projectId);
+           return UrlInfo.getCorrespondingInfoRetriever(gameVersion, getAddonSource(), origin, updatingAddon, branch, releases, projectId);
         } catch (ScrapeException e){
             e.setAddon(this);
             throw e;

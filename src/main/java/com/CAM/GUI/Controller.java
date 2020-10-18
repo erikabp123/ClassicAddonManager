@@ -10,6 +10,8 @@ import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPISearcher;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeScraper;
 import com.CAM.DataCollection.TwitchOwned.TwitchSite;
 import com.CAM.DataCollection.TwitchOwned.WowAce.WowAceScraper;
+import com.CAM.DataCollection.WowInterface.WowInterfaceAPISearcher;
+import com.CAM.DataCollection.WowInterface.WowInterfaceAddonResponse.WowInterfaceAddonResponse;
 import com.CAM.HelperTools.*;
 import com.CAM.Settings.SessionOnlySettings;
 import com.CAM.Starter;
@@ -132,7 +134,7 @@ public class Controller implements Initializable {
     private CheckBox checkboxReleases;
 
     @FXML
-    private CheckBox checkboxClassicSearch;
+    private CheckBox checkboxGameVersionSearch;
 
     //endregion
 
@@ -211,11 +213,8 @@ public class Controller implements Initializable {
     //region General Functionality
     @FXML
     private void setupAction() {
-        String installLocation = AddonManager.specifyInstallLocation(getAddonManager().getGameVersion());
-        if (installLocation == null) {
-            return;
-        }
-        getAddonManager().setInstallLocation(installLocation);
+        AddonManagerControl.selectInstallations(null);
+
     }
 
     @FXML
@@ -236,7 +235,7 @@ public class Controller implements Initializable {
 
                 switch (urlInfo.addonSource) {
                     case CURSEFORGE:
-                        checkIfProceedClassic(origin);
+                        checkIfProceedGameVersion(origin);
                         break;
                     case GITHUB:
                         handleGithubAdd(origin);
@@ -248,7 +247,7 @@ public class Controller implements Initializable {
                         startAddonAddThread(origin);
                         break;
                     case WOWACE:
-                        checkIfProceedClassic(origin);
+                        checkIfProceedGameVersion(origin);
                         break;
                 }
             } catch (ScrapeException e) {
@@ -276,13 +275,16 @@ public class Controller implements Initializable {
             try {
                 if (addonSource.equals(CurseAddonResponse.class)) {
                     CurseAddonResponse response = (CurseAddonResponse) addon;
-                    checkIfProceedClassicSearch(response);
+                    checkIfProceedGameVersionSearch(response);
                     return;
                 }
-                if (addonSource.equals(TukuiAddonResponse.class)) {
+                else if (addonSource.equals(TukuiAddonResponse.class)) {
                     startAddonAddSearchedThread((TukuiAddonResponse) addon);
                     Platform.runLater(() -> clearSearchSelectionAction());
-                    return;
+                }
+                else if (addonSource.equals(WowInterfaceAddonResponse.class)){
+                    startAddonAddSearchedThread((WowInterfaceAddonResponse) addon);
+                    Platform.runLater(() -> clearSearchSelectionAction());
                 }
 
             } catch (ScrapeException e) {
@@ -340,7 +342,7 @@ public class Controller implements Initializable {
                 String lastQuery = lastSearchQuery.get();
                 boolean isLastQueryClassicSpecific = lastSearchQueryCheckbox.get();
 
-                boolean isLastQuerySameCheckboxValue = isLastQueryClassicSpecific == checkboxClassicSearch.isSelected();
+                boolean isLastQuerySameCheckboxValue = isLastQueryClassicSpecific == checkboxGameVersionSearch.isSelected();
 
                 if (userQuery.length() < 1
                         || (userQuery.equals(lastQuery) && isLastQuerySameCheckboxValue)
@@ -351,6 +353,8 @@ public class Controller implements Initializable {
                     curseSearch(userQuery);
                 } else if(choiceBoxSource.getValue().equals(AddonSource.TUKUI)){
                     tukuiSearch(userQuery);
+                } else if(choiceBoxSource.getValue().equals(AddonSource.WOWINTERFACE)){
+                    wowInterfaceSearch(userQuery);
                 }
 
                 boolean success = false;
@@ -359,7 +363,7 @@ public class Controller implements Initializable {
                 }
                 success = false;
                 while (!success){
-                    success = lastSearchQueryCheckbox.compareAndSet(lastSearchQueryCheckbox.get(), checkboxClassicSearch.isSelected());
+                    success = lastSearchQueryCheckbox.compareAndSet(lastSearchQueryCheckbox.get(), checkboxGameVersionSearch.isSelected());
                 }
             } catch (ScrapeException e) {
                 handleUnknownException(e);
@@ -372,7 +376,7 @@ public class Controller implements Initializable {
     }
 
     private void tukuiSearch(String userQuery) throws ScrapeException {
-        TukuiAPISearcher apiSearcher = new TukuiAPISearcher();
+        TukuiAPISearcher apiSearcher = new TukuiAPISearcher(getAddonManager().getGameVersion());
         ArrayList<TukuiAddonResponse> results = apiSearcher.search(userQuery);
         ObservableList<TukuiAddonResponse> observableList = FXCollections.observableList(results);
         Platform.runLater(() -> {
@@ -384,17 +388,27 @@ public class Controller implements Initializable {
     private void curseSearch(String userQuery) throws ScrapeException {
         CurseForgeAPISearcher apiSearcher = new CurseForgeAPISearcher();
         ArrayList<CurseAddonResponse> results = apiSearcher.search(userQuery);
-        ArrayList<CurseAddonResponse> classicResults = new ArrayList<>();
+        ArrayList<CurseAddonResponse> gameVersionResults = new ArrayList<>();
         for(CurseAddonResponse response : results){
-            if(response.isClassicSupported()){
-                classicResults.add(response);
+            if(response.isGameVersionSupported(getAddonManager().getGameVersion())){
+                gameVersionResults.add(response);
             }
         }
 
         ObservableList<CurseAddonResponse> observableList;
-        observableList = checkboxClassicSearch.isSelected()
-                ? FXCollections.observableList(classicResults)
+        observableList = checkboxGameVersionSearch.isSelected()
+                ? FXCollections.observableList(gameVersionResults)
                 : FXCollections.observableList(results);
+        Platform.runLater(() -> {
+            comboBoxSearch.show();
+            comboBoxSearch.setItems(observableList);
+        });
+    }
+
+    private void wowInterfaceSearch(String userQuery) throws ScrapeException {
+        WowInterfaceAPISearcher apiSearcher = new WowInterfaceAPISearcher();
+        ArrayList<WowInterfaceAddonResponse> results = apiSearcher.search(userQuery);
+        ObservableList<WowInterfaceAddonResponse> observableList = FXCollections.observableList(results);
         Platform.runLater(() -> {
             comboBoxSearch.show();
             comboBoxSearch.setItems(observableList);
@@ -741,8 +755,9 @@ public class Controller implements Initializable {
 
     private void setupSearchSourcesList() {
         ObservableList<AddonSource> sources = FXCollections.observableArrayList();
-        sources.add(AddonSource.CURSEFORGE);
-        sources.add(AddonSource.TUKUI);
+        for(AddonSource source: AddonSource.values()){
+            if(source.isSearchable()) sources.add(source);
+        }
         choiceBoxSource.setItems(sources);
         choiceBoxSource.getSelectionModel().select(0);
         choiceBoxSource.getSelectionModel()
@@ -880,7 +895,6 @@ public class Controller implements Initializable {
                         }
                         return;
                     case 400:
-                        //TODO: Alert informing that request is bad, maybe addon moved to a new URL? (especially the case with wowinterface)
                         showBadRequestAlert();
                         return;
                     case 503:
@@ -1098,7 +1112,7 @@ public class Controller implements Initializable {
         addAddonThread.start();
     }
 
-    private void checkIfProceedClassic(String origin) throws ScrapeException {
+    private void checkIfProceedGameVersion(String origin) throws ScrapeException {
         AddonSource addonSource = UrlInfo.getAddonSource(origin);
         String trimmedOrigin = UrlInfo.trimString(origin, addonSource);
         TwitchSite scraper = null;
@@ -1109,7 +1123,7 @@ public class Controller implements Initializable {
             scraper = WowAceScraper.getOfficialScraper(trimmedOrigin, false);
         }
 
-        if (scraper.isClassicSupported()) {
+        if (scraper.isGameVersionSupported()) {
             startAddonAddThread(null);
             return;
         }
@@ -1117,12 +1131,13 @@ public class Controller implements Initializable {
 
         String name = scraperConvert.getName();
         Platform.runLater(() -> {
+            String gameVersionString = "\"" + addonManagerControl.getActiveManager().getGameVersion() + "\"";
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Non-Classic addon");
-            alert.setHeaderText("This addon does not seem to have an official classic release!");
-            alert.setContentText(name + " does not seem to have an official classic release. " +
-                    "Do you wish to add it anyway? This will result in downloading non-classic updates until classic ones are released.\n" +
-                    "NOTE: There is no guarantee this addon will work with classic!");
+            alert.setTitle("Non-" + gameVersionString + " addon");
+            alert.setHeaderText("This addon does not seem to have an official " + gameVersionString + " release!");
+            alert.setContentText(name + " does not seem to have an official " + gameVersionString + " release. " +
+                    "Do you wish to add it anyway? This will result in downloading non-" + gameVersionString + " updates until proper ones are released.\n" +
+                    "NOTE: There is no guarantee this addon will work with your installation!");
 
             Optional<ButtonType> result = alert.showAndWait();
             if (result.get() != ButtonType.OK) {
@@ -1133,9 +1148,9 @@ public class Controller implements Initializable {
         });
     }
 
-    private void checkIfProceedClassicSearch(CurseAddonResponse response) throws ScrapeException {
+    private void checkIfProceedGameVersionSearch(CurseAddonResponse response) throws ScrapeException {
 
-        if (response.isClassicSupported()) {
+        if (response.isGameVersionSupported(getAddonManager().getGameVersion())) {
             startAddonAddSearchedThread(response);
             Platform.runLater(() -> clearSearchSelectionAction());
             return;
@@ -1500,10 +1515,21 @@ public class Controller implements Initializable {
         return addonManagerControl.getActiveManager();
     }
 
+    public AddonManagerControl getAddonManagerControl() {
+        return addonManagerControl;
+    }
+
     public void setAddonManagerControl(AddonManagerControl addonManagerControl){
         this.addonManagerControl = addonManagerControl;
         updateManagedVersionChoiceBox();
-        managedVersionChoiceBox.getSelectionModel().select(0);
+        AddonManager activeManager = addonManagerControl.getActiveManager();
+        if(activeManager != null ) managedVersionChoiceBox.getSelectionModel().select(activeManager.getGameVersion());
+        else managedVersionChoiceBox.getSelectionModel().select(0);
+    }
+
+    public void updateSelectedManagedVersionChoiceBox(){
+        AddonManager activeManager = addonManagerControl.getActiveManager();
+        managedVersionChoiceBox.getSelectionModel().select(activeManager.getGameVersion());
     }
 
     public void updateManagedVersionChoiceBox(){
@@ -1515,21 +1541,35 @@ public class Controller implements Initializable {
         Platform.runLater(() -> {
             addonManagerControl.setActiveManager(gameVersion);
             updateListView();
+            checkboxGameVersionSearch.setText("Search only " + gameVersion + " addons");
         });
 
     }
 
     public void setupListeners(){
         managedVersionChoiceBox.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue.intValue() == -1) {
+                return;
+            }
             GameVersion gameVersion = (GameVersion) managedVersionChoiceBox.getItems().get(newValue.intValue());
             Log.verbose("Changing managed version to " +  gameVersion);
             updateActiveManager(gameVersion);
+        });
+        choiceBoxSource.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
+            Platform.runLater(() -> {
+                boolean isCurseforge = choiceBoxSource.getValue().equals(AddonSource.CURSEFORGE);
+                checkboxGameVersionSearch.setVisible(isCurseforge);
+                checkboxGameVersionSearch.setFocusTraversable(isCurseforge);
+                checkboxGameVersionSearch.setDisable(!isCurseforge);
+            });
+
         });
     }
 
     public static Controller getInstance() {
         return controller;
     }
+
 
 
 }

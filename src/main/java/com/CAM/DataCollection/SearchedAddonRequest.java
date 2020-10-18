@@ -3,6 +3,10 @@ package com.CAM.DataCollection;
 import com.CAM.HelperTools.AddonSource;
 
 public interface SearchedAddonRequest {
+
+    @Override
+    String toString();
+
     AddonSource getAddonSource();
 
     String getName();
@@ -12,4 +16,5 @@ public interface SearchedAddonRequest {
     String getOrigin();
 
     int getProjectId();
+
 }

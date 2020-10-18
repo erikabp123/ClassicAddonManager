@@ -5,6 +5,7 @@ import com.CAM.DataCollection.ScrapeException;
 import com.CAM.DataCollection.Tukui.TukuiAddonResponse.TukuiAddonResponse;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
+import com.CAM.HelperTools.GameVersion;
 import com.CAM.HelperTools.UrlInfo;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebResponse;
@@ -17,13 +18,14 @@ public class TukuiAPI extends API {
 
     private JsonObject repoObject;
     private int addonNumber;
-    private String baseUrl = "https://www.tukui.org/api.php?classic-addon=";
+    private String baseUrl;
     private TukuiAddonResponse latestResponse;
 
-    public TukuiAPI(int addonNumber) throws ScrapeException {
+    public TukuiAPI(int addonNumber, GameVersion gameVersion) throws ScrapeException {
         super(null, AddonSource.TUKUI);
         this.repoObject = null;
         this.addonNumber = addonNumber;
+        baseUrl = "https://www.tukui.org/api.php?" + gameVersion.getTukuiSpecificSuffix() + "=";
         Gson gson = new Gson();
         latestResponse = gson.fromJson(getRepoObject(), TukuiAddonResponse.class);
         super.setUrl(latestResponse.getOrigin());
@@ -102,7 +104,7 @@ public class TukuiAPI extends API {
 
     @Override
     protected boolean apiFound() throws ScrapeException {
-        String api = "https://www.tukui.org/api.php?classic-addon=" + addonNumber;
+        String api = baseUrl + addonNumber;
         Page response = jsonScrape(api);
         if (response == null || response.getWebResponse().getContentAsString().equals("")) {
             return false;

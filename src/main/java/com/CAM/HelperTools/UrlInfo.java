@@ -5,7 +5,7 @@ import com.CAM.DataCollection.Github.GitHubAPI;
 import com.CAM.DataCollection.Tukui.TukuiAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPI;
 import com.CAM.DataCollection.TwitchOwned.WowAce.WowAceScraper;
-import com.CAM.DataCollection.WowInterface.WowInterfaceScraper;
+import com.CAM.DataCollection.WowInterface.WowInterfaceAPI;
 
 import java.net.URL;
 
@@ -196,16 +196,16 @@ public class UrlInfo {
         return null;
     }
 
-    public static AddonInfoRetriever getCorrespondingInfoRetriever(AddonSource addonSource, String origin, boolean updatingAddon, String branch, boolean releases, int projectId) throws ScrapeException{
+    public static AddonInfoRetriever getCorrespondingInfoRetriever(GameVersion gameVersion, AddonSource addonSource, String origin, boolean updatingAddon, String branch, boolean releases, int projectId) throws ScrapeException{
         switch (addonSource){
             case CURSEFORGE:
-                return new CurseForgeAPI(projectId);
+                return new CurseForgeAPI(projectId, gameVersion);
             case GITHUB:
                 return new GitHubAPI(origin, branch, releases, updatingAddon);
             case WOWINTERFACE:
-                return new WowInterfaceScraper(origin, updatingAddon);
+                return new WowInterfaceAPI(projectId);
             case TUKUI:
-                return new TukuiAPI(projectId);
+                return new TukuiAPI(projectId, gameVersion);
             case WOWACE:
                 return WowAceScraper.makeScraper(origin, updatingAddon);
         }

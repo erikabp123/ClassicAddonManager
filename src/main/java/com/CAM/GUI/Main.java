@@ -30,8 +30,8 @@ public class Main extends Application {
         HashMap<GameVersion, AddonManager> managers = new HashMap<>();
         AddonManagerControl amc;
 
-        if(AddonManager.noPreviousSetup()){
-            AddonManager.selectInstallations(managers);
+        if(AddonManagerControl.noPreviousSetup()){
+            AddonManagerControl.selectInstallations(managers);
             if(managers.isEmpty()) return;
             amc = new AddonManagerControl(managers);
             amc.saveToFile();
@@ -55,6 +55,7 @@ public class Main extends Application {
         Controller controller = loader.getController();
         controller.setAddonManagerControl(amc);
         controller.updateListView();
+        controller.updateActiveManager(amc.getActiveManager().getGameVersion());
         controller.setupListeners();
         Thread updateAddonFormatThread = new Thread(() -> controller.updateManagedListToLatestFormat());
         updateAddonFormatThread.start();

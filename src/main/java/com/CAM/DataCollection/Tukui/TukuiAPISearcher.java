@@ -3,6 +3,7 @@ package com.CAM.DataCollection.Tukui;
 import com.CAM.DataCollection.ScrapeException;
 import com.CAM.DataCollection.Tukui.TukuiAddonResponse.TukuiAddonResponse;
 import com.CAM.HelperTools.AddonSource;
+import com.CAM.HelperTools.GameVersion;
 import com.CAM.HelperTools.Log;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
@@ -16,16 +17,23 @@ import java.util.Collections;
 
 public class TukuiAPISearcher {
 
-    private String baseUrl = "https://www.tukui.org/api.php?classic-addons=all";
+    private String baseUrl;
+    private GameVersion gameVersion;
+
+    public TukuiAPISearcher(GameVersion gameVersion){
+        this.gameVersion = gameVersion;
+        this.baseUrl = "https://www.tukui.org/api.php?" + gameVersion.getTukuiSuffix() + "=all";
+    }
 
     public ArrayList<TukuiAddonResponse> search(String searchFilter) throws ScrapeException {
-        System.out.println("Searching...");
+        Log.verbose("Performing Tukui search ...");
         Page page = jsonScrape(baseUrl);
         String json = page.getWebResponse().getContentAsString();
         Gson gson = new Gson();
         ArrayList<TukuiAddonResponse> unfilteredResponse = gson.fromJson(json, new TypeToken<ArrayList<TukuiAddonResponse>>() {
         }.getType());
         ArrayList<TukuiAddonResponse> filteredResponse = filterResponse(unfilteredResponse, searchFilter);
+        Log.verbose("Finished Tukui search!");
         return filteredResponse;
     }
 

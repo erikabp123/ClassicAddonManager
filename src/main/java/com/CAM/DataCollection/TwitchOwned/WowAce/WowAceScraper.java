@@ -23,7 +23,7 @@ public class WowAceScraper extends Scraper implements TwitchSite {
 
     public static WowAceScraper makeScraper(String url, boolean updatingAddon) throws ScrapeException {
         WowAceScraper scraper = getOfficialScraper(url, updatingAddon);
-        if(scraper.isClassicSupported()){
+        if(scraper.isGameVersionSupported()){
             return scraper;
         }
         return getNonOfficialScraper(url, updatingAddon);
@@ -163,7 +163,7 @@ public class WowAceScraper extends Scraper implements TwitchSite {
     }
 
     @Override
-    public boolean isClassicSupported(){
+    public boolean isGameVersionSupported(){
         HtmlTableRow row = findFirstDownloadRow(getFetchedPage());
         if(row == null){
             return false;

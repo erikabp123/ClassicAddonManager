@@ -3,6 +3,7 @@ package com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse;
 import com.CAM.DataCollection.SearchedAddonRequest;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
+import com.CAM.HelperTools.GameVersion;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,12 +39,12 @@ public class CurseAddonResponse implements SearchedAddonRequest {
 
     @Override
     public String toString(){
-        return name + " by " + authors.get(0).name;
+        return getName() + " by " + getAuthor();
     }
 
-    public boolean isClassicSupported(){
+    public boolean isGameVersionSupported(GameVersion gameVersion){
         for(CurseFile file : latestFiles){
-            if(file.gameVersionFlavor.equals("wow_classic")){
+            if(file.gameVersionFlavor.equals(gameVersion.getCurseFlavor())){
                 return true;
             }
         }

@@ -7,35 +7,45 @@ import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseFile
 import com.CAM.DataCollection.TwitchOwned.TwitchSite;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
+import com.CAM.HelperTools.GameVersion;
 import com.CAM.Settings.Preferences;
 import com.gargoylesoftware.htmlunit.Page;
 import com.google.gson.Gson;
 
 import java.util.Date;
+import java.util.HashMap;
 
 public class CurseForgeAPI extends API implements TwitchSite {
 
     private final String addonBaseUrl = "https://addons-ecs.forgesvc.net/api/v2/addon/";
     private int projectID;
     private CurseAddonResponse response;
-    private CurseFile latestClassicFile;
-    private CurseFile latestRetailFile;
     private CurseFile fileToUse;
+    private GameVersion gameVersion;
+    private HashMap<GameVersion, CurseFile> latestGameVersionFiles;
 
-    public CurseForgeAPI(int projectID) throws ScrapeException {
+    public CurseForgeAPI(int projectID, GameVersion gameVersion) throws ScrapeException {
         super(null, AddonSource.CURSEFORGE);
+        this.gameVersion = gameVersion;
         this.projectID = projectID;
         response = fetchAddonInfo();
-        latestClassicFile = determineLatestFileByFlavor("wow_classic");
-        latestRetailFile = determineLatestFileByFlavor("wow_retail");
-        fileToUse = isClassicSupported()
-                ? latestClassicFile
-                : latestRetailFile;
+        this.latestGameVersionFiles = new HashMap<>();
+        for(GameVersion gv: GameVersion.values()){
+            CurseFile latestFileByFlavor = determineLatestFileByFlavor(gv.getCurseFlavor());
+            if(latestFileByFlavor == null) continue;
+            latestGameVersionFiles.put(gv, latestFileByFlavor);
+        }
+        fileToUse = determineFileToUse();
+    }
+
+    private CurseFile determineFileToUse(){
+        if(isGameVersionSupported()) return latestGameVersionFiles.get(gameVersion);
+        return latestGameVersionFiles.get(latestGameVersionFiles.keySet().iterator().next());
     }
 
     @Override
-    public boolean isClassicSupported(){
-        return latestClassicFile != null;
+    public boolean isGameVersionSupported(){
+        return latestGameVersionFiles.containsKey(gameVersion);
     }
 
     private CurseAddonResponse fetchAddonInfo() throws ScrapeException {

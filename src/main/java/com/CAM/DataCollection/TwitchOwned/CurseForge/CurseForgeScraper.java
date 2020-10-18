@@ -22,7 +22,7 @@ public class CurseForgeScraper extends Scraper implements TwitchSite {
 
     public static CurseForgeScraper makeScraper(String url, boolean updatingAddon) throws ScrapeException {
         CurseForgeScraper scraper = getOfficialScraper(url, updatingAddon);
-        if(scraper.isClassicSupported()){
+        if(scraper.isGameVersionSupported()){
             return scraper;
         }
         return getNonOfficialScraper(url, updatingAddon);
@@ -156,7 +156,7 @@ public class CurseForgeScraper extends Scraper implements TwitchSite {
     }
 
     @Override
-    public boolean isClassicSupported(){
+    public boolean isGameVersionSupported(){
         HtmlTableRow row = findFirstDownloadRow(getFetchedPage());
         if(row == null){
             return false;

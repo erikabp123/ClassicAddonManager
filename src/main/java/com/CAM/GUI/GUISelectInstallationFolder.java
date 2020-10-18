@@ -1,28 +1,31 @@
 package com.CAM.GUI;
 
 import com.CAM.AddonManagement.AddonManager;
-import com.CAM.HelperTools.GameVersion;
-import com.CAM.HelperTools.LoopController;
-import com.CAM.HelperTools.UserInput;
+import com.CAM.HelperTools.*;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static com.CAM.GUI.GUISelectInstallationFolder.scanForInstallLocation;
+import static com.CAM.GUI.GUISelectInstallationFolder.specifyInstallLocation;
 
 public class GUISelectInstallationFolder implements Initializable, WindowController {
 
@@ -113,6 +116,8 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
     Image imageFailure = new Image(this.getClass().getClassLoader().getResource("failure.png").toExternalForm());
     HashMap<GameVersion, InstallationSearch> searches = new HashMap<>();
     HashMap<GameVersion, AddonManager> managers;
+    AddonManagerControl amc;
+    boolean firstTimeSetup;
 
 
     @FXML
@@ -157,12 +162,29 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
 
     @FXML
     private void saveAction(ActionEvent event) {
-        for(GameVersion gv: searches.keySet()){
-            InstallationSearch search = searches.get(gv);
-            if(!search.isConfirmed()) continue;
-            AddonManager manager = AddonManager.initializeFromScanUI(gv, search.getLocation());
-            managers.put(gv, manager);
+        if(firstTimeSetup){
+            for(GameVersion gv: searches.keySet()){
+                InstallationSearch search = searches.get(gv);
+                if(!search.isConfirmed()) continue;
+                AddonManager manager = AddonManager.initializeFromScanUI(gv, search.getLocation());
+                managers.put(gv, manager);
+            }
+        } else {
+            for(GameVersion gv: searches.keySet()){
+                InstallationSearch search = searches.get(gv);
+                if(!search.isConfirmed()) continue;
+                if(amc.getManagers().keySet().contains(gv)){
+                    String location = search.getLocation() + "Interface\\AddOns\\";
+                    amc.getManagers().get(gv).setInstallLocation(location);
+                    continue;
+                }
+                AddonManager manager = AddonManager.initializeFromScanUI(gv, search.getLocation());
+                amc.addManagedGame(gv, manager);
+            }
+            Controller.getInstance().updateManagedVersionChoiceBox();
+            Controller.getInstance().updateSelectedManagedVersionChoiceBox();
         }
+
         closeStage(event);
     }
 
@@ -181,8 +203,8 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
         selectInstallationContinueButton.setDisable(false);
     }
 
-    private void scanForLocations() {
-        for(GameVersion gv: GameVersion.values()){
+    private void scanForLocations(GameVersion[] versions) {
+        for(GameVersion gv: versions){
             searches.put(gv, createInstallationSearch(gv));
         }
         for(GameVersion gv: searches.keySet()){
@@ -190,6 +212,10 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
             searchThread.setDaemon(true);
             searchThread.start();
         }
+    }
+
+    private void scanForLocations() {
+        scanForLocations(GameVersion.values());
     }
 
     private InstallationSearch createInstallationSearch(GameVersion gameVersion){
@@ -233,8 +259,52 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
 
     @Override
     public void initDialog(Object[] args) {
-        managers = (HashMap<GameVersion, AddonManager>) args[0];
+        firstTimeSetup = (args[0] != null);
         updateButtonGraphics();
+
+        if(firstTimeSetup){
+            managers = (HashMap<GameVersion, AddonManager>) args[0];
+            initFirstTime();
+        }
+        else initFromPrevious();
+
+    }
+
+    public void initFromPrevious(){
+        amc = Controller.getInstance().getAddonManagerControl();
+        HashMap<GameVersion, AddonManager> currentlyManaged = amc.getManagers();
+
+        HashMap<GameVersion, AddonManager> validManager = new HashMap<>();
+        HashSet<GameVersion> rescan = new HashSet<>(Arrays.asList(GameVersion.values().clone()));
+
+        for(GameVersion gv: currentlyManaged.keySet()){
+            String path = currentlyManaged.get(gv).getInstallLocation();
+            path = path.replace("Interface\\AddOns\\", "");
+            System.out.println(path);
+            boolean validInstallation = verifyInstallLocation(path, gv);
+            if(validInstallation) validManager.put(gv, currentlyManaged.get(gv));
+        }
+
+        rescan.removeAll(validManager.keySet());
+        if(!rescan.isEmpty()) scanForLocations(rescan.toArray(new GameVersion[0]));
+        if(!validManager.isEmpty()) markAsValidInstall(validManager);
+
+    }
+
+    private void markAsValidInstall(HashMap<GameVersion, AddonManager> versions) {
+        for(GameVersion gv: versions.keySet()){
+            searches.put(gv, createInstallationSearch(gv));
+        }
+        for(GameVersion gv: versions.keySet()){
+            Platform.runLater(() -> {
+                String path = versions.get(gv).getInstallLocation();
+                path = path.replace("Interface\\AddOns\\", "");
+                searches.get(gv).prefillSearch(path);
+            });
+        }
+    }
+
+    public void initFirstTime(){
         scanForLocations();
     }
 
@@ -257,6 +327,128 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
     public void initialize(URL location, ResourceBundle resources) {
 
     }
+
+    public static String specifyInstallLocation(GameVersion gameVersion) {
+        boolean validPath = false;
+        String input = null;
+        UserInput userInput = GUIUserInput.getBaseContext();
+
+        String title, header, content;
+        switch (gameVersion){
+            case RETAIL:
+                title = "Setup Install Path";
+                header = "Please provide the path to your WoW installation!";
+                content = "To proceed, Classic Addon Manager needs to know where WoW is installed. Do you wish to proceed?";
+                break;
+            case PTR_RETAIL:
+                title = "Setup Install Path";
+                header = "Please provide the path to your WoW PTR installation!";
+                content = "To proceed, Classic Addon Manager needs to know where WoW PTR is installed. Do you wish to proceed?";
+                break;
+            case CLASSIC:
+                title = "Setup Install Path";
+                header = "Please provide the path to your WoW Classic installation!";
+                content = "To proceed, Classic Addon Manager needs to know where WoW classic is installed. Do you wish to proceed?";
+                break;
+            case PTR_CLASSIC:
+                title = "Setup Install Path";
+                header = "Please provide the path to your WoW Classic PTR installation!";
+                content = "To proceed, Classic Addon Manager needs to know where WoW classic PTR is installed. Do you wish to proceed?";;
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + gameVersion);
+        }
+
+        boolean proceed = userInput.askToProceedPrompt(title, header, content);
+        if (!proceed) {
+            return null;
+        }
+
+        String directoryChooserTitle;
+        switch (gameVersion){
+            case RETAIL:
+                directoryChooserTitle = "Navigate to the wow '_retail_' folder";
+                break;
+            case PTR_RETAIL:
+                directoryChooserTitle = "Navigate to the wow '_ptr_' folder";
+                break;
+            case CLASSIC:
+                directoryChooserTitle = "Navigate to the wow '_classic_' folder";
+                break;
+            case PTR_CLASSIC:
+                directoryChooserTitle = "Navigate to the wow '_classic_ptr_' folder";
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + gameVersion);
+        }
+
+        while (!validPath) {
+            UserInputResponse response = userInput.getUserInput(directoryChooserTitle);
+            input = response.getInput() + "\\";
+            if (response.isAbort()) {
+                return null;
+            }
+            System.out.println(input);
+            validPath = verifyInstallLocation(input, gameVersion);
+            if(!validPath) showInvalidFolderAlert(gameVersion);
+        }
+        return input + "Interface\\AddOns";
+    }
+
+    private static void showInvalidFolderAlert(GameVersion gameVersion) {
+        Platform.runLater(() -> {
+            Alert exceptionAlert = new Alert(Alert.AlertType.WARNING);
+            exceptionAlert.setHeaderText("Invalid folder!");
+            exceptionAlert.setContentText("The supplied folder is invalid! Please select the folder containing the " + gameVersion.getExeName() + " file!");
+            exceptionAlert.showAndWait();
+        });
+    }
+
+    public static String scanForInstallLocation(GameVersion gameVersion) throws IOException {
+        String exeName = gameVersion.getExeName();
+
+        String[] commands = {"cmd.exe", "/c", "cd \\ & dir /s /b " + exeName + " & exit"};
+        Process p = Runtime.getRuntime().exec(commands);
+        BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        String line;
+
+        while (true) {
+            line = input.readLine();
+            if (line == null) break;
+
+            if (!line.contains("\\" + gameVersion.getPath() + "\\")) continue;
+            String substring = line.substring(0, line.length() - exeName.length());
+            if(verifyInstallLocation(substring, gameVersion)) return substring;
+        }
+
+        return null;
+    }
+
+    public static boolean verifyInstallLocation(String path, GameVersion gameVersion) {
+        Log.verbose("Checking supplied path ...");
+
+        String exeName = gameVersion.getExeName();
+        String prefix = gameVersion.getPrefix();
+
+
+        String exePath = path + exeName;
+        if (!(new File(exePath).exists())) {
+            Log.verbose(exeName + " not found!");
+            return false;
+        }
+        System.out.println("path: " + exePath);
+        String version = FileOperations.getFileVersion(exePath);
+        System.out.println("Version: " + version);
+
+
+        if (!version.startsWith(prefix)) {
+            Log.verbose("Invalid game version!");
+            return false;
+        }
+        Log.verbose("Path valid!");
+        return true;
+    }
+
 }
 
 class InstallationSearch {
@@ -312,7 +504,7 @@ class InstallationSearch {
     public void startScan() {
         try {
             Platform.runLater(() -> searchingImageView.setImage(imageProcessing));
-            location.set(AddonManager.scanForInstallLocation(gameVersion));
+            location.set(scanForInstallLocation(gameVersion));
             Platform.runLater(() -> {
                 if(skip.get() || location.get() == null) {
                     cancelSearch();
@@ -336,6 +528,11 @@ class InstallationSearch {
         enableManualSelection();
     }
 
+    public void prefillSearch(String currentUrl){
+        location.set(currentUrl);
+        searchSuccess(location.get());
+    }
+
     private void enableManualSelection() {
         manualSelectionButton.setVisible(true);
         manualSelectionButton.setFocusTraversable(true);
@@ -343,7 +540,7 @@ class InstallationSearch {
     }
 
     public void manualSelection() {
-        String installLocation = AddonManager.specifyInstallLocation(gameVersion);
+        String installLocation = specifyInstallLocation(gameVersion);
         if(installLocation == null) return;
         searchSuccess(installLocation);
     }

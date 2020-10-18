@@ -17,7 +17,6 @@ public class AddonManager {
 
     private static final String DOWNLOAD_LOCATION = "downloads/";
     private static final String DATA_LOCATION = "data/";
-    private static final String MANAGED_LOCATION = "data/";
 
 
     private String version = "3.0";
@@ -29,6 +28,10 @@ public class AddonManager {
         this.managedAddons = new ArrayList<>();
         this.installLocation = installLocation;
         this.gameVersion = gameVersion;
+    }
+
+    public String getInstallLocation(){
+        return installLocation;
     }
 
     public GameVersion getGameVersion(){
@@ -101,7 +104,7 @@ public class AddonManager {
                     continue;
                 }
                 addon.setLastUpdateCheck(new Date());
-                UpdateResponse response = addon.checkForUpdate();
+                UpdateResponse response = addon.checkForUpdate(gameVersion);
                 if (!response.isUpdateAvailable() && !SessionOnlySettings.isForceReDownloads()) {
                     Log.verbose(addon.getName() + " by " + addon.getAuthor() + " is up to date!");
                     statusCode = 1;
@@ -175,7 +178,7 @@ public class AddonManager {
             return false;
         }
 
-        AddonInfoRetriever retriever = UrlInfo.getCorrespondingInfoRetriever(urlInfo.addonSource, trimmedOrigin, false, request.branch, request.releases, -1);
+        AddonInfoRetriever retriever = UrlInfo.getCorrespondingInfoRetriever(gameVersion, urlInfo.addonSource, trimmedOrigin, false, request.branch, request.releases, -1);
 
         String name = retriever.getName();
         String author = retriever.getAuthor();
@@ -228,21 +231,6 @@ public class AddonManager {
 
         Log.log("Successfully removed addon!");
         return true;
-    }
-
-    public static boolean noPreviousSetup(){
-        for(GameVersion gv: GameVersion.values()){
-            String path = "data/" + gv + "/managed.json";
-            File file = new File(path);
-            if(file.exists()) return false;
-        }
-        return true;
-    }
-
-    public static void selectInstallations(HashMap<GameVersion, AddonManager> managers){
-        Window window = new Window("selectAddonFolder.fxml", "Select Addon Installation Folder");
-        window.initDialog(new Object[]{managers});
-        window.showAndWait();
     }
 
     public static AddonManager initializeFromScanUI(GameVersion gameVersion, String installLocation) {
@@ -305,7 +293,7 @@ public class AddonManager {
 
         Set<String> directoriesFullPaths = new HashSet<>();
         for (String directory : readInstallationLog(addon)) {
-            String fullPathToDirectory = installLocation + "\\" + directory;
+            String fullPathToDirectory = installLocation + directory;
             directoriesFullPaths.add(fullPathToDirectory);
         }
         Set<String> tocFolders = new HashSet<>();
@@ -389,7 +377,7 @@ public class AddonManager {
         Set<String> directories = readInstallationLog(addon);
         Set<String> renamedDirectories = new HashSet<>();
         for (String directory : directories) {
-            String fullPath = installLocation + "\\" + directory;
+            String fullPath = installLocation + directory;
             if (!determineIfFolderShouldBeRenamed(fullPath)) {
                 renamedDirectories.add(directory);
                 continue;
@@ -435,7 +423,7 @@ public class AddonManager {
         Log.verbose("Attempting uninstall of " + addon.getName() + " ...");
         Set<String> directories = readInstallationLog(addon);
         for (String directory : directories) {
-            String fullPath = installLocation + "\\" + directory;
+            String fullPath = installLocation + directory;
             FileOperations.deleteDirectory(fullPath);
         }
         FileOperations.deleteFile(getInstallationLogPath(addon));
@@ -469,31 +457,6 @@ public class AddonManager {
 
     //HELPER METHODS
 
-    public static boolean verifyInstallLocation(String path, GameVersion gameVersion) {
-        Log.verbose("Checking supplied path ...");
-
-        String exeName = gameVersion.getExeName();
-        String prefix = gameVersion.getPrefix();
-
-
-        String exePath = path + exeName;
-        if (!(new File(exePath).exists())) {
-            Log.verbose(exeName + " not found!");
-            return false;
-        }
-        System.out.println("path: " + exePath);
-        String version = FileOperations.getFileVersion(exePath);
-        System.out.println("Version: " + version);
-
-
-        if (!version.startsWith(prefix)) {
-            Log.verbose("Invalid game version!");
-            return false;
-        }
-        Log.verbose("Path valid!");
-        return true;
-    }
-
     public String getInstallationLogPath(Addon addon) {
         return getAddonFoldersLocation() + addon.getName() + ".json";
     }
@@ -511,102 +474,6 @@ public class AddonManager {
     public void setInstallLocation(String installLocation) {
         this.installLocation = installLocation;
         saveToFile();
-    }
-
-    public static String specifyInstallLocation(GameVersion gameVersion) {
-        boolean validPath = false;
-        String input = null;
-        UserInput userInput = GUIUserInput.getBaseContext();
-        
-        String title, header, content;
-        switch (gameVersion){
-            case RETAIL:
-                title = "Setup Install Path";
-                header = "Please provide the path to your WoW installation!";
-                content = "To proceed, Classic Addon Manager needs to know where WoW is installed. Do you wish to proceed?";
-                break;
-            case PTR_RETAIL:
-                title = "Setup Install Path";
-                header = "Please provide the path to your WoW PTR installation!";
-                content = "To proceed, Classic Addon Manager needs to know where WoW PTR is installed. Do you wish to proceed?";
-                break;
-            case CLASSIC:
-                title = "Setup Install Path";
-                header = "Please provide the path to your WoW Classic installation!";
-                content = "To proceed, Classic Addon Manager needs to know where WoW classic is installed. Do you wish to proceed?";
-                break;
-            case PTR_CLASSIC:
-                title = "Setup Install Path";
-                header = "Please provide the path to your WoW Classic PTR installation!";
-                content = "To proceed, Classic Addon Manager needs to know where WoW classic PTR is installed. Do you wish to proceed?";;
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + gameVersion);
-        }
-        
-        boolean proceed = userInput.askToProceedPrompt(title, header, content);
-        if (!proceed) {
-            return null;
-        }
-
-        String directoryChooserTitle;
-        switch (gameVersion){
-            case RETAIL:
-                directoryChooserTitle = "Navigate to the wow '_retail_' folder";
-                break;
-            case PTR_RETAIL:
-                directoryChooserTitle = "Navigate to the wow '_ptr_' folder";
-                break;
-            case CLASSIC:
-                directoryChooserTitle = "Navigate to the wow '_classic_' folder";
-                break;
-            case PTR_CLASSIC:
-                directoryChooserTitle = "Navigate to the wow '_classic_ptr_' folder";
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + gameVersion);
-        }
-
-        while (!validPath) {
-            UserInputResponse response = userInput.getUserInput(directoryChooserTitle);
-            input = response.getInput();
-            if (response.isAbort()) {
-                return null;
-            }
-            System.out.println(response.getInput());
-            validPath = verifyInstallLocation(response.getInput(), gameVersion);
-            if(!validPath) showInvalidFolderAlert(gameVersion);
-        }
-        return input + "\\Interface\\AddOns";
-    }
-
-    private static void showInvalidFolderAlert(GameVersion gameVersion) {
-        Platform.runLater(() -> {
-            Alert exceptionAlert = new Alert(Alert.AlertType.WARNING);
-            exceptionAlert.setHeaderText("Invalid folder!");
-            exceptionAlert.setContentText("The supplied folder is invalid! Please select the folder containing the " + gameVersion.getExeName() + " file!");
-            exceptionAlert.showAndWait();
-        });
-    }
-
-    public static String scanForInstallLocation(GameVersion gameVersion) throws IOException {
-        String exeName = gameVersion.getExeName();
-
-        String[] commands = {"cmd.exe", "/c", "cd \\ & dir /s /b " + exeName + " & exit"};
-        Process p = Runtime.getRuntime().exec(commands);
-        BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        String line;
-
-        while (true) {
-            line = input.readLine();
-            if (line == null) break;
-
-            if (!line.contains("\\" + gameVersion.getPath() + "\\")) continue;
-            String substring = line.substring(0, line.length() - exeName.length());
-            if(verifyInstallLocation(substring, gameVersion)) return substring;
-        }
-
-        return null;
     }
 
 
