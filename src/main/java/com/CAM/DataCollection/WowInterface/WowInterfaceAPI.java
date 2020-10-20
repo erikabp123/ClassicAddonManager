@@ -11,6 +11,8 @@ import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class WowInterfaceAPI extends API {
 
@@ -22,6 +24,13 @@ public class WowInterfaceAPI extends API {
         super(null, AddonSource.WOWINTERFACE);
         this.projectID = projectID;
         fileToUse = fetchAddonInfo();
+    }
+
+    public static int extractAddonNumber(String origin) {
+        Pattern p = Pattern.compile("\\d+");
+        Matcher m = p.matcher(origin);
+        if(m.find()) return Integer.parseInt(m.group(0));
+        else throw new IllegalArgumentException("URL for WowInterface invalid as it contains no addon number! " + origin);
     }
 
     private WowInterfaceFile fetchAddonInfo() throws ScrapeException {

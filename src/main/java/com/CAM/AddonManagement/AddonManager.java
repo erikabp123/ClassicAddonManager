@@ -38,6 +38,8 @@ public class AddonManager {
         return gameVersion;
     }
 
+    public void setGameVersion(GameVersion gameVersion){ this.gameVersion = gameVersion; }
+
     private String getManagedLocation() {
         return DATA_LOCATION + gameVersion + "/managed.json";
     }
@@ -477,4 +479,11 @@ public class AddonManager {
     }
 
 
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
 }

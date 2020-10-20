@@ -1,11 +1,12 @@
 .button{
-    -fx-border-color: transparent;
-    -fx-border-width: 0;
+    -fx-border-color: black;
+    -fx-border-width: 0.1;
     -fx-background-radius: 0;
-    -fx-background-color: transparent;
+    -fx-background-color: rgba(220,220,220, 0.2);
     -fx-font-family:"Segoe UI", Helvetica, Arial, sans-serif;
     -fx-font-size: 1em; /* 12 */
     -fx-text-fill: #828282;
+
 }
 
 .button:focused {

@@ -5,6 +5,7 @@ import com.CAM.DataCollection.Tukui.TukuiAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPISearcher;
+import com.CAM.DataCollection.WowInterface.WowInterfaceAPI;
 import com.CAM.HelperTools.*;
 
 import java.util.Date;
@@ -102,7 +103,7 @@ public class Addon implements Comparable<Addon> {
 
     public boolean updateToLatestFormat() throws ScrapeException {
         if(getAddonSource() != AddonSource.CURSEFORGE
-                && getAddonSource() != AddonSource.TUKUI){
+                && getAddonSource() != AddonSource.TUKUI && getAddonSource() != AddonSource.WOWINTERFACE){
             return false;
         }
         if(projectId > 0){
@@ -110,15 +111,24 @@ public class Addon implements Comparable<Addon> {
         }
 
         int projectId = 0;
-        if(getAddonSource() == AddonSource.CURSEFORGE){
-            CurseForgeAPISearcher searcher = new CurseForgeAPISearcher();
-            CurseAddonResponse response = searcher.findCorrespondingAddon(this);
-            if(response == null){
-                System.out.println("request user input");
-            }
-            projectId = response.id;
-        } else if(getAddonSource() == AddonSource.TUKUI){
-            projectId = TukuiAPI.extractAddonNumber(this.origin);
+
+        switch (getAddonSource()){
+            case CURSEFORGE:
+                CurseForgeAPISearcher searcher = new CurseForgeAPISearcher();
+                CurseAddonResponse response = searcher.findCorrespondingAddon(this);
+                if(response == null){
+                    System.out.println("request user input");
+                }
+                projectId = response.id;
+                break;
+            case TUKUI:
+                projectId = TukuiAPI.extractAddonNumber(this.origin);
+                break;
+            case WOWINTERFACE:
+                projectId = WowInterfaceAPI.extractAddonNumber(this.origin);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid addon source!");
         }
 
         setProjectId(projectId);

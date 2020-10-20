@@ -56,10 +56,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Controller implements Initializable {
@@ -213,8 +211,7 @@ public class Controller implements Initializable {
     //region General Functionality
     @FXML
     private void setupAction() {
-        AddonManagerControl.selectInstallations(null);
-
+        AddonManagerControl.selectInstallations((HashMap<GameVersion, AddonManager>) null);
     }
 
     @FXML

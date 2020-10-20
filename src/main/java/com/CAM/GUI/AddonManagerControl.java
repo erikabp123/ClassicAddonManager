@@ -1,9 +1,7 @@
 package com.CAM.GUI;
 
 import com.CAM.AddonManagement.AddonManager;
-import com.CAM.HelperTools.GameVersion;
-import com.CAM.HelperTools.Log;
-import com.CAM.HelperTools.ReadWriteClassFiles;
+import com.CAM.HelperTools.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -20,6 +18,21 @@ public class AddonManagerControl {
         this.managers = managers;
         if(managers.keySet().isEmpty()) return;
         activeManager = managers.keySet().iterator().next();
+    }
+
+    public static void convertFromOldFormat() {
+        Log.verbose("Loading managed.json ...");
+        AddonManager addonManager = (AddonManager) ReadWriteClassFiles.readFile("data/managed.json", new AddonManager(null, null));
+        Log.verbose("Successfully loaded managed.json!");
+        addonManager.setVersion("3.0");
+        addonManager.setGameVersion(GameVersion.CLASSIC);
+        addonManager.saveToFile();
+        addonManager.setInstallLocation(addonManager.getInstallLocation() + "\\");
+        HashMap<GameVersion, AddonManager> hashMap = new HashMap<>();
+        hashMap.put(GameVersion.CLASSIC, addonManager);
+        AddonManagerControl amc = new AddonManagerControl(hashMap);
+        FileOperations.moveFile("data/managed/", "data/" + GameVersion.CLASSIC + "/managed/");
+        amc.saveToFile();
     }
 
     public HashMap<GameVersion, AddonManager> getManagers(){
@@ -76,18 +89,27 @@ public class AddonManagerControl {
         return managers.keySet();
     }
 
+    public static boolean noCurrentSetup(){
+        String path = "data/managedGames.json";
+        File file = new File(path);
+        return !file.exists();
+    }
+
     public static boolean noPreviousSetup(){
-        for(GameVersion gv: GameVersion.values()){
-            String path = "data/" + gv + "/managed.json";
-            File file = new File(path);
-            if(file.exists()) return false;
-        }
-        return true;
+        String path = "data/managed.json";
+        File file = new File(path);
+        return !file.exists();
     }
 
     public static void selectInstallations(HashMap<GameVersion, AddonManager> managers){
         Window window = new Window("selectAddonFolder.fxml", "Select Addon Installation Folder");
         window.initDialog(new Object[]{managers});
+        window.showAndWait();
+    }
+
+    public static void selectInstallations(ArgumentPasser argumentPasser){
+        Window window = new Window("selectAddonFolder.fxml", "Select Addon Installation Folder");
+        window.initDialog(new Object[]{argumentPasser});
         window.showAndWait();
     }
 

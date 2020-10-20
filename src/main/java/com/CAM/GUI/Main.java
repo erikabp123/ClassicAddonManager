@@ -1,6 +1,8 @@
 package com.CAM.GUI;
 
 import com.CAM.AddonManagement.AddonManager;
+import com.CAM.HelperTools.ArgumentPasser;
+import com.CAM.HelperTools.FileOperations;
 import com.CAM.HelperTools.GameVersion;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -29,21 +31,23 @@ public class Main extends Application {
 
         HashMap<GameVersion, AddonManager> managers = new HashMap<>();
         AddonManagerControl amc;
+        boolean updateInstallLocation = false;
 
-        if(AddonManagerControl.noPreviousSetup()){
-            AddonManagerControl.selectInstallations(managers);
-            if(managers.isEmpty()) return;
-            amc = new AddonManagerControl(managers);
-            amc.saveToFile();
-        } else {
-            amc = AddonManagerControl.loadFromFile();
-            if(amc == null) return;
-
-            for(GameVersion gv: GameVersion.values()){
-                AddonManager manager = AddonManager.loadManagerFromFile(gv);
-                if(manager == null) continue;
-                managers.put(gv, manager);
+        if(AddonManagerControl.noCurrentSetup()){
+            if(AddonManagerControl.noPreviousSetup()){
+                AddonManagerControl.selectInstallations(managers);
+                if(managers.isEmpty()) return;
+                amc = new AddonManagerControl(managers);
+                amc.saveToFile();
+            } else {
+                AddonManagerControl.convertFromOldFormat();
+                FileOperations.deleteFile("/data/managed.json");
+                amc = load(managers);
+                updateInstallLocation = true;
             }
+
+        } else {
+            amc = load(managers);
         }
 
 
@@ -57,12 +61,32 @@ public class Main extends Application {
         controller.updateListView();
         controller.updateActiveManager(amc.getActiveManager().getGameVersion());
         controller.setupListeners();
+
+        if(updateInstallLocation){
+            ArgumentPasser argumentPasser = new ArgumentPasser();
+            AddonManagerControl.selectInstallations(argumentPasser);
+            if(argumentPasser.getReturnArguments() != null && argumentPasser.getReturnArguments()[0].equals("Cancelled")) return;
+        }
+
+
         Thread updateAddonFormatThread = new Thread(() -> controller.updateManagedListToLatestFormat());
         updateAddonFormatThread.start();
         Thread updateThread = new Thread(() -> controller.checkForUpdate());
         updateThread.start();
 
         stage.show();
+    }
+
+    public static AddonManagerControl load(HashMap<GameVersion, AddonManager> managers){
+        AddonManagerControl amc = AddonManagerControl.loadFromFile();
+        if(amc == null) return null;
+
+        for(GameVersion gv: GameVersion.values()){
+            AddonManager manager = AddonManager.loadManagerFromFile(gv);
+            if(manager == null) continue;
+            managers.put(gv, manager);
+        }
+        return amc;
     }
 
 

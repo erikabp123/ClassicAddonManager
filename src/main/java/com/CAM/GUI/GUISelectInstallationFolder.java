@@ -118,6 +118,7 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
     HashMap<GameVersion, AddonManager> managers;
     AddonManagerControl amc;
     boolean firstTimeSetup;
+    private ArgumentPasser closedButtonClicked;
 
 
     @FXML
@@ -190,6 +191,9 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
 
     @FXML
     private void cancelAction(ActionEvent event) {
+        if(closedButtonClicked != null){
+            closedButtonClicked.setReturnArguments(new Object[]{"Cancelled"});
+        }
         closeStage(event);
     }
 
@@ -259,14 +263,17 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
 
     @Override
     public void initDialog(Object[] args) {
-        firstTimeSetup = (args[0] != null);
+        firstTimeSetup = (args[0] != null && !args[0].getClass().equals(ArgumentPasser.class));
         updateButtonGraphics();
 
         if(firstTimeSetup){
             managers = (HashMap<GameVersion, AddonManager>) args[0];
             initFirstTime();
         }
-        else initFromPrevious();
+        else{
+            if(args[0] != null && args[0].getClass().equals(ArgumentPasser.class)) setClosedButtonClicked((ArgumentPasser) args[0]);
+            initFromPrevious();
+        };
 
     }
 
@@ -280,7 +287,6 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
         for(GameVersion gv: currentlyManaged.keySet()){
             String path = currentlyManaged.get(gv).getInstallLocation();
             path = path.replace("Interface\\AddOns\\", "");
-            System.out.println(path);
             boolean validInstallation = verifyInstallLocation(path, gv);
             if(validInstallation) validManager.put(gv, currentlyManaged.get(gv));
         }
@@ -317,9 +323,9 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
 
         for(Button button: cancelSearchButtons){
             ImageView view = new ImageView(imageFailure);
+            button.setGraphic(view);
             view.setFitHeight(15);
             view.setFitWidth(15);
-            button.setGraphic(view);
         }
     }
 
@@ -388,7 +394,6 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
             if (response.isAbort()) {
                 return null;
             }
-            System.out.println(input);
             validPath = verifyInstallLocation(input, gameVersion);
             if(!validPath) showInvalidFolderAlert(gameVersion);
         }
@@ -436,9 +441,7 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
             Log.verbose(exeName + " not found!");
             return false;
         }
-        System.out.println("path: " + exePath);
         String version = FileOperations.getFileVersion(exePath);
-        System.out.println("Version: " + version);
 
 
         if (!version.startsWith(prefix)) {
@@ -449,6 +452,13 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
         return true;
     }
 
+    public ArgumentPasser getClosedButtonClicked() {
+        return closedButtonClicked;
+    }
+
+    public void setClosedButtonClicked(ArgumentPasser closedButtonClicked) {
+        this.closedButtonClicked = closedButtonClicked;
+    }
 }
 
 class InstallationSearch {
@@ -492,9 +502,9 @@ class InstallationSearch {
     private void searchSuccess(String installLocation){
         searchComplete();
         ImageView buttonView = new ImageView(imageSuccess);
+        confirmSearchButton.setGraphic(buttonView);
         buttonView.setFitHeight(15);
         buttonView.setFitWidth(15);
-        confirmSearchButton.setGraphic(buttonView);
         confirmSearchButton.setVisible(true);
         confirmSearchButton.setDisable(false);
         confirmSearchButton.setFocusTraversable(true);

@@ -106,7 +106,7 @@
                               <ComboBox fx:id="comboBoxSearch" editable="true" layoutX="145.0" layoutY="21.0" onAction="#searchEnterAction" prefHeight="32.0" prefWidth="417.0" promptText="Search by addon name or author" />
                               <ImageView fx:id="imageViewAddSearch" fitHeight="13.0" fitWidth="104.0" layoutX="568.0" layoutY="5.0" pickOnBounds="true" preserveRatio="true" visible="false" />
                               <Button fx:id="buttonClearSelection" disable="true" focusTraversable="false" layoutX="503.0" layoutY="20.0" mnemonicParsing="false" onAction="#clearSearchSelectionAction" prefHeight="32.0" prefWidth="59.0" text="X" visible="false" />
-                              <CheckBox fx:id="checkboxGameVersionSearch" layoutX="3.0" mnemonicParsing="false" text="Search only Gameversion addons" />
+                              <CheckBox fx:id="checkboxGameVersionSearch" disable="true" focusTraversable="false" layoutX="3.0" mnemonicParsing="false" text="Search only Gameversion addons" visible="false" />
                            </children>
                         </AnchorPane>
                   </content>

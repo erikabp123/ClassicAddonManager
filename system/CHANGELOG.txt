@@ -1,3 +1,13 @@
+v0.9
+    - Added support for Retail and PTR for both versions of the game, with ability  to easily expand to TBC or any other versions of the game if/when they launch
+    - Added ability to scan for wow Installations
+    - Added relevant UI for scanning
+    - Added dropdown in main UI to switch between managed versions
+    - Changed WowInterface to be searchable via API
+    - Updated UI to reflect
+    - Added Simple cache system (only used by WowInteface at the moment)
+    - Random cleanup
+
 v0.81
     - Added a feature to toggle forcing re-downloads. When this is enabled updating addons will force them to redownload regardless of whether you have the most up-to-date version. Useful if an addon got uninstalled but you still have the timestamp.
     - Renamed the force updates toggle to force updates checking to better reflect its function. It ignores the built-in 30 min internal cooldown each addon has for checking for new updates.
