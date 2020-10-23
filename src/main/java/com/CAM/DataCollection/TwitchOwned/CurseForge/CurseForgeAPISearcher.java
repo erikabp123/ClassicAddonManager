@@ -1,6 +1,7 @@
 package com.CAM.DataCollection.TwitchOwned.CurseForge;
 
 import com.CAM.AddonManagement.Addon;
+import com.CAM.DataCollection.APISearcher;
 import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.HelperTools.AddonSource;
@@ -17,7 +18,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-public class CurseForgeAPISearcher {
+public class CurseForgeAPISearcher extends APISearcher {
 
     private String baseUrl = "https://addons-ecs.forgesvc.net/api/v2/addon/search?categoryId=0&gameId=1&pageSize=0&searchFilter=";
 
@@ -25,7 +26,7 @@ public class CurseForgeAPISearcher {
         System.out.println("Searching...");
         String encodedSearchFilter = encodeValue(searchFilter);
         String url = baseUrl + encodedSearchFilter;
-        Page page = jsonScrape(url);
+        Page page = fetchJson(url);
         String json = page.getWebResponse().getContentAsString();
         Gson gson = new Gson();
         return gson.fromJson(json, new TypeToken<ArrayList<CurseAddonResponse>>(){}.getType());
@@ -49,25 +50,7 @@ public class CurseForgeAPISearcher {
         }
     }
 
-    private Page jsonScrape(String url) throws DataCollectionException {
-        WebClient client = new WebClient();
-        client.getOptions().setJavaScriptEnabled(false);
-        client.getOptions().setCssEnabled(false);
-        client.getOptions().setUseInsecureSSL(true);
-
-        Page page;
-
-        try {
-            page = client.getPage(url);
-        } catch (FailingHttpStatusCodeException e){
-            Log.verbose("Scrape resulted in " + e.getStatusCode());
-            throw new DataCollectionException(getAddonSource(), e);
-        } catch (IOException e) {
-            throw new DataCollectionException(getAddonSource(), e);
-        }
-        return page;
-    }
-
+    @Override
     public AddonSource getAddonSource(){
         return AddonSource.CURSEFORGE;
     }

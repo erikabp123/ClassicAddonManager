@@ -72,7 +72,8 @@ public abstract class API implements AddonInfoRetriever {
         return source;
     }
 
-    public Page jsonScrape(String url) throws DataCollectionException {
+    //TODO: Merge this and APISearcher fetchJson to reduce code duplication
+    public Page fetchJson(String url) throws DataCollectionException {
         WebClient client = new WebClient();
         client.getOptions().setJavaScriptEnabled(js);
         client.getOptions().setCssEnabled(css);
@@ -83,7 +84,7 @@ public abstract class API implements AddonInfoRetriever {
         try {
             page = client.getPage(url);
         } catch (FailingHttpStatusCodeException e){
-            Log.verbose("Scrape resulted in " + e.getStatusCode());
+            Log.verbose("Fetch resulted in " + e.getStatusCode());
             throw new DataCollectionException(getAddonSource(), e);
         } catch (IOException e) {
             throw new DataCollectionException(getAddonSource(), e);

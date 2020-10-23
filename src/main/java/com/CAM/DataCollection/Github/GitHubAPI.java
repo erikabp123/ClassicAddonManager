@@ -75,7 +75,7 @@ public class GitHubAPI extends API {
         String prefix = "https://api.github.com/repos/";
         String suffix = "/branches/" + branch;
         String url = prefix + repoInfo[3] + "/" + repoInfo[4] + suffix;
-        JsonObject jsonObject = getJsonObject(jsonScrape(url));
+        JsonObject jsonObject = getJsonObject(fetchJson(url));
         String githubDate = jsonObject.getAsJsonObject("commit").getAsJsonObject("commit").getAsJsonObject("author").get("date").toString();
         Date date = DateConverter.convertFromGithub(githubDate);
         return date;
@@ -107,7 +107,7 @@ public class GitHubAPI extends API {
         String prefix = "https://api.github.com/repos/";
         String suffix = "/releases";
         String url = prefix + repoInfo[3] + "/" + repoInfo[4] + suffix;
-        repoArray = getJsonArray(jsonScrape(url));
+        repoArray = getJsonArray(fetchJson(url));
         return repoArray;
     }
 
@@ -135,7 +135,7 @@ public class GitHubAPI extends API {
         String author = scraper.getAuthor();
         String name = scraper.getName();
         String branchesApi = "https://api.github.com/repos/" + author + "/" + name + "/branches";
-        JsonArray array = scraper.getJsonArray(scraper.jsonScrape(branchesApi));
+        JsonArray array = scraper.getJsonArray(scraper.fetchJson(branchesApi));
         for(JsonElement branch : array){
             branches.add(((JsonObject) branch).get("name").getAsString());
         }
@@ -174,7 +174,7 @@ public class GitHubAPI extends API {
         String author = getAuthor();
         String name = getName();
         String api = "https://api.github.com/repos/" + author + "/" + name + "/" + suffix;
-        Page response = jsonScrape(api);
+        Page response = fetchJson(api);
         if(response == null){
             return false;
         }

@@ -66,7 +66,7 @@ public class TukuiAPI extends API {
         }
 
         String url = baseUrl + addonNumber;
-        repoObject = getJsonObject(jsonScrape(url));
+        repoObject = getJsonObject(fetchJson(url));
         return repoObject;
     }
 
@@ -105,7 +105,7 @@ public class TukuiAPI extends API {
     @Override
     protected boolean apiFound() throws DataCollectionException {
         String api = baseUrl + addonNumber;
-        Page response = jsonScrape(api);
+        Page response = fetchJson(api);
         if (response == null || response.getWebResponse().getContentAsString().equals("")) {
             return false;
         }

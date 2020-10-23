@@ -50,8 +50,7 @@ public class CurseForgeAPI extends API implements TwitchSite {
 
     private CurseAddonResponse fetchAddonInfo() throws DataCollectionException {
         String url = addonBaseUrl + projectID;
-        System.out.println(url);
-        Page page = jsonScrape(url);
+        Page page = fetchJson(url);
         String jsonResponse = page.getWebResponse().getContentAsString();
         Gson gson = new Gson();
         return gson.fromJson(jsonResponse, CurseAddonResponse.class);

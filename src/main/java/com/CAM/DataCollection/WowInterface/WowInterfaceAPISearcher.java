@@ -1,6 +1,7 @@
 package com.CAM.DataCollection.WowInterface;
 
 import com.CAM.AddonManagement.Addon;
+import com.CAM.DataCollection.APISearcher;
 import com.CAM.DataCollection.Cache.Cache;
 import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAddonResponse.WowInterfaceAddonResponse;
@@ -16,7 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class WowInterfaceAPISearcher {
+public class WowInterfaceAPISearcher extends APISearcher {
 
     private String baseUrl = "https://api.mmoui.com/v3/game/WOW/filelist.json";
 
@@ -26,7 +27,7 @@ public class WowInterfaceAPISearcher {
         Cache cache = Cache.getInstance();
         Object cachedList = cache.getCacheValue(AddonSource.WOWINTERFACE);
         if(cachedList == null){
-            Page page = jsonScrape(baseUrl);
+            Page page = fetchJson(baseUrl);
             String json = page.getWebResponse().getContentAsString();
             Gson gson = new Gson();
             responses = gson.fromJson(json, new TypeToken<ArrayList<WowInterfaceAddonResponse>>(){}.getType());
@@ -69,25 +70,7 @@ public class WowInterfaceAPISearcher {
         return null;
     }
 
-    private Page jsonScrape(String url) throws DataCollectionException {
-        WebClient client = new WebClient();
-        client.getOptions().setJavaScriptEnabled(false);
-        client.getOptions().setCssEnabled(false);
-        client.getOptions().setUseInsecureSSL(true);
-
-        Page page;
-
-        try {
-            page = client.getPage(url);
-        } catch (FailingHttpStatusCodeException e){
-            Log.verbose("Scrape resulted in " + e.getStatusCode());
-            throw new DataCollectionException(getAddonSource(), e);
-        } catch (IOException e) {
-            throw new DataCollectionException(getAddonSource(), e);
-        }
-        return page;
-    }
-
+    @Override
     public AddonSource getAddonSource(){
         return AddonSource.WOWINTERFACE;
     }
