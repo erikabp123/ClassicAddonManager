@@ -1,13 +1,8 @@
 package com.CAM.AddonManagement;
 
 import com.CAM.DataCollection.*;
-import com.CAM.GUI.GUIUserInput;
-import com.CAM.GUI.Window;
 import com.CAM.HelperTools.*;
 import com.CAM.Settings.SessionOnlySettings;
-import com.google.gson.Gson;
-import javafx.application.Platform;
-import javafx.scene.control.Alert;
 import net.lingala.zip4j.model.FileHeader;
 
 import java.io.*;
@@ -119,11 +114,11 @@ public class AddonManager {
                 Log.log("update available for: " + addon.getName() + " by " + addon.getAuthor() + "!");
                 addon.fetchUpdate(response.getRetriever());
                 install(addon);
-            } catch (ScrapeException e) {
+            } catch (DataCollectionException e) {
                 exceptions.add(e);
                 statusCode = 0;
             } catch (Exception e) {
-                exceptions.add(new ScrapeException(addon, e));
+                exceptions.add(new DataCollectionException(addon, e));
                 statusCode = 0;
             }
             listener.informFinish(position, statusCode);
@@ -135,7 +130,7 @@ public class AddonManager {
         return exceptions;
     }
 
-    public void updateToLatestFormat(UpdateListener listener) throws ScrapeException {
+    public void updateToLatestFormat(UpdateListener listener) throws DataCollectionException {
         int i = 1;
         for (Addon addon : getManagedAddons()) {
             listener.notifyProgress(i);
@@ -162,7 +157,7 @@ public class AddonManager {
         return (new Random()).nextInt(DELAY_RANGE) + MIN_DELAY;
     }
 
-    public boolean addNewAddon(AddonRequest request) throws ScrapeException {
+    public boolean addNewAddon(AddonRequest request) throws DataCollectionException {
         Log.log("Attempting to track new addon ...");
 
         UrlInfo urlInfo = UrlInfo.examineAddonUrl(request.origin);
@@ -194,7 +189,7 @@ public class AddonManager {
         return true;
     }
 
-    public boolean addNewSearchedAddon(SearchedAddonRequest request) throws ScrapeException {
+    public boolean addNewSearchedAddon(SearchedAddonRequest request) throws DataCollectionException {
         Log.log("Attempting to track new addon ...");
 
         int projectId = request.getProjectId();

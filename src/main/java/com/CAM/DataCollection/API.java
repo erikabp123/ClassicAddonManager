@@ -27,19 +27,19 @@ public abstract class API implements AddonInfoRetriever {
     }
 
     @Override
-    public abstract String getDownloadLink() throws ScrapeException;
+    public abstract String getDownloadLink() throws DataCollectionException;
 
     @Override
-    public abstract Date getLastUpdated() throws ScrapeException;
+    public abstract Date getLastUpdated() throws DataCollectionException;
 
     @Override
-    public abstract String getName() throws ScrapeException;
+    public abstract String getName() throws DataCollectionException;
 
     @Override
-    public abstract String getAuthor() throws ScrapeException;
+    public abstract String getAuthor() throws DataCollectionException;
 
     @Override
-    public abstract String getFileName() throws ScrapeException;
+    public abstract String getFileName() throws DataCollectionException;
 
     @Override
     public String getUrl(){
@@ -65,14 +65,14 @@ public abstract class API implements AddonInfoRetriever {
     }
 
     @Override
-    public abstract boolean isValidLink() throws ScrapeException;
+    public abstract boolean isValidLink() throws DataCollectionException;
 
     @Override
     public AddonSource getAddonSource(){
         return source;
     }
 
-    public Page jsonScrape(String url) throws ScrapeException {
+    public Page jsonScrape(String url) throws DataCollectionException {
         WebClient client = new WebClient();
         client.getOptions().setJavaScriptEnabled(js);
         client.getOptions().setCssEnabled(css);
@@ -84,13 +84,13 @@ public abstract class API implements AddonInfoRetriever {
             page = client.getPage(url);
         } catch (FailingHttpStatusCodeException e){
             Log.verbose("Scrape resulted in " + e.getStatusCode());
-            throw new ScrapeException(getAddonSource(), e);
+            throw new DataCollectionException(getAddonSource(), e);
         } catch (IOException e) {
-            throw new ScrapeException(getAddonSource(), e);
+            throw new DataCollectionException(getAddonSource(), e);
         }
         return page;
     }
 
-    protected abstract boolean apiFound() throws ScrapeException;
+    protected abstract boolean apiFound() throws DataCollectionException;
 
 }

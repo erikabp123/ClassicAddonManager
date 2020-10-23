@@ -3,7 +3,7 @@ package com.CAM.Updating;
 import com.CAM.DataCollection.Github.CAMGithubAPI;
 import com.CAM.DataCollection.FileDownloader;
 import com.CAM.DataCollection.Github.GitHubAPI;
-import com.CAM.DataCollection.ScrapeException;
+import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.GUI.Controller;
 import com.CAM.HelperTools.Log;
 import javafx.application.Platform;
@@ -35,7 +35,7 @@ public class SelfUpdater {
         return REPO_LOCATION;
     }
 
-    public static void selfUpdate(Controller controller) throws ScrapeException {
+    public static void selfUpdate(Controller controller) throws DataCollectionException {
         Log.log("Running self updater ...");
         CAMGithubAPI scraper = new CAMGithubAPI(getRepoLocation());
         HashMap<String, String> filesToDownload = determineDownloads(scraper);
@@ -82,7 +82,7 @@ public class SelfUpdater {
         }
     }
 
-    private static HashMap<String, String> determineDownloads(CAMGithubAPI scraper) throws ScrapeException {
+    private static HashMap<String, String> determineDownloads(CAMGithubAPI scraper) throws DataCollectionException {
         HashMap<String, String> filesToDownload = new HashMap<>();
         VersionInfo versionInfo = VersionInfo.readVersioningFile();
         boolean newTag = getTag(scraper) > VersionInfo.CAM_VERSION;
@@ -140,7 +140,7 @@ public class SelfUpdater {
         }
     }
 
-    public static double getTag(GitHubAPI scraper) throws ScrapeException {
+    public static double getTag(GitHubAPI scraper) throws DataCollectionException {
         String cleaned = scraper.getTag().replace("v", "");
         double tagAsNum = Double.parseDouble(cleaned);
         return tagAsNum;

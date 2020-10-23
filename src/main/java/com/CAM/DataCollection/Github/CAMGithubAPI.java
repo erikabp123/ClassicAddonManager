@@ -1,15 +1,15 @@
 package com.CAM.DataCollection.Github;
 
-import com.CAM.DataCollection.ScrapeException;
+import com.CAM.DataCollection.DataCollectionException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 public class CAMGithubAPI extends GitHubAPI {
-    public CAMGithubAPI(String repo) throws ScrapeException {
+    public CAMGithubAPI(String repo) throws DataCollectionException {
         super(repo, null, true, true);
     }
 
-    public String getReleaseJarDownload() throws ScrapeException {
+    public String getReleaseJarDownload() throws DataCollectionException {
         JsonArray jsonArray = getRepoArray();
         JsonArray assets = ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets"));
         int assetIndex = 0;
@@ -25,7 +25,7 @@ public class CAMGithubAPI extends GitHubAPI {
         return downloadLink;
     }
 
-    public String getUpdateManifestLink() throws ScrapeException {
+    public String getUpdateManifestLink() throws DataCollectionException {
         JsonArray jsonArray = getRepoArray();
         JsonArray assets = ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets"));
         int assetIndex = 0;
@@ -41,7 +41,7 @@ public class CAMGithubAPI extends GitHubAPI {
         return downloadLink;
     }
 
-    public String getReleaseExeDownload() throws ScrapeException {
+    public String getReleaseExeDownload() throws DataCollectionException {
         JsonArray jsonArray = getRepoArray();
         JsonArray assets = ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets"));
         int assetIndex = 0;
@@ -57,7 +57,7 @@ public class CAMGithubAPI extends GitHubAPI {
         return downloadLink;
     }
 
-    public String getChangelogDownload() throws ScrapeException {
+    public String getChangelogDownload() throws DataCollectionException {
         JsonArray jsonArray = getRepoArray();
         JsonArray assets = ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets"));
         int assetIndex = 0;

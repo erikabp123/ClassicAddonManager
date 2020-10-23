@@ -1,6 +1,6 @@
 package com.CAM.DataCollection.Tukui;
 
-import com.CAM.DataCollection.ScrapeException;
+import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.Tukui.TukuiAddonResponse.TukuiAddonResponse;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.GameVersion;
@@ -25,7 +25,7 @@ public class TukuiAPISearcher {
         this.baseUrl = "https://www.tukui.org/api.php?" + gameVersion.getTukuiSuffix() + "=all";
     }
 
-    public ArrayList<TukuiAddonResponse> search(String searchFilter) throws ScrapeException {
+    public ArrayList<TukuiAddonResponse> search(String searchFilter) throws DataCollectionException {
         Log.verbose("Performing Tukui search ...");
         Page page = jsonScrape(baseUrl);
         String json = page.getWebResponse().getContentAsString();
@@ -51,7 +51,7 @@ public class TukuiAPISearcher {
         return filteredResponse;
     }
 
-    private Page jsonScrape(String url) throws ScrapeException {
+    private Page jsonScrape(String url) throws DataCollectionException {
         WebClient client = new WebClient();
         client.getOptions().setJavaScriptEnabled(false);
         client.getOptions().setCssEnabled(false);
@@ -63,9 +63,9 @@ public class TukuiAPISearcher {
             page = client.getPage(url);
         } catch (FailingHttpStatusCodeException e) {
             Log.verbose("Scrape resulted in " + e.getStatusCode());
-            throw new ScrapeException(getAddonSource(), e);
+            throw new DataCollectionException(getAddonSource(), e);
         } catch (IOException e) {
-            throw new ScrapeException(getAddonSource(), e);
+            throw new DataCollectionException(getAddonSource(), e);
         }
         return page;
     }

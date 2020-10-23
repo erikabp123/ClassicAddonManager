@@ -21,8 +21,6 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -227,7 +225,7 @@ public class Controller implements Initializable {
 
                 UrlInfo urlInfo = UrlInfo.examineAddonUrl(origin);
                 if (!urlInfo.isValid) {
-                    throw new ScrapeException(null, "URL does not point to a valid addon! Please double check the URL and try again!");
+                    throw new DataCollectionException(null, "URL does not point to a valid addon! Please double check the URL and try again!");
                 }
 
                 switch (urlInfo.addonSource) {
@@ -247,7 +245,7 @@ public class Controller implements Initializable {
                         checkIfProceedGameVersion(origin);
                         break;
                 }
-            } catch (ScrapeException e) {
+            } catch (DataCollectionException e) {
                 handleAddScrapeException(e);
                 cleanUpAfterAddAction();
             } catch (Exception e) {
@@ -284,7 +282,7 @@ public class Controller implements Initializable {
                     Platform.runLater(() -> clearSearchSelectionAction());
                 }
 
-            } catch (ScrapeException e) {
+            } catch (DataCollectionException e) {
                 handleAddScrapeException(e);
                 cleanUpAfterAddAction();
             } catch (Exception e) {
@@ -362,7 +360,7 @@ public class Controller implements Initializable {
                 while (!success){
                     success = lastSearchQueryCheckbox.compareAndSet(lastSearchQueryCheckbox.get(), checkboxGameVersionSearch.isSelected());
                 }
-            } catch (ScrapeException e) {
+            } catch (DataCollectionException e) {
                 handleUnknownException(e);
             }
 
@@ -372,7 +370,7 @@ public class Controller implements Initializable {
         searchThread.start();
     }
 
-    private void tukuiSearch(String userQuery) throws ScrapeException {
+    private void tukuiSearch(String userQuery) throws DataCollectionException {
         TukuiAPISearcher apiSearcher = new TukuiAPISearcher(getAddonManager().getGameVersion());
         ArrayList<TukuiAddonResponse> results = apiSearcher.search(userQuery);
         ObservableList<TukuiAddonResponse> observableList = FXCollections.observableList(results);
@@ -382,7 +380,7 @@ public class Controller implements Initializable {
         });
     }
 
-    private void curseSearch(String userQuery) throws ScrapeException {
+    private void curseSearch(String userQuery) throws DataCollectionException {
         CurseForgeAPISearcher apiSearcher = new CurseForgeAPISearcher();
         ArrayList<CurseAddonResponse> results = apiSearcher.search(userQuery);
         ArrayList<CurseAddonResponse> gameVersionResults = new ArrayList<>();
@@ -402,7 +400,7 @@ public class Controller implements Initializable {
         });
     }
 
-    private void wowInterfaceSearch(String userQuery) throws ScrapeException {
+    private void wowInterfaceSearch(String userQuery) throws DataCollectionException {
         WowInterfaceAPISearcher apiSearcher = new WowInterfaceAPISearcher();
         ArrayList<WowInterfaceAddonResponse> results = apiSearcher.search(userQuery);
         ObservableList<WowInterfaceAddonResponse> observableList = FXCollections.observableList(results);
@@ -442,9 +440,9 @@ public class Controller implements Initializable {
 
             ArrayList<Exception> exceptions = getAddonManager().updateAddons(progressListener);
             for (Exception e : exceptions) {
-                if (e.getClass() == ScrapeException.class) {
-                    ((ScrapeException) e).getException().printStackTrace();
-                    handleUpdateScrapeException((ScrapeException) e);
+                if (e.getClass() == DataCollectionException.class) {
+                    ((DataCollectionException) e).getException().printStackTrace();
+                    handleUpdateScrapeException((DataCollectionException) e);
                 } else {
                     handleUnknownException(e);
                 }
@@ -472,7 +470,7 @@ public class Controller implements Initializable {
             });
             getAddonManager().updateToLatestFormat(progress -> Platform.runLater(() ->
                     textConvertingProgress.setText(progress + "/" + getAddonManager().getManagedAddons().size())));
-        } catch (ScrapeException e) {
+        } catch (DataCollectionException e) {
             e.printStackTrace();
         } finally {
             Platform.runLater(() -> {
@@ -651,7 +649,7 @@ public class Controller implements Initializable {
         Thread updateThread = new Thread(() -> {
             try {
                 SelfUpdater.selfUpdate(Controller.controller);
-            } catch (ScrapeException e) {
+            } catch (DataCollectionException e) {
                 handleUnknownException(e);
             }
         });
@@ -787,8 +785,8 @@ public class Controller implements Initializable {
         // Create expandable Exception.
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        if (e.getClass().equals(ScrapeException.class)) {
-            ScrapeException exception = (ScrapeException) e;
+        if (e.getClass().equals(DataCollectionException.class)) {
+            DataCollectionException exception = (DataCollectionException) e;
             if (exception.getAddon() != null) {
                 pw.append("Addon: " + exception.getAddon().getName() + "\n");
                 pw.append("Author: " + exception.getAddon().getAuthor() + "\n");
@@ -825,7 +823,7 @@ public class Controller implements Initializable {
         return alert;
     }
 
-    private void showInvalidUrlAlert(ScrapeException e) {
+    private void showInvalidUrlAlert(DataCollectionException e) {
         Platform.runLater(() -> {
             Alert invalidAlert = new Alert(Alert.AlertType.ERROR);
             invalidAlert.setTitle("Invalid URL");
@@ -872,7 +870,7 @@ public class Controller implements Initializable {
     //endregion
 
     //region Adding
-    private void handleAddScrapeException(ScrapeException e) {
+    private void handleAddScrapeException(DataCollectionException e) {
         e.printStackTrace();
         Platform.runLater(() -> {
             if (e.getType().equals(FailingHttpStatusCodeException.class)) {
@@ -905,14 +903,14 @@ public class Controller implements Initializable {
                 }
             }
 
-            if (e.getType().equals(ScrapeException.class)) {
+            if (e.getType().equals(DataCollectionException.class)) {
                 showInvalidUrlAlert(e);
                 return;
             }
         });
     }
 
-    private void handleAddSearchedScrapeException(ScrapeException e) {
+    private void handleAddSearchedScrapeException(DataCollectionException e) {
         e.printStackTrace();
         Platform.runLater(() -> {
             if (e.getType().equals(FailingHttpStatusCodeException.class)) {
@@ -930,7 +928,7 @@ public class Controller implements Initializable {
                 }
             }
 
-            if (e.getType().equals(ScrapeException.class)) {
+            if (e.getType().equals(DataCollectionException.class)) {
                 showInvalidUrlAlert(e);
                 return;
             }
@@ -939,7 +937,7 @@ public class Controller implements Initializable {
     //endregion
 
     //region Updates
-    private void handleUpdateScrapeException(ScrapeException e) {
+    private void handleUpdateScrapeException(DataCollectionException e) {
         Log.log("Classic Addon Manager encountered an issue and is stopping!");
         e.printStackTrace();
         if (e.getType().equals(FailingHttpStatusCodeException.class)) {
@@ -979,7 +977,7 @@ public class Controller implements Initializable {
             //TODO: Add any other causes of FailingHttpStatusCodeExepection here
         }
 
-        if (e.getType().equals(ScrapeException.class)) {
+        if (e.getType().equals(DataCollectionException.class)) {
             showInvalidUrlAlert(e);
         }
 
@@ -1083,7 +1081,7 @@ public class Controller implements Initializable {
                 }
 
                 getAddonManager().addNewAddon(request);
-            } catch (ScrapeException e) {
+            } catch (DataCollectionException e) {
                 handleAddScrapeException(e);
             } catch (Exception e) {
                 handleUnknownException(e);
@@ -1098,7 +1096,7 @@ public class Controller implements Initializable {
         Thread addAddonThread = new Thread(() -> {
             try {
                 getAddonManager().addNewSearchedAddon(request);
-            } catch (ScrapeException e) {
+            } catch (DataCollectionException e) {
                 handleAddSearchedScrapeException(e);
             } catch (Exception e) {
                 handleUnknownException(e);
@@ -1109,7 +1107,7 @@ public class Controller implements Initializable {
         addAddonThread.start();
     }
 
-    private void checkIfProceedGameVersion(String origin) throws ScrapeException {
+    private void checkIfProceedGameVersion(String origin) throws DataCollectionException {
         AddonSource addonSource = UrlInfo.getAddonSource(origin);
         String trimmedOrigin = UrlInfo.trimString(origin, addonSource);
         TwitchSite scraper = null;
@@ -1145,7 +1143,7 @@ public class Controller implements Initializable {
         });
     }
 
-    private void checkIfProceedGameVersionSearch(CurseAddonResponse response) throws ScrapeException {
+    private void checkIfProceedGameVersionSearch(CurseAddonResponse response) throws DataCollectionException {
 
         if (response.isGameVersionSupported(getAddonManager().getGameVersion())) {
             startAddonAddSearchedThread(response);
@@ -1172,7 +1170,7 @@ public class Controller implements Initializable {
         });
     }
 
-    private void handleGithubAdd(String origin) throws ScrapeException {
+    private void handleGithubAdd(String origin) throws DataCollectionException {
         String trimmedOrigin = UrlInfo.trimGitHubUrl(origin);
         if (checkboxReleases.isSelected()) {
             startAddonAddThread(null);
@@ -1181,7 +1179,7 @@ public class Controller implements Initializable {
         determineBranch(trimmedOrigin);
     }
 
-    private void determineBranch(String origin) throws ScrapeException {
+    private void determineBranch(String origin) throws DataCollectionException {
         String trimmedOrigin = UrlInfo.trimGitHubUrl(origin);
         ArrayList<String> names = GitHubAPI.getBranches(trimmedOrigin);
         Platform.runLater(() -> {
@@ -1227,7 +1225,7 @@ public class Controller implements Initializable {
     public void checkForUpdate() {
         try {
             SelfUpdater.selfUpdate(this);
-        } catch (ScrapeException e) {
+        } catch (DataCollectionException e) {
             Platform.runLater(() -> handleUnknownException(e));
         }
     }

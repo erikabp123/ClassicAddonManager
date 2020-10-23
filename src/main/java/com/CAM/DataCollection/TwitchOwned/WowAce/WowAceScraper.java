@@ -1,6 +1,6 @@
 package com.CAM.DataCollection.TwitchOwned.WowAce;
 
-import com.CAM.DataCollection.ScrapeException;
+import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.Scraper;
 import com.CAM.DataCollection.TwitchOwned.TwitchSite;
 import com.CAM.HelperTools.AddonSource;
@@ -11,6 +11,7 @@ import com.gargoylesoftware.htmlunit.html.*;
 import java.util.Date;
 import java.util.List;
 
+@Deprecated
 public class WowAceScraper extends Scraper implements TwitchSite {
 
     private final static String gameVersion = "1738749986%3A67408"; //TODO: change to non-final and support automatic scraping of gameVersion in case it changes
@@ -21,7 +22,7 @@ public class WowAceScraper extends Scraper implements TwitchSite {
     private String baseUrl;
     private HtmlPage scrapedOverviewPage;
 
-    public static WowAceScraper makeScraper(String url, boolean updatingAddon) throws ScrapeException {
+    public static WowAceScraper makeScraper(String url, boolean updatingAddon) throws DataCollectionException {
         WowAceScraper scraper = getOfficialScraper(url, updatingAddon);
         if(scraper.isGameVersionSupported()){
             return scraper;
@@ -29,19 +30,19 @@ public class WowAceScraper extends Scraper implements TwitchSite {
         return getNonOfficialScraper(url, updatingAddon);
     }
 
-    public static WowAceScraper getNonOfficialScraper(String url, boolean updatingAddon) throws ScrapeException {
+    public static WowAceScraper getNonOfficialScraper(String url, boolean updatingAddon) throws DataCollectionException {
         return new WowAceScraper(url, nonOfficialSuffix, updatingAddon);
     }
 
-    public static WowAceScraper getOfficialScraper(String url, boolean updatingAddon) throws ScrapeException {
+    public static WowAceScraper getOfficialScraper(String url, boolean updatingAddon) throws DataCollectionException {
         return new WowAceScraper(url, officialSuffix, updatingAddon);
     }
 
-    public WowAceScraper(String url, String suffix, boolean updatingAddon) throws ScrapeException {
+    public WowAceScraper(String url, String suffix, boolean updatingAddon) throws DataCollectionException {
         super(url + suffix, AddonSource.WOWACE);
         this.baseUrl = url;
         if(!updatingAddon && !isValidLink()){
-            throw new ScrapeException(getAddonSource(), "Invalid WowAce url!");
+            throw new DataCollectionException(getAddonSource(), "Invalid WowAce url!");
         }
     }
 
@@ -75,7 +76,7 @@ public class WowAceScraper extends Scraper implements TwitchSite {
     }
 
     @Override
-    public String getAuthor() throws ScrapeException {
+    public String getAuthor() throws DataCollectionException {
         Log.verbose("Fetching author name!");
         HtmlPage page = getScrapedOverviewPage();
         HtmlListItem authorListItem = (HtmlListItem) page.getByXPath("//li[@class='user-tag-large owner']").get(0);
@@ -86,7 +87,7 @@ public class WowAceScraper extends Scraper implements TwitchSite {
         return sanatizeInput(author);
     }
 
-    private HtmlPage getScrapedOverviewPage() throws ScrapeException {
+    private HtmlPage getScrapedOverviewPage() throws DataCollectionException {
         if(scrapedOverviewPage != null){
             return scrapedOverviewPage;
         }
@@ -103,7 +104,7 @@ public class WowAceScraper extends Scraper implements TwitchSite {
     }
 
     @Override
-    public boolean isValidLink() throws ScrapeException {
+    public boolean isValidLink() throws DataCollectionException {
         WowAceScraper scraper = this;
         if(getUrl().endsWith(officialSuffix)){
             scraper = getNonOfficialScraper(baseUrl, false);

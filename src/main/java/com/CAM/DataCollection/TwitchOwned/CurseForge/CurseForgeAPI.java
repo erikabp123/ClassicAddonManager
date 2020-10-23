@@ -1,7 +1,7 @@
 package com.CAM.DataCollection.TwitchOwned.CurseForge;
 
 import com.CAM.DataCollection.API;
-import com.CAM.DataCollection.ScrapeException;
+import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseFile;
 import com.CAM.DataCollection.TwitchOwned.TwitchSite;
@@ -24,7 +24,7 @@ public class CurseForgeAPI extends API implements TwitchSite {
     private GameVersion gameVersion;
     private HashMap<GameVersion, CurseFile> latestGameVersionFiles;
 
-    public CurseForgeAPI(int projectID, GameVersion gameVersion) throws ScrapeException {
+    public CurseForgeAPI(int projectID, GameVersion gameVersion) throws DataCollectionException {
         super(null, AddonSource.CURSEFORGE);
         this.gameVersion = gameVersion;
         this.projectID = projectID;
@@ -48,7 +48,7 @@ public class CurseForgeAPI extends API implements TwitchSite {
         return latestGameVersionFiles.containsKey(gameVersion);
     }
 
-    private CurseAddonResponse fetchAddonInfo() throws ScrapeException {
+    private CurseAddonResponse fetchAddonInfo() throws DataCollectionException {
         String url = addonBaseUrl + projectID;
         System.out.println(url);
         Page page = jsonScrape(url);

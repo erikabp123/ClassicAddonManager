@@ -2,9 +2,7 @@ package com.CAM.DataCollection.WowInterface;
 
 import com.CAM.AddonManagement.Addon;
 import com.CAM.DataCollection.Cache.Cache;
-import com.CAM.DataCollection.ScrapeException;
-import com.CAM.DataCollection.Tukui.TukuiAddonResponse.TukuiAddonResponse;
-import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
+import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAddonResponse.WowInterfaceAddonResponse;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.Log;
@@ -15,9 +13,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -25,7 +20,7 @@ public class WowInterfaceAPISearcher {
 
     private String baseUrl = "https://api.mmoui.com/v3/game/WOW/filelist.json";
 
-    public ArrayList<WowInterfaceAddonResponse> search(String searchFilter) throws ScrapeException {
+    public ArrayList<WowInterfaceAddonResponse> search(String searchFilter) throws DataCollectionException {
         System.out.println("Searching...");
         ArrayList<WowInterfaceAddonResponse> responses;
         Cache cache = Cache.getInstance();
@@ -64,7 +59,7 @@ public class WowInterfaceAPISearcher {
         return new ArrayList<>(filteredResponse.subList(0, 20));
     }
 
-    public WowInterfaceAddonResponse findCorrespondingAddon(Addon addon) throws ScrapeException {
+    public WowInterfaceAddonResponse findCorrespondingAddon(Addon addon) throws DataCollectionException {
         ArrayList<WowInterfaceAddonResponse> addons = search(addon.getName());
         for(WowInterfaceAddonResponse response : addons){
             if(addon.getOrigin().startsWith(response.UIFileInfoURL)) {
@@ -74,7 +69,7 @@ public class WowInterfaceAPISearcher {
         return null;
     }
 
-    private Page jsonScrape(String url) throws ScrapeException {
+    private Page jsonScrape(String url) throws DataCollectionException {
         WebClient client = new WebClient();
         client.getOptions().setJavaScriptEnabled(false);
         client.getOptions().setCssEnabled(false);
@@ -86,9 +81,9 @@ public class WowInterfaceAPISearcher {
             page = client.getPage(url);
         } catch (FailingHttpStatusCodeException e){
             Log.verbose("Scrape resulted in " + e.getStatusCode());
-            throw new ScrapeException(getAddonSource(), e);
+            throw new DataCollectionException(getAddonSource(), e);
         } catch (IOException e) {
-            throw new ScrapeException(getAddonSource(), e);
+            throw new DataCollectionException(getAddonSource(), e);
         }
         return page;
     }

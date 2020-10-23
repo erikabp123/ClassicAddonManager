@@ -3,7 +3,6 @@ package com.CAM.AddonManagement;
 import com.CAM.DataCollection.*;
 import com.CAM.DataCollection.Tukui.TukuiAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
-import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPISearcher;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAPI;
 import com.CAM.HelperTools.*;
@@ -40,7 +39,7 @@ public class Addon implements Comparable<Addon> {
         return new Addon(name, author, origin, branch, releases);
     }
 
-    public boolean fetchUpdate(AddonInfoRetriever retriever) throws ScrapeException {
+    public boolean fetchUpdate(AddonInfoRetriever retriever) throws DataCollectionException {
         try {
             Log.verbose("Attempting to fetch update ...");
             String downloadLink = retriever.getDownloadLink();
@@ -50,11 +49,11 @@ public class Addon implements Comparable<Addon> {
             lastUpdated = retriever.getLastUpdated();
             lastFileName = fileName;
             lastUpdateCheck = new Date();
-        } catch (ScrapeException e){
+        } catch (DataCollectionException e){
             e.setAddon(this);
             throw e;
         } catch (Exception e) {
-            ScrapeException exception = new ScrapeException(getAddonSource(), e);
+            DataCollectionException exception = new DataCollectionException(getAddonSource(), e);
             exception.setAddon(this);
             throw exception;
         }
@@ -62,7 +61,7 @@ public class Addon implements Comparable<Addon> {
         return true;
     }
 
-    public UpdateResponse checkForUpdate(GameVersion gameVersion) throws ScrapeException {
+    public UpdateResponse checkForUpdate(GameVersion gameVersion) throws DataCollectionException {
         UpdateResponse response;
         try {
             AddonInfoRetriever retriever = getInfoRetriever(true, gameVersion);
@@ -80,7 +79,7 @@ public class Addon implements Comparable<Addon> {
             }
             // There are no new updates
             response.setUpdateAvailable(false);
-        } catch (ScrapeException e){
+        } catch (DataCollectionException e){
             e.setAddon(this);
             throw e;
         }
@@ -88,10 +87,10 @@ public class Addon implements Comparable<Addon> {
         return response;
     }
 
-    private AddonInfoRetriever getInfoRetriever(boolean updatingAddon, GameVersion gameVersion) throws ScrapeException {
+    private AddonInfoRetriever getInfoRetriever(boolean updatingAddon, GameVersion gameVersion) throws DataCollectionException {
         try {
            return UrlInfo.getCorrespondingInfoRetriever(gameVersion, getAddonSource(), origin, updatingAddon, branch, releases, projectId);
-        } catch (ScrapeException e){
+        } catch (DataCollectionException e){
             e.setAddon(this);
             throw e;
         }
@@ -101,7 +100,7 @@ public class Addon implements Comparable<Addon> {
         return UrlInfo.getAddonSource(origin);
     }
 
-    public boolean updateToLatestFormat() throws ScrapeException {
+    public boolean updateToLatestFormat() throws DataCollectionException {
         if(getAddonSource() != AddonSource.CURSEFORGE
                 && getAddonSource() != AddonSource.TUKUI && getAddonSource() != AddonSource.WOWINTERFACE){
             return false;

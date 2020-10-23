@@ -196,7 +196,7 @@ public class UrlInfo {
         return null;
     }
 
-    public static AddonInfoRetriever getCorrespondingInfoRetriever(GameVersion gameVersion, AddonSource addonSource, String origin, boolean updatingAddon, String branch, boolean releases, int projectId) throws ScrapeException{
+    public static AddonInfoRetriever getCorrespondingInfoRetriever(GameVersion gameVersion, AddonSource addonSource, String origin, boolean updatingAddon, String branch, boolean releases, int projectId) throws DataCollectionException {
         switch (addonSource){
             case CURSEFORGE:
                 return new CurseForgeAPI(projectId, gameVersion);

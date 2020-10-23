@@ -3,27 +3,27 @@ package com.CAM.DataCollection;
 import com.CAM.AddonManagement.Addon;
 import com.CAM.HelperTools.AddonSource;
 
-public class ScrapeException extends Exception {
+public class DataCollectionException extends Exception {
 
     private Exception exception;
     private AddonSource source;
     private Addon addon;
     private String message;
 
-    public ScrapeException(AddonSource source, String message) {
+    public DataCollectionException(AddonSource source, String message) {
         super(message);
         this.setMessage(message);
         this.exception = this;
         this.source = source;
     }
 
-    public ScrapeException(AddonSource source, Exception e){
+    public DataCollectionException(AddonSource source, Exception e){
         super();
         this.exception = e;
         this.source = source;
     }
 
-    public ScrapeException(Addon addon, Exception e){
+    public DataCollectionException(Addon addon, Exception e){
         super();
         this.exception = e;
         this.addon = addon;

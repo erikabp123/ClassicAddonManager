@@ -7,15 +7,15 @@ import java.util.Date;
 
 public interface AddonInfoRetriever {
 
-    String getDownloadLink() throws ScrapeException;
+    String getDownloadLink() throws DataCollectionException;
 
-    Date getLastUpdated() throws ScrapeException;
+    Date getLastUpdated() throws DataCollectionException;
 
-    String getName() throws ScrapeException;
+    String getName() throws DataCollectionException;
 
-    String getAuthor() throws ScrapeException;
+    String getAuthor() throws DataCollectionException;
 
-    String getFileName() throws ScrapeException;
+    String getFileName() throws DataCollectionException;
 
     String getUrl();
 
@@ -23,7 +23,7 @@ public interface AddonInfoRetriever {
 
     void setFetchedPage(Page scrapedPage);
 
-    boolean isValidLink() throws ScrapeException;
+    boolean isValidLink() throws DataCollectionException;
 
     AddonSource getAddonSource();
 

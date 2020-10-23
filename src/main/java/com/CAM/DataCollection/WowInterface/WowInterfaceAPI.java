@@ -1,8 +1,7 @@
 package com.CAM.DataCollection.WowInterface;
 
 import com.CAM.DataCollection.API;
-import com.CAM.DataCollection.ScrapeException;
-import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
+import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAddonResponse.WowInterfaceFile;
 import com.CAM.HelperTools.AddonSource;
 import com.gargoylesoftware.htmlunit.Page;
@@ -20,7 +19,7 @@ public class WowInterfaceAPI extends API {
     private int projectID;
     private WowInterfaceFile fileToUse;
 
-    public WowInterfaceAPI(int projectID) throws ScrapeException {
+    public WowInterfaceAPI(int projectID) throws DataCollectionException {
         super(null, AddonSource.WOWINTERFACE);
         this.projectID = projectID;
         fileToUse = fetchAddonInfo();
@@ -33,7 +32,7 @@ public class WowInterfaceAPI extends API {
         else throw new IllegalArgumentException("URL for WowInterface invalid as it contains no addon number! " + origin);
     }
 
-    private WowInterfaceFile fetchAddonInfo() throws ScrapeException {
+    private WowInterfaceFile fetchAddonInfo() throws DataCollectionException {
         String url = addonBaseUrl + projectID + ".json";
         System.out.println(url);
         Page page = jsonScrape(url);
@@ -44,37 +43,37 @@ public class WowInterfaceAPI extends API {
     }
 
     @Override
-    public String getDownloadLink() throws ScrapeException {
+    public String getDownloadLink() throws DataCollectionException {
         return fileToUse.UIDownload;
     }
 
     @Override
-    public Date getLastUpdated() throws ScrapeException {
+    public Date getLastUpdated() throws DataCollectionException {
         return new Date(fileToUse.UIDate);
     }
 
     @Override
-    public String getName() throws ScrapeException {
+    public String getName() throws DataCollectionException {
         return fileToUse.UIName;
     }
 
     @Override
-    public String getAuthor() throws ScrapeException {
+    public String getAuthor() throws DataCollectionException {
         return fileToUse.UIAuthorName;
     }
 
     @Override
-    public String getFileName() throws ScrapeException {
+    public String getFileName() throws DataCollectionException {
         return fileToUse.UIFileName;
     }
 
     @Override
-    public boolean isValidLink() throws ScrapeException {
+    public boolean isValidLink() throws DataCollectionException {
         return false;
     }
 
     @Override
-    protected boolean apiFound() throws ScrapeException {
+    protected boolean apiFound() throws DataCollectionException {
         return false;
     }
 }

@@ -9,6 +9,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.io.IOException;
 import java.util.Date;
 
+@Deprecated
 public abstract class Scraper implements AddonInfoRetriever {
 
     private final String url;
@@ -18,7 +19,7 @@ public abstract class Scraper implements AddonInfoRetriever {
     private HtmlPage fetchedPage;
     private AddonSource source;
 
-    public Scraper(String url, AddonSource source) throws ScrapeException {
+    public Scraper(String url, AddonSource source) throws DataCollectionException {
         this.url = url;
         this.js = false;
         this.css = false;
@@ -27,7 +28,7 @@ public abstract class Scraper implements AddonInfoRetriever {
         this.fetchedPage = scrape(this.url);
     }
 
-    public HtmlPage scrape(String targetUrl) throws ScrapeException {
+    public HtmlPage scrape(String targetUrl) throws DataCollectionException {
         WebClient client = new WebClient(BrowserVersion.CHROME);
         client.getOptions().setJavaScriptEnabled(js);
         client.getOptions().setCssEnabled(css);
@@ -46,16 +47,16 @@ public abstract class Scraper implements AddonInfoRetriever {
                 case 503:
                     return scrapeJS(targetUrl);
                 default:
-                    throw new ScrapeException(getAddonSource(), e);
+                    throw new DataCollectionException(getAddonSource(), e);
             }
         } catch (IOException e) {
-            throw new ScrapeException(getAddonSource(), e);
+            throw new DataCollectionException(getAddonSource(), e);
         }
 
         return page;
     }
 
-    private HtmlPage scrapeJS(String targetUrl) throws ScrapeException {
+    private HtmlPage scrapeJS(String targetUrl) throws DataCollectionException {
         Log.verbose("Attempting JS scrape ...");
         WebClient client = new WebClient(BrowserVersion.CHROME);
         client.getOptions().setJavaScriptEnabled(true);
@@ -71,28 +72,28 @@ public abstract class Scraper implements AddonInfoRetriever {
             client.waitForBackgroundJavaScript(10000);
         } catch (FailingHttpStatusCodeException e){
             Log.verbose("JS scrape resulted in " + e.getStatusCode());
-            throw new ScrapeException(getAddonSource(), e);
+            throw new DataCollectionException(getAddonSource(), e);
         } catch (IOException e){
-            throw new ScrapeException(getAddonSource(), e);
+            throw new DataCollectionException(getAddonSource(), e);
         }
 
         return page;
     }
 
     @Override
-    public abstract String getDownloadLink() throws ScrapeException;
+    public abstract String getDownloadLink() throws DataCollectionException;
 
     @Override
-    public abstract Date getLastUpdated() throws ScrapeException;
+    public abstract Date getLastUpdated() throws DataCollectionException;
 
     @Override
-    public abstract String getName() throws ScrapeException;
+    public abstract String getName() throws DataCollectionException;
 
     @Override
-    public abstract String getAuthor() throws ScrapeException;
+    public abstract String getAuthor() throws DataCollectionException;
 
     @Override
-    public abstract String getFileName() throws ScrapeException;
+    public abstract String getFileName() throws DataCollectionException;
 
     @Override
     public String getUrl(){
@@ -117,7 +118,7 @@ public abstract class Scraper implements AddonInfoRetriever {
     }
 
     @Override
-    public abstract boolean isValidLink() throws ScrapeException;
+    public abstract boolean isValidLink() throws DataCollectionException;
 
     @Override
     public AddonSource getAddonSource(){

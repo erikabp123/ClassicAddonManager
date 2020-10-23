@@ -1,7 +1,7 @@
 package com.CAM.DataCollection.Github;
 
 import com.CAM.DataCollection.API;
-import com.CAM.DataCollection.ScrapeException;
+import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
 import com.CAM.HelperTools.Log;
@@ -20,31 +20,31 @@ public class GitHubAPI extends API {
     private boolean releases;
     private JsonArray repoArray;
 
-    public GitHubAPI(String url, String branch, boolean releases, boolean updatingAddon) throws ScrapeException {
+    public GitHubAPI(String url, String branch, boolean releases, boolean updatingAddon) throws DataCollectionException {
         super(url, AddonSource.GITHUB);
         this.branch = branch;
         this.releases = releases;
         this.repoArray = null;
         if(!updatingAddon && !isValidLink()){
-            throw new ScrapeException(getAddonSource(), "Invalid Github URL!");
+            throw new DataCollectionException(getAddonSource(), "Invalid Github URL!");
         }
     }
 
     @Override
-    public String getDownloadLink() throws ScrapeException {
+    public String getDownloadLink() throws DataCollectionException {
         if(releases){
             return getReleasesDownload();
         }
         return getBranchDownload();
     }
 
-    private String getReleasesDownload() throws ScrapeException {
+    private String getReleasesDownload() throws DataCollectionException {
         JsonArray jsonArray = getRepoArray();
         String downloadLink;
         try {
             downloadLink = ((JsonObject) ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets")).get(0)).get("browser_download_url").getAsString();
         } catch (IndexOutOfBoundsException e){
-            throw  new ScrapeException(getAddonSource(), e);
+            throw  new DataCollectionException(getAddonSource(), e);
         }
 
         return downloadLink;
@@ -56,21 +56,21 @@ public class GitHubAPI extends API {
     }
 
     @Override
-    public Date getLastUpdated() throws ScrapeException {
+    public Date getLastUpdated() throws DataCollectionException {
         if(releases){
             return getReleasesUpdated();
         }
         return getBranchUpdated();
     }
 
-    private Date getReleasesUpdated() throws ScrapeException {
+    private Date getReleasesUpdated() throws DataCollectionException {
         JsonArray jsonArray = getRepoArray();
         String githubDate = ((JsonObject) jsonArray.get(0)).get("published_at").getAsString();
         Date date = DateConverter.convertFromGithub(githubDate);
         return date;
     }
 
-    private Date getBranchUpdated() throws ScrapeException{
+    private Date getBranchUpdated() throws DataCollectionException {
         String[] repoInfo = getUrl().split("/");
         String prefix = "https://api.github.com/repos/";
         String suffix = "/branches/" + branch;
@@ -93,13 +93,13 @@ public class GitHubAPI extends API {
         return new Gson().fromJson(json, JsonObject.class);
     }
 
-    public String getTag() throws ScrapeException {
+    public String getTag() throws DataCollectionException {
         JsonArray jsonArray = getRepoArray();
         String tag = ((JsonObject) jsonArray.get(0)).get("tag_name").getAsString();
         return tag;
     }
 
-    public JsonArray getRepoArray() throws ScrapeException {
+    public JsonArray getRepoArray() throws DataCollectionException {
         if(repoArray != null){
             return repoArray;
         }
@@ -129,7 +129,7 @@ public class GitHubAPI extends API {
         return fileName;
     }
 
-    public static ArrayList<String> getBranches(String repo) throws ScrapeException {
+    public static ArrayList<String> getBranches(String repo) throws DataCollectionException {
         ArrayList<String> branches = new ArrayList<>();
         GitHubAPI scraper = new GitHubAPI(repo, null, false, false);
         String author = scraper.getAuthor();
@@ -151,7 +151,7 @@ public class GitHubAPI extends API {
     }
 
     @Override
-    public boolean isValidLink() throws ScrapeException {
+    public boolean isValidLink() throws DataCollectionException {
         String[] parts = getUrl().split("/");
         if(parts.length < 5){
             return false;
@@ -161,13 +161,13 @@ public class GitHubAPI extends API {
         }
         if(releases && getRepoArray().size() == 0){
             Log.log("The provided link does not have any releases!");
-            throw new ScrapeException(getAddonSource(), "The provided link does not have any releases!");
+            throw new DataCollectionException(getAddonSource(), "The provided link does not have any releases!");
         }
         return true;
     }
 
     @Override
-    protected boolean apiFound() throws ScrapeException {
+    protected boolean apiFound() throws DataCollectionException {
         String suffix = releases
                 ? "releases"
                 : "branches";

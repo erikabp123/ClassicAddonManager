@@ -1,7 +1,7 @@
 package com.CAM.DataCollection.Tukui;
 
 import com.CAM.DataCollection.API;
-import com.CAM.DataCollection.ScrapeException;
+import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.Tukui.TukuiAddonResponse.TukuiAddonResponse;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
@@ -21,7 +21,7 @@ public class TukuiAPI extends API {
     private String baseUrl;
     private TukuiAddonResponse latestResponse;
 
-    public TukuiAPI(int addonNumber, GameVersion gameVersion) throws ScrapeException {
+    public TukuiAPI(int addonNumber, GameVersion gameVersion) throws DataCollectionException {
         super(null, AddonSource.TUKUI);
         this.repoObject = null;
         this.addonNumber = addonNumber;
@@ -60,7 +60,7 @@ public class TukuiAPI extends API {
         return new Gson().fromJson(json, JsonObject.class);
     }
 
-    private JsonObject getRepoObject() throws ScrapeException {
+    private JsonObject getRepoObject() throws DataCollectionException {
         if (repoObject != null) {
             return repoObject;
         }
@@ -87,7 +87,7 @@ public class TukuiAPI extends API {
     }
 
     @Override
-    public boolean isValidLink() throws ScrapeException {
+    public boolean isValidLink() throws DataCollectionException {
         if(!UrlInfo.isValidTukuiUrl(getUrl())){
             return false;
         }
@@ -103,7 +103,7 @@ public class TukuiAPI extends API {
     }
 
     @Override
-    protected boolean apiFound() throws ScrapeException {
+    protected boolean apiFound() throws DataCollectionException {
         String api = baseUrl + addonNumber;
         Page response = jsonScrape(api);
         if (response == null || response.getWebResponse().getContentAsString().equals("")) {

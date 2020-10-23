@@ -1,6 +1,6 @@
 package com.CAM.DataCollection.TwitchOwned.CurseForge;
 
-import com.CAM.DataCollection.ScrapeException;
+import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.Scraper;
 import com.CAM.DataCollection.TwitchOwned.TwitchSite;
 import com.CAM.HelperTools.AddonSource;
@@ -11,6 +11,7 @@ import com.gargoylesoftware.htmlunit.html.*;
 import java.util.Date;
 import java.util.List;
 
+@Deprecated
 public class CurseForgeScraper extends Scraper implements TwitchSite {
 
     private final static String gameVersion = "1738749986%3A67408"; //TODO: change to non-final and support automatic scraping of gameVersion in case it changes
@@ -20,7 +21,7 @@ public class CurseForgeScraper extends Scraper implements TwitchSite {
 
     private String baseUrl;
 
-    public static CurseForgeScraper makeScraper(String url, boolean updatingAddon) throws ScrapeException {
+    public static CurseForgeScraper makeScraper(String url, boolean updatingAddon) throws DataCollectionException {
         CurseForgeScraper scraper = getOfficialScraper(url, updatingAddon);
         if(scraper.isGameVersionSupported()){
             return scraper;
@@ -28,19 +29,19 @@ public class CurseForgeScraper extends Scraper implements TwitchSite {
         return getNonOfficialScraper(url, updatingAddon);
     }
 
-    public static CurseForgeScraper getNonOfficialScraper(String url, boolean updatingAddon) throws ScrapeException {
+    public static CurseForgeScraper getNonOfficialScraper(String url, boolean updatingAddon) throws DataCollectionException {
         return new CurseForgeScraper(url, nonOfficialSuffix, updatingAddon);
     }
 
-    public static CurseForgeScraper getOfficialScraper(String url, boolean updatingAddon) throws ScrapeException {
+    public static CurseForgeScraper getOfficialScraper(String url, boolean updatingAddon) throws DataCollectionException {
         return new CurseForgeScraper(url, officialSuffix, updatingAddon);
     }
 
-    public CurseForgeScraper(String url, String suffix, boolean updatingAddon) throws ScrapeException {
+    public CurseForgeScraper(String url, String suffix, boolean updatingAddon) throws DataCollectionException {
         super(url + suffix, AddonSource.CURSEFORGE);
         this.baseUrl = url;
         if(!updatingAddon && !isValidLink()){
-            throw new ScrapeException(getAddonSource(), "Invalid CurseForge url!");
+            throw new DataCollectionException(getAddonSource(), "Invalid CurseForge url!");
         }
     }
 
@@ -92,7 +93,7 @@ public class CurseForgeScraper extends Scraper implements TwitchSite {
     }
 
     @Override
-    public boolean isValidLink() throws ScrapeException {
+    public boolean isValidLink() throws DataCollectionException {
         CurseForgeScraper scraper = this;
         if(getUrl().endsWith(officialSuffix)){
             scraper = getNonOfficialScraper(baseUrl, false);

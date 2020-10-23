@@ -1,7 +1,7 @@
 package com.CAM.DataCollection.TwitchOwned.CurseForge;
 
 import com.CAM.AddonManagement.Addon;
-import com.CAM.DataCollection.ScrapeException;
+import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.Log;
@@ -21,7 +21,7 @@ public class CurseForgeAPISearcher {
 
     private String baseUrl = "https://addons-ecs.forgesvc.net/api/v2/addon/search?categoryId=0&gameId=1&pageSize=0&searchFilter=";
 
-    public ArrayList<CurseAddonResponse> search(String searchFilter) throws ScrapeException {
+    public ArrayList<CurseAddonResponse> search(String searchFilter) throws DataCollectionException {
         System.out.println("Searching...");
         String encodedSearchFilter = encodeValue(searchFilter);
         String url = baseUrl + encodedSearchFilter;
@@ -31,7 +31,7 @@ public class CurseForgeAPISearcher {
         return gson.fromJson(json, new TypeToken<ArrayList<CurseAddonResponse>>(){}.getType());
     }
 
-    public CurseAddonResponse findCorrespondingAddon(Addon addon) throws ScrapeException {
+    public CurseAddonResponse findCorrespondingAddon(Addon addon) throws DataCollectionException {
         ArrayList<CurseAddonResponse> addons = search(addon.getName());
         for(CurseAddonResponse response : addons){
             if(addon.getOrigin().startsWith(response.websiteUrl)) {
@@ -49,7 +49,7 @@ public class CurseForgeAPISearcher {
         }
     }
 
-    private Page jsonScrape(String url) throws ScrapeException {
+    private Page jsonScrape(String url) throws DataCollectionException {
         WebClient client = new WebClient();
         client.getOptions().setJavaScriptEnabled(false);
         client.getOptions().setCssEnabled(false);
@@ -61,9 +61,9 @@ public class CurseForgeAPISearcher {
             page = client.getPage(url);
         } catch (FailingHttpStatusCodeException e){
             Log.verbose("Scrape resulted in " + e.getStatusCode());
-            throw new ScrapeException(getAddonSource(), e);
+            throw new DataCollectionException(getAddonSource(), e);
         } catch (IOException e) {
-            throw new ScrapeException(getAddonSource(), e);
+            throw new DataCollectionException(getAddonSource(), e);
         }
         return page;
     }
