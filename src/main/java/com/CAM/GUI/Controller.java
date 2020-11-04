@@ -1533,6 +1533,10 @@ public class Controller implements Initializable {
                 filteredData.setPredicate(s -> s.getName().toLowerCase().contains(filter.toLowerCase()) || s.getAuthor().toLowerCase().contains(filter.toLowerCase()));
             }
             shownItems.setAll(filteredData);
+            Addon selectedAddon = getSelectedAddon();
+            if(selectedAddon == null || !shownItems.contains(selectedAddon)){
+                installedAddonsTableView.getSelectionModel().clearSelection();
+            }
             installedAddonsTableView.setItems(shownItems);
         });
 
