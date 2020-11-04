@@ -14,19 +14,25 @@ public class GUIUpdateProgressListener implements UpdateProgressListener {
     @Override
     public void informStart(int position) {
         Platform.runLater(() -> {
+            //TODO: Re-implement this
             // Set result of previous
+            /*
             String curText = controller.listItems.get(position);
             String[] parts = curText.split(":");
             curText = parts[parts.length - 1];
             String updatedText = "P:" + curText;
             controller.listItems.set(position, updatedText);
+
+             */
         });
     }
 
     @Override
     public void informFinish(int position, int statusCode) {
         Platform.runLater(() -> {
+            //TODO: Reimplement this
             // Set result of previous
+            /*
             String curText = controller.listItems.get(position);
             String[] parts = curText.split(":");
             curText = parts[parts.length - 1];
@@ -44,6 +50,7 @@ public class GUIUpdateProgressListener implements UpdateProgressListener {
             }
             updatedText = updatedText + curText;
             controller.listItems.set(position, updatedText);
+             */
         });
     }
 

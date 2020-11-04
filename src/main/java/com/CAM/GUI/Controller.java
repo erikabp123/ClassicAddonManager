@@ -21,6 +21,7 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -30,6 +31,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Orientation;
+import javafx.scene.Cursor;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -39,6 +41,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -64,7 +67,8 @@ public class Controller implements Initializable {
     // General - Fields
     //================================================================================
     private static Controller controller;
-    final ObservableList<String> listItems = FXCollections.observableArrayList();
+    final ObservableList<Addon> listItems = FXCollections.observableArrayList();
+    final ObservableList<Addon> shownItems = FXCollections.observableArrayList();
     private AddonManagerControl addonManagerControl;
     private final AtomicReference<String> lastSearchQuery = new AtomicReference<>("");
     private final AtomicReference<Boolean> lastSearchQueryCheckbox = new AtomicReference<>(false);
@@ -145,6 +149,27 @@ public class Controller implements Initializable {
     @FXML
     private ListView<String> listViewAddons;
     //endregion
+
+    @FXML
+    private TableView installedAddonsTableView;
+
+    @FXML
+    private TableColumn<Addon, Addon> managedTableColumnSource;
+
+    @FXML
+    private TableColumn<Addon, String> managedTableColumnAddon;
+
+    @FXML
+    private TableColumn<Addon, String> managedTableColumnAuthor;
+
+    @FXML
+    private TableColumn<Addon, String> managedTableColumnUpdated;
+
+    @FXML
+    private TableColumn<Addon, String> managedTableColumnFileName;
+
+    @FXML
+    private TableColumn<Addon, String> managedTableColumnFlavor;
 
     //region Text Input/Output
     @FXML
@@ -228,22 +253,10 @@ public class Controller implements Initializable {
                     throw new DataCollectionException(null, "URL does not point to a valid addon! Please double check the URL and try again!");
                 }
 
-                switch (urlInfo.addonSource) {
-                    case CURSEFORGE:
-                        checkIfProceedGameVersion(origin);
-                        break;
-                    case GITHUB:
-                        handleGithubAdd(origin);
-                        break;
-                    case WOWINTERFACE:
-                        startAddonAddThread(origin);
-                        break;
-                    case TUKUI:
-                        startAddonAddThread(origin);
-                        break;
-                    case WOWACE:
-                        checkIfProceedGameVersion(origin);
-                        break;
+                if (urlInfo.addonSource == AddonSource.GITHUB) {
+                    handleGithubAdd(origin);
+                } else {
+                    throw new DataCollectionException(null, "Invalid website!");
                 }
             } catch (DataCollectionException e) {
                 handleAddScrapeException(e);
@@ -271,15 +284,14 @@ public class Controller implements Initializable {
                 if (addonSource.equals(CurseAddonResponse.class)) {
                     CurseAddonResponse response = (CurseAddonResponse) addon;
                     checkIfProceedGameVersionSearch(response);
-                    return;
                 }
                 else if (addonSource.equals(TukuiAddonResponse.class)) {
                     startAddonAddSearchedThread((TukuiAddonResponse) addon);
-                    Platform.runLater(() -> clearSearchSelectionAction());
+                    Platform.runLater(this::clearSearchSelectionAction);
                 }
                 else if (addonSource.equals(WowInterfaceAddonResponse.class)){
                     startAddonAddSearchedThread((WowInterfaceAddonResponse) addon);
-                    Platform.runLater(() -> clearSearchSelectionAction());
+                    Platform.runLater(this::clearSearchSelectionAction);
                 }
 
             } catch (DataCollectionException e) {
@@ -315,7 +327,7 @@ public class Controller implements Initializable {
 
     @FXML
     private void convertAddonsAction(){
-        Thread updateAddonFormatThread = new Thread(() -> updateManagedListToLatestFormat());
+        Thread updateAddonFormatThread = new Thread(this::updateManagedListToLatestFormat);
         updateAddonFormatThread.start();
     }
 
@@ -489,13 +501,15 @@ public class Controller implements Initializable {
     @FXML
     private void removeAction() {
         Thread removeThread = new Thread(() -> {
-            Platform.runLater(() -> disableAll());
-            int selectedIndex = getNonFilteredIndex();
-            if (selectedIndex != -1) {
-                getAddonManager().removeAddon(selectedIndex);
+            Platform.runLater(this::disableAll);
+            Addon selectedAddon = getSelectedAddon();
+            ArrayList<Addon> asList = new ArrayList<>();
+            if(selectedAddon != null){
+                getAddonManager().removeAddon(selectedAddon);
+                asList.add(selectedAddon);
             }
             Platform.runLater(() -> {
-                updateListView();
+                removeFromTableView(asList);
                 enableAll();
             });
         });
@@ -504,10 +518,8 @@ public class Controller implements Initializable {
 
     @FXML
     public void editAction() {
-        int selectedIndex = getNonFilteredIndex();
-        if (selectedIndex == -1) {
-            return;
-        }
+        Addon selectedAddon = getSelectedAddon();
+        if(selectedAddon == null) return;
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("editAddon.fxml"));
         Parent parent = null;
@@ -517,7 +529,6 @@ public class Controller implements Initializable {
             e.printStackTrace();
         }
         EditAddonController dialogController = fxmlLoader.getController();
-        Addon selectedAddon = getAddonManager().getManagedAddons().get(selectedIndex);
         dialogController.createDialog(selectedAddon);
 
         Scene scene = new Scene(parent);
@@ -637,7 +648,8 @@ public class Controller implements Initializable {
                 return;
             }
             getAddonManager().importAddonList(imported);
-            Platform.runLater(() -> updateListView());
+            ArrayList<Addon> finalImported = imported;
+            Platform.runLater(() -> addToTableView(finalImported));
         });
         importThread.start();
     }
@@ -710,9 +722,7 @@ public class Controller implements Initializable {
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             try {
                 Desktop.getDesktop().browse(new URI(url));
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (URISyntaxException e) {
+            } catch (IOException | URISyntaxException e) {
                 e.printStackTrace();
             }
         }
@@ -735,8 +745,9 @@ public class Controller implements Initializable {
         Image addingImage = new Image(this.getClass().getClassLoader().getResource("adding.gif").toExternalForm());
         imageViewAdd.setImage(addingImage);
         imageViewAddSearch.setImage(addingImage);
-        listViewAddons.setCellFactory(param -> new AddonListCell<>());
+        //listViewAddons.setCellFactory(param -> new AddonListCell<>());
         setFilterList();
+        installedAddonsTableView.setPlaceholder(new Label("No addons installed"));
         Log.listen(new GUILogListener(textAreaOutputLog));
         progressBarListen();
         setupOutputLogContextMenu();
@@ -1076,11 +1087,15 @@ public class Controller implements Initializable {
                 request.releases = releases;
 
                 if (!isValidRequest(request)) {
-                    cleanUpAfterAddAction();
                     return;
                 }
 
-                getAddonManager().addNewAddon(request);
+                Addon newAddon = getAddonManager().addNewAddon(request);
+                ArrayList<Addon> asList = new ArrayList<>();
+                if(newAddon != null){
+                    asList.add(newAddon);
+                }
+                addToTableView(asList);
             } catch (DataCollectionException e) {
                 handleAddScrapeException(e);
             } catch (Exception e) {
@@ -1095,7 +1110,12 @@ public class Controller implements Initializable {
     private void startAddonAddSearchedThread(SearchedAddonRequest request) {
         Thread addAddonThread = new Thread(() -> {
             try {
-                getAddonManager().addNewSearchedAddon(request);
+                Addon newAddon = getAddonManager().addNewSearchedAddon(request);
+                ArrayList<Addon> asList = new ArrayList<>();
+                if(newAddon != null){
+                    asList.add(newAddon);
+                }
+                addToTableView(asList);
             } catch (DataCollectionException e) {
                 handleAddSearchedScrapeException(e);
             } catch (Exception e) {
@@ -1147,7 +1167,7 @@ public class Controller implements Initializable {
 
         if (response.isGameVersionSupported(getAddonManager().getGameVersion())) {
             startAddonAddSearchedThread(response);
-            Platform.runLater(() -> clearSearchSelectionAction());
+            Platform.runLater(this::clearSearchSelectionAction);
             return;
         }
 
@@ -1389,7 +1409,6 @@ public class Controller implements Initializable {
 
     public void cleanUpAfterAddAction() {
         Platform.runLater(() -> {
-            updateListView();
             enableAll();
             imageViewAdd.setVisible(false);
         });
@@ -1397,7 +1416,6 @@ public class Controller implements Initializable {
 
     public void cleanUpAfterAddSearchAction() {
         Platform.runLater(() -> {
-            updateListView();
             enableAll();
             imageViewAddSearch.setVisible(false);
         });
@@ -1413,6 +1431,7 @@ public class Controller implements Initializable {
         checkboxReleases.setDisable(true);
         menuBar.setDisable(true);
         listViewAddons.setDisable(true);
+        installedAddonsTableView.setDisable(true);
         textManagedLabel.setDisable(true);
         textManagedLabel.setVisible(false);
         textOutputLogLabel.setDisable(true);
@@ -1431,14 +1450,58 @@ public class Controller implements Initializable {
     }
     //endregion
 
-    public void updateListView() {
-        ArrayList<String> addonNames = new ArrayList<>();
-        for (Addon addon : getAddonManager().getManagedAddons()) {
-            addonNames.add(addon.getName());
-        }
-        listItems.setAll(addonNames);
-        updateListViewLabel();
+    public void setupTableView(){
+        List<Addon> addons = getAddonManager().getManagedAddons();
+
+        managedTableColumnAddon.setCellValueFactory(new PropertyValueFactory<>("name"));
+        managedTableColumnAuthor.setCellValueFactory(new PropertyValueFactory<>("author"));
+        managedTableColumnUpdated.setCellValueFactory(new PropertyValueFactory<>("lastUpdateCheck"));
+        managedTableColumnFileName.setCellValueFactory(new PropertyValueFactory<>("lastFileName"));
+        managedTableColumnFlavor.setCellValueFactory(new PropertyValueFactory<>("flavor"));
+
+        managedTableColumnSource.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue()));
+
+        managedTableColumnSource.setCellFactory(param -> {
+            final ImageView imageview = new ImageView();
+            imageview.setFitHeight(75);
+            imageview.setFitWidth(150);
+            TableCell<Addon, Addon> cell = new TableCell<>() {
+                @Override
+                public void updateItem(Addon item, boolean empty) {
+                    if (item != null) {
+                        imageview.setImage(item.getWebsiteIcon());
+                        setOnMouseEntered(event -> setCursor(Cursor.HAND));
+                        setOnMouseExited(event -> setCursor(Cursor.DEFAULT));
+                        setOnMouseClicked(event -> openUrl(item.getOrigin()));
+                    } else {
+                        imageview.setImage(null);
+                    }
+                }
+            };
+
+            cell.setGraphic(imageview);
+            return cell;
+        });
+
+        managedTableColumnSource.setComparator(Comparator.comparing(o -> o.getAddonSource().name()));
+
+        listItems.setAll(addons);
+        shownItems.setAll(listItems);
+        installedAddonsTableView.setItems(shownItems);
     }
+
+    public void removeFromTableView(List<Addon> addons) {
+        listItems.removeAll(addons);
+        shownItems.removeAll(addons);
+        installedAddonsTableView.setItems(shownItems);
+    }
+
+    public void addToTableView(List<Addon> addons) {
+        listItems.addAll(addons);
+        shownItems.addAll(addons);
+        installedAddonsTableView.setItems(shownItems);
+    }
+
 
     private void updateListViewLabel() {
         int managedCount = getAddonManager().getManagedAddons().size();
@@ -1460,44 +1523,24 @@ public class Controller implements Initializable {
     //region Filtering List View
 
     private void setFilterList() {
-        listViewAddons.setItems(listItems);
+        shownItems.setAll(listItems);
         filterAddonsTextField.textProperty().addListener(obs -> {
-            FilteredList<String> filteredData = new FilteredList<>(listItems, s -> true);
+            FilteredList<Addon> filteredData = new FilteredList<>(listItems, s -> true);
             String filter = filterAddonsTextField.getText();
             if (filter == null || filter.length() == 0) {
                 filteredData.setPredicate(s -> true);
             } else {
-                filteredData.setPredicate(s -> s.toLowerCase().contains(filter.toLowerCase()));
+                filteredData.setPredicate(s -> s.getName().toLowerCase().contains(filter.toLowerCase()) || s.getAuthor().toLowerCase().contains(filter.toLowerCase()));
             }
-            listViewAddons.setItems(filteredData);
+            shownItems.setAll(filteredData);
+            installedAddonsTableView.setItems(shownItems);
         });
 
-        listItems.addListener((ListChangeListener<String>) c -> filterAddonsTextField.setText(null));
+        //listItems.addListener((ListChangeListener<Addon>) c -> filterAddonsTextField.setText(null));
     }
 
-    private int getNonFilteredIndex() {
-        ObservableList<Integer> selected = listViewAddons.getSelectionModel().getSelectedIndices();
-        if (selected.size() == 0) {
-            return -1;
-        }
-        int selectedIndex = selected.get(0);
-        // Not filtered
-        if (listViewAddons.getItems().size() == listItems.size()) {
-            return selectedIndex;
-        }
-        // Filtered
-        List<Addon> addons = getAddonManager().getManagedAddons();
-        String[] selectedName = listViewAddons.getItems().get(selectedIndex).split(":");
-        String selectedNameStripped = selectedName[selectedName.length - 1];
-        int trueIndex = 0;
-        for (Addon addon : addons) {
-            if (addon.getName().equals(selectedNameStripped)) {
-                return trueIndex;
-            }
-            trueIndex++;
-        }
-        // should never reach this, will only happen if the names are different in the displayed list and the actual storage
-        return -1;
+    private Addon getSelectedAddon(){
+        return (Addon) installedAddonsTableView.getSelectionModel().getSelectedItem();
     }
 
 
@@ -1535,7 +1578,7 @@ public class Controller implements Initializable {
     public void updateActiveManager(GameVersion gameVersion){
         Platform.runLater(() -> {
             addonManagerControl.setActiveManager(gameVersion);
-            updateListView();
+            setupTableView();
             checkboxGameVersionSearch.setText("Search only " + gameVersion + " addons");
         });
 

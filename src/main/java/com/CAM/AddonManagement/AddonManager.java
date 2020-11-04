@@ -157,13 +157,13 @@ public class AddonManager {
         return (new Random()).nextInt(DELAY_RANGE) + MIN_DELAY;
     }
 
-    public boolean addNewAddon(AddonRequest request) throws DataCollectionException {
+    public Addon addNewAddon(AddonRequest request) throws DataCollectionException {
         Log.log("Attempting to track new addon ...");
 
         UrlInfo urlInfo = UrlInfo.examineAddonUrl(request.origin);
         if (!urlInfo.isValid) {
             Log.log("Could not track addon!");
-            return false;
+            return null;
         }
         String trimmedOrigin = UrlInfo.trimString(request.origin, urlInfo.addonSource);
 
@@ -172,7 +172,7 @@ public class AddonManager {
                 continue;
             }
             Log.log(addon.getName() + " already being tracked!");
-            return false;
+            return null;
         }
 
         AddonInfoRetriever retriever = UrlInfo.getCorrespondingInfoRetriever(gameVersion, urlInfo.addonSource, trimmedOrigin, false, request.branch, request.releases, -1);
@@ -186,17 +186,17 @@ public class AddonManager {
         saveToFile();
 
         Log.log("Successfully tracking new addon!");
-        return true;
+        return newAddon;
     }
 
-    public boolean addNewSearchedAddon(SearchedAddonRequest request) throws DataCollectionException {
+    public Addon addNewSearchedAddon(SearchedAddonRequest request) throws DataCollectionException {
         Log.log("Attempting to track new addon ...");
 
         int projectId = request.getProjectId();
         for (Addon addon : managedAddons) {
             if (addon.getProjectId() == projectId) {
                 Log.log(addon.getName() + " already being tracked!");
-                return false;
+                return null;
             }
         }
 
@@ -210,7 +210,7 @@ public class AddonManager {
         saveToFile();
 
         Log.log("Successfully tracking new addon!");
-        return true;
+        return newAddon;
     }
 
     public boolean removeAddon(int addonNum) {
@@ -223,6 +223,23 @@ public class AddonManager {
 
         uninstall(managedAddons.get(addonNum));
         managedAddons.remove(addonNum);
+
+        saveToFile();
+
+        Log.log("Successfully removed addon!");
+        return true;
+    }
+
+    public boolean removeAddon(Addon addon) {
+        Log.log("Attempting to remove addon ...");
+
+        if (!managedAddons.contains(addon)) {
+            Log.log("Addon " + addon.getName() + " was not found!");
+            return false;
+        }
+
+        uninstall(addon);
+        managedAddons.remove(addon);
 
         saveToFile();
 

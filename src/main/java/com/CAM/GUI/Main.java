@@ -18,7 +18,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception{
 
-        FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("GUI.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("GUI_v2.fxml"));
 
         Stage stage = new Stage();
         stage.getIcons().add(new Image(getClass().getClassLoader().getResource("program_icon.png").toExternalForm()));
@@ -58,8 +58,8 @@ public class Main extends Application {
         }
         Controller controller = loader.getController();
         controller.setAddonManagerControl(amc);
-        controller.updateListView();
         controller.updateActiveManager(amc.getActiveManager().getGameVersion());
+        controller.setupTableView();
         controller.setupListeners();
 
         if(updateInstallLocation){

@@ -6,7 +6,9 @@ import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddo
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPISearcher;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAPI;
 import com.CAM.HelperTools.*;
+import javafx.scene.image.Image;
 
+import java.awt.*;
 import java.util.Date;
 
 public class Addon implements Comparable<Addon> {
@@ -198,5 +200,15 @@ public class Addon implements Comparable<Addon> {
 
     public void setProjectId(int projectId) {
         this.projectId = projectId;
+    }
+
+    public String getFlavor(){
+        if(isReleases()) return "Release";
+        if(getBranch() != null) return getBranch();
+        return "Project ID: " + getProjectId();
+    }
+
+    public Image getWebsiteIcon(){
+        return new Image(this.getClass().getClassLoader().getResource(getAddonSource().getLogoName()).toExternalForm());
     }
 }
