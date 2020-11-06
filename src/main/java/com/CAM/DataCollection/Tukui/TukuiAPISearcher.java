@@ -2,7 +2,9 @@ package com.CAM.DataCollection.Tukui;
 
 import com.CAM.DataCollection.APISearcher;
 import com.CAM.DataCollection.DataCollectionException;
+import com.CAM.DataCollection.SearchedAddonRequest;
 import com.CAM.DataCollection.Tukui.TukuiAddonResponse.TukuiAddonResponse;
+import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.GameVersion;
 import com.CAM.HelperTools.Log;
@@ -26,30 +28,14 @@ public class TukuiAPISearcher extends APISearcher {
         this.baseUrl = "https://www.tukui.org/api.php?" + gameVersion.getTukuiSuffix() + "=all";
     }
 
-    public ArrayList<TukuiAddonResponse> search(String searchFilter) throws DataCollectionException {
+    public ArrayList<SearchedAddonRequest> search(String searchFilter) throws DataCollectionException {
         Log.verbose("Performing Tukui search ...");
-        Page page = fetchJson(baseUrl);
-        String json = page.getWebResponse().getContentAsString();
+        String json = fetchJson(baseUrl);
         Gson gson = new Gson();
-        ArrayList<TukuiAddonResponse> unfilteredResponse = gson.fromJson(json, new TypeToken<ArrayList<TukuiAddonResponse>>() {
-        }.getType());
-        ArrayList<TukuiAddonResponse> filteredResponse = filterResponse(unfilteredResponse, searchFilter);
+        ArrayList<TukuiAddonResponse> unfilteredResponse = gson.fromJson(json, new TypeToken<ArrayList<TukuiAddonResponse>>(){}.getType());
+        ArrayList<SearchedAddonRequest> filtered = filterResponse(unfilteredResponse, searchFilter);
         Log.verbose("Finished Tukui search!");
-        return filteredResponse;
-    }
-
-    private ArrayList<TukuiAddonResponse> filterResponse(ArrayList<TukuiAddonResponse> unfilteredResponse, String searchFilter) {
-        ArrayList<TukuiAddonResponse> filteredResponse = new ArrayList<>();
-
-        for (TukuiAddonResponse response : unfilteredResponse) {
-            response.searchFilter = searchFilter;
-            double weight = response.determineWeight();
-            if (weight > 0) {
-                filteredResponse.add(response);
-            }
-        }
-        Collections.sort(filteredResponse);
-        return filteredResponse;
+        return filtered;
     }
 
     @Override

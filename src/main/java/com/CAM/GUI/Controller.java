@@ -384,8 +384,8 @@ public class Controller implements Initializable {
 
     private void tukuiSearch(String userQuery) throws DataCollectionException {
         TukuiAPISearcher apiSearcher = new TukuiAPISearcher(getAddonManager().getGameVersion());
-        ArrayList<TukuiAddonResponse> results = apiSearcher.search(userQuery);
-        ObservableList<TukuiAddonResponse> observableList = FXCollections.observableList(results);
+        ArrayList<SearchedAddonRequest> results = apiSearcher.search(userQuery);
+        ObservableList<SearchedAddonRequest> observableList = FXCollections.observableList(results);
         Platform.runLater(() -> {
             comboBoxSearch.show();
             comboBoxSearch.setItems(observableList);
@@ -394,15 +394,16 @@ public class Controller implements Initializable {
 
     private void curseSearch(String userQuery) throws DataCollectionException {
         CurseForgeAPISearcher apiSearcher = new CurseForgeAPISearcher();
-        ArrayList<CurseAddonResponse> results = apiSearcher.search(userQuery);
-        ArrayList<CurseAddonResponse> gameVersionResults = new ArrayList<>();
-        for(CurseAddonResponse response : results){
-            if(response.isGameVersionSupported(getAddonManager().getGameVersion())){
+        ArrayList<SearchedAddonRequest> results = apiSearcher.search(userQuery);
+        ArrayList<SearchedAddonRequest> gameVersionResults = new ArrayList<>();
+        for(SearchedAddonRequest response : results){
+            CurseAddonResponse castResponse = (CurseAddonResponse) response;
+            if(castResponse.isGameVersionSupported(getAddonManager().getGameVersion())){
                 gameVersionResults.add(response);
             }
         }
 
-        ObservableList<CurseAddonResponse> observableList;
+        ObservableList<SearchedAddonRequest> observableList;
         observableList = checkboxGameVersionSearch.isSelected()
                 ? FXCollections.observableList(gameVersionResults)
                 : FXCollections.observableList(results);
@@ -414,8 +415,8 @@ public class Controller implements Initializable {
 
     private void wowInterfaceSearch(String userQuery) throws DataCollectionException {
         WowInterfaceAPISearcher apiSearcher = new WowInterfaceAPISearcher();
-        ArrayList<WowInterfaceAddonResponse> results = apiSearcher.search(userQuery);
-        ObservableList<WowInterfaceAddonResponse> observableList = FXCollections.observableList(results);
+        ArrayList<SearchedAddonRequest> results = apiSearcher.search(userQuery);
+        ObservableList<SearchedAddonRequest> observableList = FXCollections.observableList(results);
         Platform.runLater(() -> {
             comboBoxSearch.show();
             comboBoxSearch.setItems(observableList);

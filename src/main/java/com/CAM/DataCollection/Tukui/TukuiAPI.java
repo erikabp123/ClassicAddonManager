@@ -54,9 +54,7 @@ public class TukuiAPI extends API {
         return DateConverter.convertFromTukui(latestResponse.lastupdate);
     }
 
-    private JsonObject getJsonObject(Page page) {
-        WebResponse webResponse = page.getWebResponse();
-        String json = webResponse.getContentAsString();
+    private JsonObject getJsonObject(String json) {
         return new Gson().fromJson(json, JsonObject.class);
     }
 
@@ -105,8 +103,8 @@ public class TukuiAPI extends API {
     @Override
     protected boolean apiFound() throws DataCollectionException {
         String api = baseUrl + addonNumber;
-        Page response = fetchJson(api);
-        if (response == null || response.getWebResponse().getContentAsString().equals("")) {
+        String response = fetchJson(api);
+        if (response == null || response.equals("")) {
             return false;
         }
         repoObject = getJsonObject(response);

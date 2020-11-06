@@ -62,6 +62,58 @@ public class AddonManager {
         return false;
     }
 
+    public ArrayList<Addon> checkForUpdates(){
+        Log.log("Checking for updates ...");
+        ArrayList<Exception> exceptions = new ArrayList<>();
+        ArrayList<Addon> updatesAvailable = new ArrayList<>();
+
+        for(Addon addon : getManagedAddons()){
+            try {
+                UpdateResponse response = addon.checkForUpdate(gameVersion);
+                if (!response.isUpdateAvailable()) {
+                    Log.verbose(addon.getName() + " by " + addon.getAuthor() + " is up to date!");
+                    addon.setLastUpdateCheck(new Date());
+                    saveToFile();
+                    continue;
+                }
+
+                Log.log("update available for: " + addon.getName() + " by " + addon.getAuthor() + "!");
+                updatesAvailable.add(addon);
+            } catch (Exception e) {
+                exceptions.add(e);
+            }
+        }
+
+        return updatesAvailable;
+    }
+
+    public Exception updateSpecificAddon(Addon addon, UpdateProgressListener listener){
+
+        Log.log("Updating " + addon.getName() + " by " + addon.getAuthor() + "...");
+
+        try {
+            UpdateResponse response = addon.checkForUpdate(gameVersion);
+            if (!response.isUpdateAvailable() && !SessionOnlySettings.isForceReDownloads()) {
+                Log.verbose(addon.getName() + " by " + addon.getAuthor() + " is up to date!");
+                addon.setLastUpdateCheck(new Date());
+                saveToFile();
+                return null;
+            }
+            Log.log("update available for: " + addon.getName() + " by " + addon.getAuthor() + "!");
+            addon.fetchUpdate(response.getApi());
+            install(addon);
+        } catch (Exception e) {
+            return e;
+        }
+
+        addon.setLastUpdated(new Date());
+        saveToFile();
+        Log.log("Finished updating!");
+
+
+        return null;
+    }
+
     public ArrayList<Exception> updateAddons(UpdateProgressListener listener) {
         int UPDATE_MIN_WAIT = 1800000; //30 min in ms
         ArrayList<Exception> exceptions = new ArrayList<>();
@@ -112,7 +164,7 @@ public class AddonManager {
                     continue;
                 }
                 Log.log("update available for: " + addon.getName() + " by " + addon.getAuthor() + "!");
-                addon.fetchUpdate(response.getRetriever());
+                addon.fetchUpdate(response.getApi());
                 install(addon);
             } catch (DataCollectionException e) {
                 exceptions.add(e);
@@ -175,10 +227,10 @@ public class AddonManager {
             return null;
         }
 
-        AddonInfoRetriever retriever = UrlInfo.getCorrespondingInfoRetriever(gameVersion, urlInfo.addonSource, trimmedOrigin, false, request.branch, request.releases, -1);
+        API api = UrlInfo.getCorrespondingAPI(gameVersion, urlInfo.addonSource, trimmedOrigin, false, request.branch, request.releases, -1);
 
-        String name = retriever.getName();
-        String author = retriever.getAuthor();
+        String name = api.getName();
+        String author = api.getAuthor();
         Addon newAddon = new Addon(name, author, trimmedOrigin, request.branch, request.releases);
 
         managedAddons.add(newAddon);
@@ -211,23 +263,6 @@ public class AddonManager {
 
         Log.log("Successfully tracking new addon!");
         return newAddon;
-    }
-
-    public boolean removeAddon(int addonNum) {
-        Log.log("Attempting to remove addon ...");
-
-        if (addonNum > managedAddons.size()) {
-            Log.log("Addon #" + addonNum + " was not found!");
-            return false;
-        }
-
-        uninstall(managedAddons.get(addonNum));
-        managedAddons.remove(addonNum);
-
-        saveToFile();
-
-        Log.log("Successfully removed addon!");
-        return true;
     }
 
     public boolean removeAddon(Addon addon) {

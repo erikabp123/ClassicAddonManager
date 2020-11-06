@@ -25,7 +25,7 @@ public class EditPreferencesController implements Initializable, WindowControlle
 
     @FXML
     private void saveAction(ActionEvent event){
-        this.preferences.cfReleasesOnly = cfReleases.isSelected();
+        this.preferences.setCfReleasesOnly(cfReleases.isSelected());
         Preferences.savePreferencesFile();
         closeStage(event);
     }
@@ -38,7 +38,7 @@ public class EditPreferencesController implements Initializable, WindowControlle
     @Override
     public void initDialog(Object[] args){
         this.preferences = Preferences.getInstance();
-        this.cfReleases.setSelected(preferences.cfReleasesOnly);
+        this.cfReleases.setSelected(preferences.isCfReleasesOnly());
     }
 
     private void closeStage(ActionEvent event){

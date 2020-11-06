@@ -196,7 +196,7 @@ public class UrlInfo {
         return null;
     }
 
-    public static AddonInfoRetriever getCorrespondingInfoRetriever(GameVersion gameVersion, AddonSource addonSource, String origin, boolean updatingAddon, String branch, boolean releases, int projectId) throws DataCollectionException {
+    public static API getCorrespondingAPI(GameVersion gameVersion, AddonSource addonSource, String origin, boolean updatingAddon, String branch, boolean releases, int projectId) throws DataCollectionException {
         switch (addonSource){
             case CURSEFORGE:
                 return new CurseForgeAPI(projectId, gameVersion);
@@ -206,8 +206,6 @@ public class UrlInfo {
                 return new WowInterfaceAPI(projectId);
             case TUKUI:
                 return new TukuiAPI(projectId, gameVersion);
-            case WOWACE:
-                return WowAceScraper.makeScraper(origin, updatingAddon);
         }
         return null;
     }

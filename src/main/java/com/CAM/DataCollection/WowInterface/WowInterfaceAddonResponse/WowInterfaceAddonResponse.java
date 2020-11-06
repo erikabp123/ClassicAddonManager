@@ -7,7 +7,7 @@ import com.CAM.HelperTools.AddonSource;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-public class WowInterfaceAddonResponse implements Comparable<WowInterfaceAddonResponse>, SearchedAddonRequest {
+public class WowInterfaceAddonResponse extends SearchedAddonRequest {
 
     public int UID;
     public int UICATID;
@@ -23,38 +23,6 @@ public class WowInterfaceAddonResponse implements Comparable<WowInterfaceAddonRe
     public ArrayList<String> UIDir;
     public ArrayList<String> UIIMG_Thumbs;
     public ArrayList<String> UIIMGs;
-
-    public String searchFilter;
-
-    public double determineWeight(){
-
-        double sumWeight = 0;
-        if(contains(getName(), searchFilter)){
-            double weight = (searchFilter.length() * 1.0)/getName().length();
-            sumWeight += weight;
-        }
-        if(contains(getAuthor(), searchFilter)){
-            double weight = (searchFilter.length() * 0.5)/getAuthor().length();
-            sumWeight += weight;
-        }
-        return sumWeight;
-    }
-
-    private boolean contains(String source, String wantedStr){
-        return Pattern.compile(Pattern.quote(wantedStr), Pattern.CASE_INSENSITIVE).matcher(source).find();
-    }
-
-    @Override
-    public int compareTo(WowInterfaceAddonResponse o) {
-        // negative, as I want it to sort by HIGHEST value
-        return -Double.compare(this.determineWeight(), o.determineWeight());
-    }
-
-
-    @Override
-    public String toString(){
-        return getName() + " by " + getAuthor();
-    }
 
     @Override
     public AddonSource getAddonSource() {
@@ -79,6 +47,11 @@ public class WowInterfaceAddonResponse implements Comparable<WowInterfaceAddonRe
     @Override
     public int getProjectId() {
         return UID;
+    }
+
+    @Override
+    public String getDescription() {
+        return "";
     }
 }
 

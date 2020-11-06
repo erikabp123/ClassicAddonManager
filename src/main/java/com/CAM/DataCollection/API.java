@@ -1,5 +1,6 @@
 package com.CAM.DataCollection;
 
+import com.CAM.DataCollection.Cache.WebsiteCache;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.Log;
 import com.CAM.HelperTools.Tools;
@@ -8,7 +9,7 @@ import com.gargoylesoftware.htmlunit.*;
 import java.io.IOException;
 import java.util.Date;
 
-public abstract class API implements AddonInfoRetriever {
+public abstract class API extends PageFetcher {
 
     private String url;
     private final boolean js;
@@ -26,22 +27,16 @@ public abstract class API implements AddonInfoRetriever {
         this.fetchedPage = null;
     }
 
-    @Override
     public abstract String getDownloadLink() throws DataCollectionException;
 
-    @Override
     public abstract Date getLastUpdated() throws DataCollectionException;
 
-    @Override
     public abstract String getName() throws DataCollectionException;
 
-    @Override
     public abstract String getAuthor() throws DataCollectionException;
 
-    @Override
     public abstract String getFileName() throws DataCollectionException;
 
-    @Override
     public String getUrl(){
         return url;
     }
@@ -50,12 +45,10 @@ public abstract class API implements AddonInfoRetriever {
         this.url = url;
     }
 
-    @Override
     public Page getFetchedPage() {
         return fetchedPage;
     }
 
-    @Override
     public void setFetchedPage(Page fetchedPage){
         this.fetchedPage = fetchedPage;
     }
@@ -64,32 +57,11 @@ public abstract class API implements AddonInfoRetriever {
         return Tools.sanatizeInput(input);
     }
 
-    @Override
     public abstract boolean isValidLink() throws DataCollectionException;
 
     @Override
     public AddonSource getAddonSource(){
         return source;
-    }
-
-    //TODO: Merge this and APISearcher fetchJson to reduce code duplication
-    public Page fetchJson(String url) throws DataCollectionException {
-        WebClient client = new WebClient();
-        client.getOptions().setJavaScriptEnabled(js);
-        client.getOptions().setCssEnabled(css);
-        client.getOptions().setUseInsecureSSL(insecureSSL);
-
-        Page page;
-
-        try {
-            page = client.getPage(url);
-        } catch (FailingHttpStatusCodeException e){
-            Log.verbose("Fetch resulted in " + e.getStatusCode());
-            throw new DataCollectionException(getAddonSource(), e);
-        } catch (IOException e) {
-            throw new DataCollectionException(getAddonSource(), e);
-        }
-        return page;
     }
 
     protected abstract boolean apiFound() throws DataCollectionException;

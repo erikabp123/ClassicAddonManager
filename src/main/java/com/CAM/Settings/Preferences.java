@@ -2,10 +2,14 @@ package com.CAM.Settings;
 
 import com.CAM.HelperTools.ReadWriteClassFiles;
 
+import java.util.List;
+
 public class Preferences {
 
-    public boolean cfReleasesOnly;
+    private boolean cfReleasesOnly = false;
+    private int maxCacheDuration = 60; //min
 
+    private List<PreferencesChangeListener> listeners;
     private static Preferences preferences = null;
 
     public static Preferences getInstance() {
@@ -24,6 +28,28 @@ public class Preferences {
         Preferences pref = (Preferences) ReadWriteClassFiles.readFile("system/PREFERENCES", emptyPref);
         boolean noPrefFileFound = (pref == null);
         return noPrefFileFound ? emptyPref : pref;
+    }
+
+    public boolean isCfReleasesOnly() {
+        return cfReleasesOnly;
+    }
+
+    public void setCfReleasesOnly(boolean cfReleasesOnly) {
+        this.cfReleasesOnly = cfReleasesOnly;
+        notifyListeners("cfReleases");
+    }
+
+    public int getMaxCacheDuration() {
+        return maxCacheDuration;
+    }
+
+    public void setMaxCacheDuration(int maxCacheDuration) {
+        this.maxCacheDuration = maxCacheDuration;
+        notifyListeners("maxCacheDuration");
+    }
+
+    private void notifyListeners(String nameOfPreference){
+        for(PreferencesChangeListener listener: listeners) listener.notifyChange(nameOfPreference);
     }
 
 

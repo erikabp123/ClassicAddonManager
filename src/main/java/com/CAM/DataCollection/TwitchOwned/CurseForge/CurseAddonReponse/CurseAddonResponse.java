@@ -1,14 +1,16 @@
 package com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse;
 
 import com.CAM.DataCollection.SearchedAddonRequest;
+import com.CAM.DataCollection.WowInterface.WowInterfaceAddonResponse.WowInterfaceAddonResponse;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.DateConverter;
 import com.CAM.HelperTools.GameVersion;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.regex.Pattern;
 
-public class CurseAddonResponse implements SearchedAddonRequest {
+public class CurseAddonResponse extends SearchedAddonRequest {
     public int id;
     public String name;
     public ArrayList<CurseAuthor> authors;
@@ -37,10 +39,6 @@ public class CurseAddonResponse implements SearchedAddonRequest {
     public boolean isAvailable;
     public boolean isExperiemental;
 
-    @Override
-    public String toString(){
-        return getName() + " by " + getAuthor();
-    }
 
     public boolean isGameVersionSupported(GameVersion gameVersion){
         for(CurseFile file : latestFiles){
@@ -74,6 +72,11 @@ public class CurseAddonResponse implements SearchedAddonRequest {
     @Override
     public int getProjectId() {
         return id;
+    }
+
+    @Override
+    public String getDescription() {
+        return summary;
     }
 
 }

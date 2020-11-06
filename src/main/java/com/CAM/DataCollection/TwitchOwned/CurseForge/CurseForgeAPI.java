@@ -50,8 +50,7 @@ public class CurseForgeAPI extends API implements TwitchSite {
 
     private CurseAddonResponse fetchAddonInfo() throws DataCollectionException {
         String url = addonBaseUrl + projectID;
-        Page page = fetchJson(url);
-        String jsonResponse = page.getWebResponse().getContentAsString();
+        String jsonResponse = fetchJson(url);
         Gson gson = new Gson();
         return gson.fromJson(jsonResponse, CurseAddonResponse.class);
     }
@@ -66,7 +65,7 @@ public class CurseForgeAPI extends API implements TwitchSite {
                 latestFile = file;
                 continue;
             }
-            if(Preferences.getInstance().cfReleasesOnly && file.releaseType != 1) {
+            if(Preferences.getInstance().isCfReleasesOnly() && file.releaseType != 1) {
                 System.out.println("Not a release, skipping!");
                 continue;
             } //skip non-releases if set in preferences

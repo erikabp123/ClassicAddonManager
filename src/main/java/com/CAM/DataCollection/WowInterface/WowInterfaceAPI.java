@@ -34,9 +34,7 @@ public class WowInterfaceAPI extends API {
 
     private WowInterfaceFile fetchAddonInfo() throws DataCollectionException {
         String url = addonBaseUrl + projectID + ".json";
-        System.out.println(url);
-        Page page = fetchJson(url);
-        String jsonResponse = page.getWebResponse().getContentAsString();
+        String jsonResponse = fetchJson(url);
         Gson gson = new Gson();
         ArrayList<WowInterfaceFile> files = gson.fromJson(jsonResponse, new TypeToken<ArrayList<WowInterfaceFile>>(){}.getType());
         return files.get(0);

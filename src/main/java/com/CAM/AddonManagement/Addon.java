@@ -8,7 +8,6 @@ import com.CAM.DataCollection.WowInterface.WowInterfaceAPI;
 import com.CAM.HelperTools.*;
 import javafx.scene.image.Image;
 
-import java.awt.*;
 import java.util.Date;
 
 public class Addon implements Comparable<Addon> {
@@ -41,14 +40,14 @@ public class Addon implements Comparable<Addon> {
         return new Addon(name, author, origin, branch, releases);
     }
 
-    public boolean fetchUpdate(AddonInfoRetriever retriever) throws DataCollectionException {
+    public void fetchUpdate(API api) throws DataCollectionException {
         try {
             Log.verbose("Attempting to fetch update ...");
-            String downloadLink = retriever.getDownloadLink();
+            String downloadLink = api.getDownloadLink();
             FileDownloader downloader = new FileDownloader("downloads");
-            String fileName = name + "_" + author + "_(" + retriever.getFileName() + ").zip";
+            String fileName = name + "_" + author + "_(" + api.getFileName() + ").zip";
             downloader.downloadFileMonitored(downloadLink, fileName);
-            lastUpdated = retriever.getLastUpdated();
+            lastUpdated = api.getLastUpdated();
             lastFileName = fileName;
             lastUpdateCheck = new Date();
         } catch (DataCollectionException e){
@@ -60,23 +59,22 @@ public class Addon implements Comparable<Addon> {
             throw exception;
         }
         Log.verbose("Successfully fetched new update!");
-        return true;
     }
 
     public UpdateResponse checkForUpdate(GameVersion gameVersion) throws DataCollectionException {
         UpdateResponse response;
         try {
-            AddonInfoRetriever retriever = getInfoRetriever(true, gameVersion);
-            response = new UpdateResponse(retriever, true);
+            API api = getAPI(true, gameVersion);
+            response = new UpdateResponse(api, true);
 
             // Check if addon has ever been updated through this program
             if(lastUpdated == null){
                 return response;
             }
-            // Get the date of the last update as seen by scrape
-            Date lastUpdateScrape = retriever.getLastUpdated();
+            // Get the date of the last update as seen by API
+            Date lastUpdateCheck = api.getLastUpdated();
             // Check if scrape has seen a newer update
-            if(DateConverter.isNewerDate(lastUpdateScrape, lastUpdated)){
+            if(DateConverter.isNewerDate(lastUpdateCheck, lastUpdated)){
                 return response;
             }
             // There are no new updates
@@ -89,9 +87,9 @@ public class Addon implements Comparable<Addon> {
         return response;
     }
 
-    private AddonInfoRetriever getInfoRetriever(boolean updatingAddon, GameVersion gameVersion) throws DataCollectionException {
+    private API getAPI(boolean updatingAddon, GameVersion gameVersion) throws DataCollectionException {
         try {
-           return UrlInfo.getCorrespondingInfoRetriever(gameVersion, getAddonSource(), origin, updatingAddon, branch, releases, projectId);
+           return UrlInfo.getCorrespondingAPI(gameVersion, getAddonSource(), origin, updatingAddon, branch, releases, projectId);
         } catch (DataCollectionException e){
             e.setAddon(this);
             throw e;

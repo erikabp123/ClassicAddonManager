@@ -81,15 +81,11 @@ public class GitHubAPI extends API {
         return date;
     }
 
-    private JsonArray getJsonArray(Page page){
-        WebResponse webResponse = page.getWebResponse();
-        String json = webResponse.getContentAsString();
+    private JsonArray getJsonArray(String json){
         return new Gson().fromJson(json, JsonArray.class);
     }
 
-    private JsonObject getJsonObject(Page page){
-        WebResponse webResponse = page.getWebResponse();
-        String json = webResponse.getContentAsString();
+    private JsonObject getJsonObject(String json){
         return new Gson().fromJson(json, JsonObject.class);
     }
 
@@ -174,7 +170,7 @@ public class GitHubAPI extends API {
         String author = getAuthor();
         String name = getName();
         String api = "https://api.github.com/repos/" + author + "/" + name + "/" + suffix;
-        Page response = fetchJson(api);
+        String response = fetchJson(api);
         if(response == null){
             return false;
         }

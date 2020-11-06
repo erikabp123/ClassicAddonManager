@@ -5,7 +5,7 @@ import com.CAM.HelperTools.AddonSource;
 
 import java.util.regex.Pattern;
 
-public class TukuiAddonResponse implements Comparable<TukuiAddonResponse>, SearchedAddonRequest {
+public class TukuiAddonResponse extends SearchedAddonRequest {
     public String id;
     public String name;
     public String small_desc;
@@ -21,41 +21,6 @@ public class TukuiAddonResponse implements Comparable<TukuiAddonResponse>, Searc
     public String web_url;
     public String changelog;
     public String donate_url;
-    
-    public String searchFilter;
-
-    public double determineWeight(){
-
-        double sumWeight = 0;
-        if(contains(name, searchFilter)){
-            double weight = (searchFilter.length() * 1.0)/name.length();
-            sumWeight += weight;
-        }
-        if(contains(author, searchFilter)){
-            double weight = (searchFilter.length() * 0.5)/author.length();
-            sumWeight += weight;
-        }
-        if(contains(small_desc, searchFilter)){
-            double weight = (searchFilter.length() * 0.2)/small_desc.length();
-            sumWeight += weight;
-        }
-        return sumWeight;
-    }
-
-    private boolean contains(String source, String wantedStr){
-        return Pattern.compile(Pattern.quote(wantedStr), Pattern.CASE_INSENSITIVE).matcher(source).find();
-    }
-
-    @Override
-    public int compareTo(TukuiAddonResponse o) {
-        // negative, as I want it to sort by HIGHEST value
-        return -Double.compare(this.determineWeight(), o.determineWeight());
-    }
-
-    @Override
-    public String toString(){
-        return getName() + " by " + getAuthor();
-    }
 
     @Override
     public AddonSource getAddonSource() {
@@ -80,5 +45,10 @@ public class TukuiAddonResponse implements Comparable<TukuiAddonResponse>, Searc
     @Override
     public int getProjectId() {
         return Integer.parseInt(id);
+    }
+
+    @Override
+    public String getDescription() {
+        return small_desc;
     }
 }

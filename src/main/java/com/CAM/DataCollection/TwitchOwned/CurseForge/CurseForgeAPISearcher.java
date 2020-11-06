@@ -3,6 +3,8 @@ package com.CAM.DataCollection.TwitchOwned.CurseForge;
 import com.CAM.AddonManagement.Addon;
 import com.CAM.DataCollection.APISearcher;
 import com.CAM.DataCollection.DataCollectionException;
+import com.CAM.DataCollection.SearchedAddonRequest;
+import com.CAM.DataCollection.Tukui.TukuiAddonResponse.TukuiAddonResponse;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.Log;
@@ -17,26 +19,29 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class CurseForgeAPISearcher extends APISearcher {
 
-    private String baseUrl = "https://addons-ecs.forgesvc.net/api/v2/addon/search?categoryId=0&gameId=1&pageSize=0&searchFilter=";
+    private String baseUrl = "https://addons-ecs.forgesvc.net/api/v2/addon/search?categoryId=0&gameId=1&pageSize=0";
 
-    public ArrayList<CurseAddonResponse> search(String searchFilter) throws DataCollectionException {
-        System.out.println("Searching...");
-        String encodedSearchFilter = encodeValue(searchFilter);
-        String url = baseUrl + encodedSearchFilter;
-        Page page = fetchJson(url);
-        String json = page.getWebResponse().getContentAsString();
+    public ArrayList<SearchedAddonRequest> search(String searchFilter) throws DataCollectionException {
+        Log.verbose("Performing Curse search ...");
+        String url = baseUrl;
+        String json = fetchJson(url);
         Gson gson = new Gson();
-        return gson.fromJson(json, new TypeToken<ArrayList<CurseAddonResponse>>(){}.getType());
+        ArrayList<CurseAddonResponse> unfiltered = gson.fromJson(json, new TypeToken<ArrayList<CurseAddonResponse>>(){}.getType());
+        ArrayList<SearchedAddonRequest> filtered = filterResponse(unfiltered, searchFilter);
+        Log.verbose("Finished Curse search!");
+        return filtered;
     }
 
     public CurseAddonResponse findCorrespondingAddon(Addon addon) throws DataCollectionException {
-        ArrayList<CurseAddonResponse> addons = search(addon.getName());
-        for(CurseAddonResponse response : addons){
-            if(addon.getOrigin().startsWith(response.websiteUrl)) {
-                return response;
+        ArrayList<SearchedAddonRequest> addons = search(addon.getName());
+        for(SearchedAddonRequest response : addons){
+            CurseAddonResponse castResponse = (CurseAddonResponse) response;
+            if(addon.getOrigin().startsWith(castResponse.websiteUrl)) {
+                return castResponse;
             }
         }
         return null;

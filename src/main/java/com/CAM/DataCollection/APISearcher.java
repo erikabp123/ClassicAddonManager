@@ -1,5 +1,7 @@
 package com.CAM.DataCollection;
 
+import com.CAM.DataCollection.Cache.WebsiteCache;
+import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.HelperTools.AddonSource;
 import com.CAM.HelperTools.Log;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -7,28 +9,25 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 
-public abstract class APISearcher {
-
-    protected Page fetchJson(String url) throws DataCollectionException {
-        WebClient client = new WebClient();
-        client.getOptions().setJavaScriptEnabled(false);
-        client.getOptions().setCssEnabled(false);
-        client.getOptions().setUseInsecureSSL(true);
-
-        Page page;
-
-        try {
-            page = client.getPage(url);
-        } catch (FailingHttpStatusCodeException e){
-            Log.verbose("fetch resulted in " + e.getStatusCode());
-            throw new DataCollectionException(getAddonSource(), e);
-        } catch (IOException e) {
-            throw new DataCollectionException(getAddonSource(), e);
-        }
-        return page;
-    }
+public abstract class APISearcher extends PageFetcher {
 
     public abstract AddonSource getAddonSource();
+
+    public ArrayList<SearchedAddonRequest> filterResponse(ArrayList<? extends SearchedAddonRequest> unfilteredResponse, String searchFilter) {
+        ArrayList<SearchedAddonRequest> filteredResponse = new ArrayList<>();
+
+        for (SearchedAddonRequest response : unfilteredResponse) {
+            response.setSearchFilter(searchFilter);
+            double weight = response.determineWeight();
+            if (weight > 0) {
+                filteredResponse.add(response);
+            }
+        }
+        Collections.sort(filteredResponse);
+        return filteredResponse;
+    }
 
 }
