@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="435.0" prefWidth="450.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.CAM.GUI.GUISelectInstallationFolder">
+   <children>
+      <AnchorPane prefHeight="32.0" prefWidth="450.0">
+         <children>
+            <Text layoutX="96.0" layoutY="40.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Select Installation Folder">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Text>
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutY="47.0" prefHeight="69.0" prefWidth="450.0">
+         <children>
+            <Text layoutX="14.0" layoutY="26.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Retail">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Text>
+            <TextField fx:id="retailLocationTextField" disable="true" focusTraversable="false" layoutX="14.0" layoutY="50.0" prefWidth="386.0" text="Searching..." />
+            <Button fx:id="retailLocationConfirmButton" disable="true" focusTraversable="false" layoutX="329.0" layoutY="16.0" mnemonicParsing="false" onAction="#retailConfirmSelectionAction" stylesheets="@hiddenBackgroundButton.css" visible="false" />
+            <ImageView fx:id="retailLocationImageView" fitHeight="30.0" fitWidth="29.0" layoutX="329.0" layoutY="18.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@processingAddon.gif" />
+               </image>
+            </ImageView>
+            <Button fx:id="cancelRetailSearchButton" layoutX="371.0" layoutY="16.0" mnemonicParsing="false" onAction="#cancelRetailAction" stylesheets="@hiddenBackgroundButton.css" />
+            <Button fx:id="retailManualSelectionButton" disable="true" focusTraversable="false" layoutX="404.0" layoutY="49.0" mnemonicParsing="false" onAction="#retailManualSelectionAction" text="..." visible="false" />
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutY="128.0" prefHeight="81.0" prefWidth="450.0">
+         <children>
+            <Text layoutX="14.0" layoutY="26.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Classic">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Text>
+            <TextField fx:id="classicLocationTextField" disable="true" focusTraversable="false" layoutX="14.0" layoutY="50.0" prefWidth="386.0" text="Searching..." />
+            <Button fx:id="classicLocationConfirmButton" disable="true" focusTraversable="false" layoutX="329.0" layoutY="16.0" mnemonicParsing="false" onAction="#classicConfirmSelectionAction" stylesheets="@hiddenBackgroundButton.css" visible="false" />
+            <ImageView fx:id="classicLocationImageView" fitHeight="30.0" fitWidth="29.0" layoutX="329.0" layoutY="18.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@processingAddon.gif" />
+               </image>
+            </ImageView>
+            <Button fx:id="cancelClassicSearchButton" layoutX="371.0" layoutY="16.0" mnemonicParsing="false" onAction="#cancelClassicAction" stylesheets="@hiddenBackgroundButton.css" />
+            <Button fx:id="classicManualSelectionButton" disable="true" focusTraversable="false" layoutX="404.0" layoutY="49.0" mnemonicParsing="false" onAction="#classicManualSelectionAction" text="..." visible="false" />
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutY="209.0" prefHeight="81.0" prefWidth="450.0">
+         <children>
+            <Text layoutX="14.0" layoutY="33.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Retail PTR">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Text>
+            <TextField fx:id="retailPtrLocationTextField" disable="true" focusTraversable="false" layoutX="14.0" layoutY="57.0" prefWidth="386.0" text="Searching..." />
+            <Button fx:id="retailPtrLocationConfirmButton" disable="true" focusTraversable="false" layoutX="329.0" layoutY="23.0" mnemonicParsing="false" onAction="#retailPtrConfirmSelectionAction" stylesheets="@hiddenBackgroundButton.css" visible="false" />
+            <ImageView fx:id="retailPtrLocationImageView" fitHeight="30.0" fitWidth="29.0" layoutX="329.0" layoutY="25.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@processingAddon.gif" />
+               </image>
+            </ImageView>
+            <Button fx:id="cancelRetailPtrSearchButton" layoutX="371.0" layoutY="23.0" mnemonicParsing="false" onAction="#cancelRetailPtrAction" stylesheets="@hiddenBackgroundButton.css" />
+            <Button fx:id="retailPtrManualSelectionButton" disable="true" focusTraversable="false" layoutX="404.0" layoutY="56.0" mnemonicParsing="false" onAction="#retailPtrManualSelectionAction" text="..." visible="false" />
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutY="297.0" prefHeight="88.0" prefWidth="450.0">
+         <children>
+            <Text layoutX="14.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Classic PTR">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Text>
+            <TextField fx:id="classicPtrLocationTextField" disable="true" focusTraversable="false" layoutX="14.0" layoutY="53.0" prefWidth="386.0" text="Searching..." />
+            <Button fx:id="classicPtrLocationConfirmButton" disable="true" focusTraversable="false" layoutX="329.0" layoutY="19.0" mnemonicParsing="false" onAction="#classicPtrConfirmSelectionAction" stylesheets="@hiddenBackgroundButton.css" visible="false" />
+            <ImageView fx:id="classicPtrLocationImageView" fitHeight="30.0" fitWidth="29.0" layoutX="329.0" layoutY="21.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@processingAddon.gif" />
+               </image>
+            </ImageView>
+            <Button fx:id="cancelClassicPtrSearchButton" layoutX="371.0" layoutY="19.0" mnemonicParsing="false" onAction="#cancelClassicPtrAction" stylesheets="@hiddenBackgroundButton.css" />
+            <Button fx:id="classicPtrManualSelectionButton" disable="true" focusTraversable="false" layoutX="404.0" layoutY="52.0" mnemonicParsing="false" onAction="#classicPtrManualSelectionAction" text="..." visible="false" />
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutY="386.0" prefHeight="28.0" prefWidth="450.0">
+         <children>
+            <Button fx:id="selectInstallationContinueButton" disable="true" focusTraversable="false" layoutX="278.0" mnemonicParsing="false" onAction="#saveAction" text="Continue" />
+            <Button fx:id="selectInstallationCancelButton" cancelButton="true" layoutX="373.0" mnemonicParsing="false" onAction="#cancelAction" text="Cancel" />
+         </children>
+      </AnchorPane>
+   </children>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+</AnchorPane>
