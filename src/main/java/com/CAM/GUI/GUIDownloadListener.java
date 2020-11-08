@@ -1,6 +1,8 @@
 package com.CAM.GUI;
 
+import com.CAM.AddonManagement.Addon;
 import com.CAM.HelperTools.DownloadListener;
+import com.CAM.HelperTools.TableViewStatus;
 import javafx.application.Platform;
 import javafx.scene.control.ProgressBar;
 
@@ -33,4 +35,5 @@ public class GUIDownloadListener implements DownloadListener {
             progressBarTotal.setProgress(totalProgress);
         });
     }
+
 }

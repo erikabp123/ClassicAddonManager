@@ -1,7 +1,10 @@
 package com.CAM.DataCollection;
 
+import com.CAM.AddonManagement.Addon;
+import com.CAM.GUI.Controller;
 import com.CAM.HelperTools.DownloadListener;
 import com.CAM.HelperTools.Log;
+import javafx.application.Platform;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -21,9 +24,21 @@ public class FileDownloader {
     private static ArrayList<DownloadListener> listeners = new ArrayList<>();
     private static final int EOF = -1;
     private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
+    private ArrayList<DownloadListener> localListeners;
 
     public FileDownloader(String downloadLocation){
         this.downloadLocation = downloadLocation;
+        this.localListeners = new ArrayList<>();
+    }
+
+    public void listenLocal(DownloadListener listener){
+        localListeners.add(listener);
+    }
+
+    public void notifyAllLocalListeners(double progress){
+        for(DownloadListener listener: localListeners){
+            listener.notify(progress);
+        }
     }
 
     public static void listen(DownloadListener listener){
@@ -56,7 +71,7 @@ public class FileDownloader {
 
     }
 
-    public void downloadFileMonitored(String stringUrl, String fileName) {
+    public void downloadFileMonitored(String stringUrl, String fileName) throws IOException {
 
         File file = new File(downloadLocation + "/" + fileName);
         URL url = null;
@@ -67,10 +82,8 @@ public class FileDownloader {
             urlConnection = url.openConnection();
             urlConnection.connect();
             source = url.openStream();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw e;
         }
 
         int fileSize = urlConnection.getContentLength();
@@ -88,7 +101,10 @@ public class FileDownloader {
                     count += n;
                     double progress = (count*1.0/fileSize);
                     notifyAllListeners(progress);
+                    notifyAllLocalListeners(progress);
                 }
+                notifyAllListeners(1);
+                notifyAllLocalListeners(1);
 
                 output.close(); // don't swallow close Exception if copy completes normally
             } finally {
@@ -96,7 +112,7 @@ public class FileDownloader {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            throw e;
         } finally {
             IOUtils.closeQuietly(source);
         }

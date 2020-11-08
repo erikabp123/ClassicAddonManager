@@ -66,7 +66,6 @@ public class CurseForgeAPI extends API implements TwitchSite {
                 continue;
             }
             if(Preferences.getInstance().isCfReleasesOnly() && file.releaseType != 1) {
-                System.out.println("Not a release, skipping!");
                 continue;
             } //skip non-releases if set in preferences
             Date curFileDate = DateConverter.convertFromCurseAPI(latestFile.fileDate);

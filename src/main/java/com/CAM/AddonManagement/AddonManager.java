@@ -1,9 +1,12 @@
 package com.CAM.AddonManagement;
 
 import com.CAM.DataCollection.*;
+import com.CAM.DataCollection.Cache.WebsiteCache;
 import com.CAM.HelperTools.*;
+import com.CAM.Settings.Preferences;
 import com.CAM.Settings.SessionOnlySettings;
 import net.lingala.zip4j.model.FileHeader;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.*;
 import java.util.*;
@@ -62,12 +65,24 @@ public class AddonManager {
         return false;
     }
 
-    public ArrayList<Addon> checkForUpdates(){
+    public ArrayList<Addon> checkForUpdates(ArrayList<Exception> exceptions){
         Log.log("Checking for updates ...");
-        ArrayList<Exception> exceptions = new ArrayList<>();
         ArrayList<Addon> updatesAvailable = new ArrayList<>();
 
         for(Addon addon : getManagedAddons()){
+            if (SessionOnlySettings.isSkipGithubDownloads() && addon.getAddonSource() == AddonSource.GITHUB) {
+                Log.log("Skipping github addon " + addon.getName() + " by " + addon.getAuthor());
+                continue;
+            }
+
+            if (!SessionOnlySettings.isForceUpdateChecking()
+                    && addon.getLastUpdateCheck() != null
+                    && System.currentTimeMillis() < addon.getLastUpdateCheck().getTime() + Preferences.getInstance().getMaxCacheDuration()
+            ) {
+                Log.log("Checked addon " + addon.getName() + " by " + addon.getAuthor() + " recently! Skipping!");
+                continue;
+            }
+
             try {
                 UpdateResponse response = addon.checkForUpdate(gameVersion);
                 if (!response.isUpdateAvailable()) {
@@ -87,31 +102,33 @@ public class AddonManager {
         return updatesAvailable;
     }
 
-    public Exception updateSpecificAddon(Addon addon, UpdateProgressListener listener){
+    public void updateSpecificAddon(Addon addon, TableViewStatus tableViewStatus) throws DataCollectionException {
 
         Log.log("Updating " + addon.getName() + " by " + addon.getAuthor() + "...");
 
-        try {
-            UpdateResponse response = addon.checkForUpdate(gameVersion);
-            if (!response.isUpdateAvailable() && !SessionOnlySettings.isForceReDownloads()) {
-                Log.verbose(addon.getName() + " by " + addon.getAuthor() + " is up to date!");
-                addon.setLastUpdateCheck(new Date());
-                saveToFile();
-                return null;
-            }
-            Log.log("update available for: " + addon.getName() + " by " + addon.getAuthor() + "!");
-            addon.fetchUpdate(response.getApi());
-            install(addon);
-        } catch (Exception e) {
-            return e;
-        }
+        addon.fetchUpdate(addon.getAPI(true, gameVersion), tableViewStatus);
+        install(addon);
 
-        addon.setLastUpdated(new Date());
+        Date now = new Date();
+        addon.setLastUpdateCheck(now);
+        addon.setLastUpdated(now);
         saveToFile();
         Log.log("Finished updating!");
+    }
 
+    public ArrayList<Exception> updateAllAddons(HashMap<Addon, TableViewStatus> addonsWithUpdates) {
+        ArrayList<Exception> exceptions = new ArrayList<>();
+        Log.log("Updating addons ...");
 
-        return null;
+        for (Addon addon : addonsWithUpdates.keySet()) {
+            try {
+                updateSpecificAddon(addon, addonsWithUpdates.get(addon));
+            } catch (DataCollectionException e) {
+                exceptions.add(e);
+            }
+        }
+        Log.log("Finished updating!");
+        return exceptions;
     }
 
     public ArrayList<Exception> updateAddons(UpdateProgressListener listener) {
@@ -159,12 +176,11 @@ public class AddonManager {
                     statusCode = 1;
                     listener.informFinish(position, statusCode);
                     position++;
-                    addon.setLastUpdateCheck(new Date());
                     saveToFile();
                     continue;
                 }
                 Log.log("update available for: " + addon.getName() + " by " + addon.getAuthor() + "!");
-                addon.fetchUpdate(response.getApi());
+                addon.fetchUpdate(response.getApi(), null);
                 install(addon);
             } catch (DataCollectionException e) {
                 exceptions.add(e);

@@ -5,6 +5,7 @@ import com.CAM.DataCollection.Tukui.TukuiAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPISearcher;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAPI;
+import com.CAM.GUI.GUIDownloadListener;
 import com.CAM.HelperTools.*;
 import javafx.scene.image.Image;
 
@@ -40,11 +41,12 @@ public class Addon implements Comparable<Addon> {
         return new Addon(name, author, origin, branch, releases);
     }
 
-    public void fetchUpdate(API api) throws DataCollectionException {
+    public void fetchUpdate(API api, TableViewStatus tableViewStatus) throws DataCollectionException {
         try {
             Log.verbose("Attempting to fetch update ...");
             String downloadLink = api.getDownloadLink();
             FileDownloader downloader = new FileDownloader("downloads");
+            downloader.listenLocal(tableViewStatus);
             String fileName = name + "_" + author + "_(" + api.getFileName() + ").zip";
             downloader.downloadFileMonitored(downloadLink, fileName);
             lastUpdated = api.getLastUpdated();
@@ -87,7 +89,7 @@ public class Addon implements Comparable<Addon> {
         return response;
     }
 
-    private API getAPI(boolean updatingAddon, GameVersion gameVersion) throws DataCollectionException {
+    public API getAPI(boolean updatingAddon, GameVersion gameVersion) throws DataCollectionException {
         try {
            return UrlInfo.getCorrespondingAPI(gameVersion, getAddonSource(), origin, updatingAddon, branch, releases, projectId);
         } catch (DataCollectionException e){

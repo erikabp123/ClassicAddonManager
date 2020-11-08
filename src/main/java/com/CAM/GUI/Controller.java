@@ -13,6 +13,7 @@ import com.CAM.DataCollection.TwitchOwned.WowAce.WowAceScraper;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAPISearcher;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAddonResponse.WowInterfaceAddonResponse;
 import com.CAM.HelperTools.*;
+import com.CAM.Settings.Preferences;
 import com.CAM.Settings.SessionOnlySettings;
 import com.CAM.Starter;
 import com.CAM.Updating.SelfUpdater;
@@ -23,7 +24,6 @@ import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
@@ -59,6 +59,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Controller implements Initializable {
@@ -72,6 +73,8 @@ public class Controller implements Initializable {
     private AddonManagerControl addonManagerControl;
     private final AtomicReference<String> lastSearchQuery = new AtomicReference<>("");
     private final AtomicReference<Boolean> lastSearchQueryCheckbox = new AtomicReference<>(false);
+    private final AtomicReference<HashMap<Addon, TableViewStatus>> updateTableViewMap = new AtomicReference<>(null);
+    private final AtomicLong updateTableViewMapTimeStamp = new AtomicLong(0);
 
     //================================================================================
     // FXML - Fields
@@ -166,10 +169,19 @@ public class Controller implements Initializable {
     private TableColumn<Addon, String> managedTableColumnUpdated;
 
     @FXML
+    private TableColumn<Addon, Addon> managedTableColumnStatus;
+
+    @FXML
     private TableColumn<Addon, String> managedTableColumnFileName;
 
     @FXML
     private TableColumn<Addon, String> managedTableColumnFlavor;
+
+    @FXML
+    private Tab searchTab;
+
+    @FXML
+    private Tab debugTab;
 
     //region Text Input/Output
     @FXML
@@ -439,8 +451,7 @@ public class Controller implements Initializable {
         choiceBoxSource.setFocusTraversable(false);
     }
 
-    @FXML
-    private void updateAction() {
+    private void updateAllAction() {
         filterAddonsTextField.setText(null);
         Thread updateThread = new Thread(() -> {
             Platform.runLater(() -> {
@@ -464,6 +475,31 @@ public class Controller implements Initializable {
                 enableAll();
                 buttonUpdate.setVisible(true);
                 progressBarDownload.setVisible(false);
+            });
+
+        });
+        updateThread.start();
+    }
+
+    @FXML
+    private void updateAction() {
+        filterAddonsTextField.setText(null);
+        Platform.runLater(() -> {
+            disableAll();
+            searchTab.setDisable(true);
+            debugTab.setDisable(true);
+        });
+        Thread updateThread = new Thread(() -> {
+            checkForAddonUpdates();
+            for(Addon addon: updateTableViewMap.get().keySet()){
+                updateTableViewMap.get().get(addon).setQueuedForUpdate(true);
+            }
+            getAddonManager().updateAllAddons(updateTableViewMap.get());
+
+            Platform.runLater(() -> {
+                enableAll();
+                searchTab.setDisable(false);
+                debugTab.setDisable(false);
             });
 
         });
@@ -1451,17 +1487,137 @@ public class Controller implements Initializable {
     }
     //endregion
 
+    public void refreshAction(){
+        Thread refreshThread = new Thread(this::checkForAddonUpdates);
+        refreshThread.start();
+    }
+
+    public void checkForAddonUpdates(){
+        Platform.runLater(() -> managedTableColumnStatus.setCellFactory(param -> {
+            final ImageView imageview = new ImageView();
+            imageview.setFitHeight(50);
+            imageview.setFitWidth(50);
+            TableCell<Addon, Addon> cell = new TableCell<>() {
+                @Override
+                public void updateItem(Addon item, boolean empty) {
+                    if (item != null) {
+                        Image loadingImage = new Image(this.getClass().getClassLoader().getResource("processingAddon.gif").toExternalForm());
+                        imageview.setImage(loadingImage);
+                    } else {
+                        imageview.setImage(null);
+                    }
+                }
+            };
+
+            cell.setGraphic(imageview);
+            return cell;
+        }));
+
+        if(System.currentTimeMillis() - updateTableViewMapTimeStamp.get() >= Preferences.getInstance().getMaxCacheDuration()){
+            ArrayList<Exception> exceptions = new ArrayList<>();
+            ArrayList<Addon> updatesAvailable = getAddonManager().checkForUpdates(exceptions);
+            for (Exception e : exceptions) {
+                if (e.getClass() == DataCollectionException.class) {
+                    ((DataCollectionException) e).getException().printStackTrace();
+                    handleUpdateScrapeException((DataCollectionException) e);
+                } else {
+                    handleUnknownException(e);
+                }
+            }
+            //ArrayList<Addon> updatesAvailable = new ArrayList<Addon>();
+            //updatesAvailable.add(getAddonManager().getManagedAddons().get(0));
+            //updatesAvailable.add(getAddonManager().getManagedAddons().get(1));
+
+            HashMap<Addon, TableViewStatus> updateHashmap = new HashMap<>();
+            for(Addon addon: updatesAvailable){
+                updateHashmap.put(addon, new TableViewStatus());
+            }
+            updateTableViewMap.set(updateHashmap);
+            updateTableViewMapTimeStamp.set(System.currentTimeMillis());
+        }
+
+        Platform.runLater(() -> managedTableColumnStatus.setCellFactory(param -> {
+            Button updateButton = new Button("Update");
+            updateButton.setDisable(true);
+            updateButton.setVisible(false);
+
+            TableCell<Addon, Addon> cell = new TableCell<>() {
+                final ProgressBar progressBar = new ProgressBar(0);
+                @Override
+                public void updateItem(Addon item, boolean empty) {
+                    updateButton.setOnAction(event -> {
+                        try {
+                            updateTableViewMap.get().get(item).setQueuedForUpdate(true);
+                            updateItem(item, empty);
+                            getAddonManager().updateSpecificAddon(item, updateTableViewMap.get().get(item));
+                        } catch (DataCollectionException e) {
+                            handleUpdateScrapeException(e);
+                        }
+                    });
+                    if (item != null) {
+                        if(updateTableViewMap.get().containsKey(item)){
+                            TableViewStatus tableViewStatus = updateTableViewMap.get().get(item);
+                            tableViewStatus.setOnChangeListener(e -> Platform.runLater(() -> {
+                                progressBar.setProgress(tableViewStatus.getProgress());
+                                updateItem(item, empty);
+                            }));
+                            if(tableViewStatus.isQueuedForUpdate()){
+                                if(tableViewStatus.isDoneUpdating()){
+                                    updateButton.setDisable(true);
+                                    updateButton.setVisible(false);
+                                    setGraphic(null);
+
+                                    Date lastUpdateCheck = item.getLastUpdateCheck();
+                                    String dateString = "Never updated!";
+                                    if(lastUpdateCheck != null) dateString = lastUpdateCheck.toString();
+                                    String text = "Checked: \n" + dateString;
+                                    setText(text);
+                                } else {
+                                    updateButton.setDisable(true);
+                                    updateButton.setVisible(false);
+                                    setText(null);
+                                    progressBar.setProgress(tableViewStatus.getProgress());
+                                    System.out.println(item.getName() + " progress: " + progressBar.getProgress());
+                                    setGraphic(progressBar);
+                                }
+                            } else {
+                                updateButton.setDisable(false);
+                                updateButton.setVisible(true);
+                                setGraphic(updateButton);
+                                setText(null);
+                            }
+                        } else {
+                            updateButton.setDisable(true);
+                            updateButton.setVisible(false);
+                            setGraphic(null);
+
+                            Date lastUpdateCheck = item.getLastUpdateCheck();
+                            String dateString = "Never updated!";
+                            if(lastUpdateCheck != null) dateString = lastUpdateCheck.toString();
+                            String text = "Checked: \n" + dateString;
+                            setText(text);
+                        }
+                    } else {
+                        updateButton.setDisable(true);
+                        updateButton.setVisible(false);
+                        setGraphic(null);
+                    }
+                }
+            };
+            return cell;
+        }));
+    }
+
     public void setupTableView(){
         List<Addon> addons = getAddonManager().getManagedAddons();
 
         managedTableColumnAddon.setCellValueFactory(new PropertyValueFactory<>("name"));
         managedTableColumnAuthor.setCellValueFactory(new PropertyValueFactory<>("author"));
-        managedTableColumnUpdated.setCellValueFactory(new PropertyValueFactory<>("lastUpdateCheck"));
+        managedTableColumnUpdated.setCellValueFactory(new PropertyValueFactory<>("lastUpdated"));
         managedTableColumnFileName.setCellValueFactory(new PropertyValueFactory<>("lastFileName"));
         managedTableColumnFlavor.setCellValueFactory(new PropertyValueFactory<>("flavor"));
 
         managedTableColumnSource.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue()));
-
         managedTableColumnSource.setCellFactory(param -> {
             final ImageView imageview = new ImageView();
             imageview.setFitHeight(75);
@@ -1484,11 +1640,32 @@ public class Controller implements Initializable {
             return cell;
         });
 
+        managedTableColumnStatus.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue()));
+        managedTableColumnStatus.setCellFactory(param -> {
+            TableCell<Addon, Addon> cell = new TableCell<>() {
+                @Override
+                public void updateItem(Addon item, boolean empty) {
+                    if (item != null) {
+                        Date lastUpdateCheck = item.getLastUpdateCheck();
+                        String dateString = "Never updated!";
+                        if(lastUpdateCheck != null) dateString = lastUpdateCheck.toString();
+                        String text = "Checked: \n" + dateString;
+                        setText(text);
+                    } else {
+                        setText(null);
+                    }
+                }
+            };
+            return cell;
+        });
+
         managedTableColumnSource.setComparator(Comparator.comparing(o -> o.getAddonSource().name()));
+        managedTableColumnStatus.setComparator(Comparator.comparing(Addon::getLastUpdateCheck));
 
         listItems.setAll(addons);
         shownItems.setAll(listItems);
         installedAddonsTableView.setItems(shownItems);
+        refreshAction();
     }
 
     public void removeFromTableView(List<Addon> addons) {
