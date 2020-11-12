@@ -1,8 +1,8 @@
 package com.CAM.DataCollection;
 
 import com.CAM.DataCollection.Cache.WebsiteCache;
-import com.CAM.HelperTools.AddonSource;
-import com.CAM.HelperTools.Log;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
+import com.CAM.HelperTools.Logging.Log;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;

@@ -13,6 +13,10 @@ import com.CAM.DataCollection.TwitchOwned.WowAce.WowAceScraper;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAPISearcher;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAddonResponse.WowInterfaceAddonResponse;
 import com.CAM.HelperTools.*;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
+import com.CAM.HelperTools.GameSpecific.GameVersion;
+import com.CAM.HelperTools.IO.DownloadListener;
+import com.CAM.HelperTools.Logging.Log;
 import com.CAM.Settings.Preferences;
 import com.CAM.Settings.SessionOnlySettings;
 import com.CAM.Starter;
@@ -22,11 +26,15 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -44,10 +52,13 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -75,6 +86,7 @@ public class Controller implements Initializable {
     private final AtomicReference<Boolean> lastSearchQueryCheckbox = new AtomicReference<>(false);
     private final AtomicReference<HashMap<Addon, TableViewStatus>> updateTableViewMap = new AtomicReference<>(null);
     private final AtomicLong updateTableViewMapTimeStamp = new AtomicLong(0);
+    private final ObservableList<SearchedAddonRequest> addSearchResults = FXCollections.observableArrayList();
 
     //================================================================================
     // FXML - Fields
@@ -157,6 +169,9 @@ public class Controller implements Initializable {
     private TableView installedAddonsTableView;
 
     @FXML
+    private TableView searchedTableView;
+
+    @FXML
     private TableColumn<Addon, Addon> managedTableColumnSource;
 
     @FXML
@@ -166,16 +181,34 @@ public class Controller implements Initializable {
     private TableColumn<Addon, String> managedTableColumnAuthor;
 
     @FXML
-    private TableColumn<Addon, String> managedTableColumnUpdated;
+    private TableColumn<Addon, Addon> managedTableColumnUpdated;
 
     @FXML
     private TableColumn<Addon, Addon> managedTableColumnStatus;
 
     @FXML
-    private TableColumn<Addon, String> managedTableColumnFileName;
+    private TableColumn<Addon, String> managedTableColumnFlavor;
 
     @FXML
-    private TableColumn<Addon, String> managedTableColumnFlavor;
+    private TableColumn<SearchedAddonRequest, SearchedAddonRequest> searchSourceTableColumn;
+
+    @FXML
+    private TableColumn<SearchedAddonRequest, String> searchAddonTableColumn;
+
+    @FXML
+    private TableColumn<SearchedAddonRequest, String> searchAuthorTableColumn;
+
+    @FXML
+    private TableColumn<SearchedAddonRequest, SearchedAddonRequest> searchGameVersionTableColumn;
+
+    @FXML
+    private TableColumn<SearchedAddonRequest, Double> searchRelevanceTableColumn;
+
+    @FXML
+    private TextArea selectedSearchedAddonTextArea;
+
+    @FXML
+    private TextField searchAllSourcesTextField;
 
     @FXML
     private Tab searchTab;
@@ -286,10 +319,13 @@ public class Controller implements Initializable {
         Thread precheckThread = new Thread(() -> {
             Platform.runLater(() -> {
                 disableAll();
-                imageViewAddSearch.setVisible(true);
             });
 
-            Object addon = comboBoxSearch.getValue();
+            Object addon = searchedTableView.getSelectionModel().getSelectedItem();
+            if(addon == null) {
+                Platform.runLater(() -> disableAll());
+                return;
+            }
             Class addonSource = addon.getClass();
 
             try {
@@ -299,11 +335,9 @@ public class Controller implements Initializable {
                 }
                 else if (addonSource.equals(TukuiAddonResponse.class)) {
                     startAddonAddSearchedThread((TukuiAddonResponse) addon);
-                    Platform.runLater(this::clearSearchSelectionAction);
                 }
                 else if (addonSource.equals(WowInterfaceAddonResponse.class)){
                     startAddonAddSearchedThread((WowInterfaceAddonResponse) addon);
-                    Platform.runLater(this::clearSearchSelectionAction);
                 }
 
             } catch (DataCollectionException e) {
@@ -343,55 +377,45 @@ public class Controller implements Initializable {
         updateAddonFormatThread.start();
     }
 
-    @FXML
-    private void searchEnterAction(ActionEvent event) {
-
-        Object selectedVal = comboBoxSearch.getValue();
-        if (selectedVal == null) {
-            return;
-        }
-        if (selectedVal instanceof  SearchedAddonRequest) {
-            selectSearchedAddon(selectedVal);
-            return;
-        }
-
+    private void searchEnterAction() {
         Thread searchThread = new Thread(() -> {
             try {
-                String userQuery = comboBoxSearch.getEditor().getText();
+                String userQuery = searchAllSourcesTextField.getText();
                 String lastQuery = lastSearchQuery.get();
-                boolean isLastQueryClassicSpecific = lastSearchQueryCheckbox.get();
 
-                boolean isLastQuerySameCheckboxValue = isLastQueryClassicSpecific == checkboxGameVersionSearch.isSelected();
-
-                if (userQuery.length() < 1
-                        || (userQuery.equals(lastQuery) && isLastQuerySameCheckboxValue)
-                        || !comboBoxSearch.isEditable()) {
+                if (userQuery.length() < 1 || (userQuery.equals(lastQuery))) {
                     return;
                 }
-                if (choiceBoxSource.getValue().equals(AddonSource.CURSEFORGE)) {
-                    curseSearch(userQuery);
-                } else if(choiceBoxSource.getValue().equals(AddonSource.TUKUI)){
-                    tukuiSearch(userQuery);
-                } else if(choiceBoxSource.getValue().equals(AddonSource.WOWINTERFACE)){
-                    wowInterfaceSearch(userQuery);
-                }
+
+                searchAll(userQuery);
 
                 boolean success = false;
                 while (!success) {
                     success = lastSearchQuery.compareAndSet(lastSearchQuery.get(), userQuery);
                 }
-                success = false;
-                while (!success){
-                    success = lastSearchQueryCheckbox.compareAndSet(lastSearchQueryCheckbox.get(), checkboxGameVersionSearch.isSelected());
-                }
             } catch (DataCollectionException e) {
                 handleUnknownException(e);
             }
-
-
         });
         searchThread.setDaemon(true);
         searchThread.start();
+    }
+
+    private void searchAll(String userQuery) throws DataCollectionException {
+        CurseForgeAPISearcher curseForgeAPISearcher = new CurseForgeAPISearcher();
+        TukuiAPISearcher tukuiAPISearcher = new TukuiAPISearcher(getAddonManager().getGameVersion());
+        WowInterfaceAPISearcher wowInterfaceAPISearcher = new WowInterfaceAPISearcher();
+
+        ArrayList<SearchedAddonRequest> results = curseForgeAPISearcher.search(userQuery);
+        results.addAll(tukuiAPISearcher.search(userQuery));
+        results.addAll(wowInterfaceAPISearcher.search(userQuery));
+
+        Collections.sort(results);
+
+        Platform.runLater(() -> {
+            addSearchResults.setAll(results);
+            searchedTableView.setItems(addSearchResults);
+        });
     }
 
     private void tukuiSearch(String userQuery) throws DataCollectionException {
@@ -544,6 +568,7 @@ public class Controller implements Initializable {
             if(selectedAddon != null){
                 getAddonManager().removeAddon(selectedAddon);
                 asList.add(selectedAddon);
+                searchedTableView.refresh();
             }
             Platform.runLater(() -> {
                 removeFromTableView(asList);
@@ -780,15 +805,30 @@ public class Controller implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         menuAboutVersion.setText("Version " + VersionInfo.CAM_VERSION);
         Image addingImage = new Image(this.getClass().getClassLoader().getResource("adding.gif").toExternalForm());
+        System.out.println(addingImage);
         imageViewAdd.setImage(addingImage);
-        imageViewAddSearch.setImage(addingImage);
+        //imageViewAddSearch.setImage(addingImage);
         //listViewAddons.setCellFactory(param -> new AddonListCell<>());
         setFilterList();
         installedAddonsTableView.setPlaceholder(new Label("No addons installed"));
+        searchAllSourcesTextField.setOnKeyPressed(ke -> {
+            if (ke.getCode().equals(KeyCode.ENTER)) {
+                Thread searchThread = new Thread(() -> {
+                    try {
+                        String userQuery = searchAllSourcesTextField.getText();
+                        searchAll(userQuery);
+                    } catch (DataCollectionException e) {
+                        handleAddSearchedScrapeException(e);
+                    }
+                });
+                searchThread.setDaemon(true);
+                searchThread.start();
+            }
+        });
         Log.listen(new GUILogListener(textAreaOutputLog));
         progressBarListen();
         setupOutputLogContextMenu();
-        setupSearchSourcesList();
+        //setupSearchSourcesList();
         if (Starter.showWhatsNew) {
             showWhatsNew();
         }
@@ -1148,6 +1188,8 @@ public class Controller implements Initializable {
         Thread addAddonThread = new Thread(() -> {
             try {
                 Addon newAddon = getAddonManager().addNewSearchedAddon(request);
+                searchedTableView.getSelectionModel().clearSelection();
+                searchedTableView.refresh();
                 ArrayList<Addon> asList = new ArrayList<>();
                 if(newAddon != null){
                     asList.add(newAddon);
@@ -1163,6 +1205,8 @@ public class Controller implements Initializable {
         });
         addAddonThread.start();
     }
+
+
 
     private void checkIfProceedGameVersion(String origin) throws DataCollectionException {
         AddonSource addonSource = UrlInfo.getAddonSource(origin);
@@ -1204,7 +1248,6 @@ public class Controller implements Initializable {
 
         if (response.isGameVersionSupported(getAddonManager().getGameVersion())) {
             startAddonAddSearchedThread(response);
-            Platform.runLater(this::clearSearchSelectionAction);
             return;
         }
 
@@ -1223,7 +1266,6 @@ public class Controller implements Initializable {
                 return;
             }
             startAddonAddSearchedThread(response);
-            clearSearchSelectionAction();
         });
     }
 
@@ -1438,10 +1480,6 @@ public class Controller implements Initializable {
         tabManual.setDisable(false);
         tabSearch.setDisable(false);
         managedVersionChoiceBox.setDisable(false);
-        // necessary to prevent bug with search field for addons
-        textManagedLabel.requestFocus(); //drop focus from combobox
-        comboBoxSearch.requestFocus(); //focus combobox
-        textManagedLabel.requestFocus(); //invisible focus on element so search field isnt selected
     }
 
     public void cleanUpAfterAddAction() {
@@ -1454,7 +1492,6 @@ public class Controller implements Initializable {
     public void cleanUpAfterAddSearchAction() {
         Platform.runLater(() -> {
             enableAll();
-            imageViewAddSearch.setVisible(false);
         });
     }
 
@@ -1613,9 +1650,23 @@ public class Controller implements Initializable {
 
         managedTableColumnAddon.setCellValueFactory(new PropertyValueFactory<>("name"));
         managedTableColumnAuthor.setCellValueFactory(new PropertyValueFactory<>("author"));
-        managedTableColumnUpdated.setCellValueFactory(new PropertyValueFactory<>("lastUpdated"));
-        managedTableColumnFileName.setCellValueFactory(new PropertyValueFactory<>("lastFileName"));
         managedTableColumnFlavor.setCellValueFactory(new PropertyValueFactory<>("flavor"));
+
+        managedTableColumnUpdated.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue()));
+        managedTableColumnUpdated.setCellFactory(param -> {
+            TableCell<Addon, Addon> cell = new TableCell<>() {
+                @Override
+                public void updateItem(Addon item, boolean empty) {
+                    if (item == null) {
+                        setText(null);
+                        return;
+                    }
+                    if(item.getLastUpdated() == null) setText("Not installed!");
+                    else setText(item.getLastUpdated().toString());
+                }
+            };
+            return cell;
+        });
 
         managedTableColumnSource.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue()));
         managedTableColumnSource.setCellFactory(param -> {
@@ -1661,11 +1712,90 @@ public class Controller implements Initializable {
 
         managedTableColumnSource.setComparator(Comparator.comparing(o -> o.getAddonSource().name()));
         managedTableColumnStatus.setComparator(Comparator.comparing(Addon::getLastUpdateCheck));
+        managedTableColumnUpdated.setComparator((o1, o2) -> {
+            if (o1.getLastUpdated() == null) return -1;
+            if (o2.getLastUpdated() == null) return 1;
+            return o1.getLastUpdated().compareTo(o2.getLastUpdated());
+        });
 
         listItems.setAll(addons);
         shownItems.setAll(listItems);
         installedAddonsTableView.setItems(shownItems);
-        refreshAction();
+        if (Preferences.getInstance().isCheckForUpdatesOnLaunch()) refreshAction();
+    }
+
+    public void setupSearchedAddonsTableView(){
+    //TODO: Continue working here, add searched results to table view
+        searchAddonTableColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        searchAuthorTableColumn.setCellValueFactory(new PropertyValueFactory<>("author"));
+        searchRelevanceTableColumn.setCellValueFactory(new PropertyValueFactory<>("weight"));
+
+        searchSourceTableColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue()));
+        searchSourceTableColumn.setCellFactory(param -> {
+            final ImageView imageview = new ImageView();
+            imageview.setFitHeight(75);
+            imageview.setFitWidth(150);
+            TableCell<SearchedAddonRequest, SearchedAddonRequest> cell = new TableCell<>() {
+                @Override
+                public void updateItem(SearchedAddonRequest item, boolean empty) {
+                    if (item == null) {
+                        imageview.setImage(null);
+                        return;
+                    }
+                    imageview.setImage(item.getAddonSource().getWebsiteIcon());
+                    setOnMouseEntered(event -> setCursor(Cursor.HAND));
+                    setOnMouseExited(event -> setCursor(Cursor.DEFAULT));
+                    setOnMouseClicked(event -> openUrl(item.getOrigin()));
+
+                    for(Addon addon: getAddonManager().getManagedAddons()){
+                        if(addon.getOrigin().equals(item.getOrigin())) {
+                            getTableRow().setOpacity(0.5);
+                            getTableRow().setDisable(true);
+                            return;
+                        }
+                    }
+                    getTableRow().setOpacity(1);
+                    getTableRow().setDisable(false);
+                }
+            };
+
+            cell.setGraphic(imageview);
+            return cell;
+        });
+
+        searchGameVersionTableColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue()));
+        searchGameVersionTableColumn.setCellFactory(param -> {
+            TableCell<SearchedAddonRequest, SearchedAddonRequest> cell = new TableCell<>() {
+                @Override
+                public void updateItem(SearchedAddonRequest item, boolean empty) {
+                    if (item != null) {
+                        StringBuilder text = new StringBuilder();
+                        for(String s: item.getSupportedPatches()) text.append(s + "\n");
+                        if(text.toString().isBlank()) text.append("Unknown");
+                        setText(text.toString());
+                    } else {
+                        setText(null);
+                    }
+                }
+            };
+            return cell;
+        });
+
+        searchSourceTableColumn.setComparator(Comparator.comparing(o -> o.getAddonSource().name()));
+
+        searchAllSourcesTextField.setOnKeyPressed(event -> {
+            if(event.getCode() == KeyCode.ENTER){
+                searchEnterAction();
+            }
+        });
+
+        searchedTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            SearchedAddonRequest searchedAddonRequest = (SearchedAddonRequest) newValue;
+            String text = "";
+            if(searchedAddonRequest != null) text = searchedAddonRequest.getDescription();
+            selectedSearchedAddonTextArea.setText(text);
+        });
+
     }
 
     public void removeFromTableView(List<Addon> addons) {
@@ -1677,6 +1807,7 @@ public class Controller implements Initializable {
     public void addToTableView(List<Addon> addons) {
         listItems.addAll(addons);
         shownItems.addAll(addons);
+        Collections.sort(shownItems);
         installedAddonsTableView.setItems(shownItems);
     }
 
@@ -1761,7 +1892,6 @@ public class Controller implements Initializable {
         Platform.runLater(() -> {
             addonManagerControl.setActiveManager(gameVersion);
             setupTableView();
-            checkboxGameVersionSearch.setText("Search only " + gameVersion + " addons");
         });
 
     }
@@ -1774,15 +1904,7 @@ public class Controller implements Initializable {
             GameVersion gameVersion = (GameVersion) managedVersionChoiceBox.getItems().get(newValue.intValue());
             Log.verbose("Changing managed version to " +  gameVersion);
             updateActiveManager(gameVersion);
-        });
-        choiceBoxSource.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
-            Platform.runLater(() -> {
-                boolean isCurseforge = choiceBoxSource.getValue().equals(AddonSource.CURSEFORGE);
-                checkboxGameVersionSearch.setVisible(isCurseforge);
-                checkboxGameVersionSearch.setFocusTraversable(isCurseforge);
-                checkboxGameVersionSearch.setDisable(!isCurseforge);
-            });
-
+            searchedTableView.refresh();
         });
     }
 

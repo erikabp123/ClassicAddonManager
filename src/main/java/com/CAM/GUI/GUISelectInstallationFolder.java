@@ -2,6 +2,9 @@ package com.CAM.GUI;
 
 import com.CAM.AddonManagement.AddonManager;
 import com.CAM.HelperTools.*;
+import com.CAM.HelperTools.GameSpecific.GameVersion;
+import com.CAM.HelperTools.IO.FileOperations;
+import com.CAM.HelperTools.Logging.Log;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -21,7 +24,6 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.CAM.GUI.GUISelectInstallationFolder.scanForInstallLocation;

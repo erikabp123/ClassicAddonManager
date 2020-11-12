@@ -5,13 +5,14 @@ import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseFile;
 import com.CAM.DataCollection.TwitchOwned.TwitchSite;
-import com.CAM.HelperTools.AddonSource;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.CAM.HelperTools.DateConverter;
-import com.CAM.HelperTools.GameVersion;
+import com.CAM.HelperTools.GameSpecific.GameVersion;
 import com.CAM.Settings.Preferences;
-import com.gargoylesoftware.htmlunit.Page;
 import com.google.gson.Gson;
+import org.checkerframework.checker.units.qual.C;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -70,7 +71,7 @@ public class CurseForgeAPI extends API implements TwitchSite {
             } //skip non-releases if set in preferences
             Date curFileDate = DateConverter.convertFromCurseAPI(latestFile.fileDate);
             Date fileDate = DateConverter.convertFromCurseAPI(file.fileDate);
-            if(DateConverter.isNewerDate(fileDate, curFileDate)){
+            if(fileDate.after(curFileDate)){
                 if(!latestFile.isAlternate && file.isAlternate){
                     continue;
                 }

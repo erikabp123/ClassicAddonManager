@@ -1,9 +1,9 @@
-package com.CAM.HelperTools;
+package com.CAM.HelperTools.GameSpecific;
 
 public enum GameVersion {
     CLASSIC("_classic_",
             "WowClassic.exe",
-            "1.",
+            "1.13",
             "wow_classic",
             "classic-addons"),
     RETAIL("_retail_",
@@ -18,7 +18,7 @@ public enum GameVersion {
             "addons"),
     PTR_CLASSIC("_classic_ptr_",
             "WowClassicT.exe",
-            "1.",
+            "1.13",
             "wow_classic",
             "classic-addons");
 
@@ -40,4 +40,5 @@ public enum GameVersion {
     public String getCurseFlavor() { return this.curseFlavor; }
     public String getTukuiSuffix() { return this.tukuiSuffix; }
     public String getTukuiSpecificSuffix(){ return this.tukuiSuffix.substring(0, tukuiSuffix.length()-1); }
+    public static GameVersion[] downloadableVersions(){ return new GameVersion[]{ RETAIL, CLASSIC }; }
 }

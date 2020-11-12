@@ -1,7 +1,7 @@
 package com.CAM.HelperTools;
 
 import com.CAM.AddonManagement.Addon;
-import javafx.application.Platform;
+import com.CAM.HelperTools.IO.DownloadListener;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TableCell;

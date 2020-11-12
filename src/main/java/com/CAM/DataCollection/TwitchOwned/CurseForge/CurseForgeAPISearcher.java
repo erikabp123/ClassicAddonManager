@@ -4,31 +4,27 @@ import com.CAM.AddonManagement.Addon;
 import com.CAM.DataCollection.APISearcher;
 import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.SearchedAddonRequest;
-import com.CAM.DataCollection.Tukui.TukuiAddonResponse.TukuiAddonResponse;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
-import com.CAM.HelperTools.AddonSource;
-import com.CAM.HelperTools.Log;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
+import com.CAM.HelperTools.Logging.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class CurseForgeAPISearcher extends APISearcher {
 
-    private String baseUrl = "https://addons-ecs.forgesvc.net/api/v2/addon/search?categoryId=0&gameId=1&pageSize=0";
+    private static final int pageSize = 100;
+
+    private String baseUrl = "https://addons-ecs.forgesvc.net/api/v2/addon/search?categoryId=0&gameId=1&pageSize=" + pageSize + "&searchFilter=";
 
     public ArrayList<SearchedAddonRequest> search(String searchFilter) throws DataCollectionException {
         Log.verbose("Performing Curse search ...");
         String url = baseUrl;
-        String json = fetchJson(url);
+        String json = fetchJson(url + encodeValue(searchFilter));
         Gson gson = new Gson();
         ArrayList<CurseAddonResponse> unfiltered = gson.fromJson(json, new TypeToken<ArrayList<CurseAddonResponse>>(){}.getType());
         ArrayList<SearchedAddonRequest> filtered = filterResponse(unfiltered, searchFilter);

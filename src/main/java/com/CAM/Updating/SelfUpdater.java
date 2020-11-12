@@ -5,7 +5,7 @@ import com.CAM.DataCollection.FileDownloader;
 import com.CAM.DataCollection.Github.GitHubAPI;
 import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.GUI.Controller;
-import com.CAM.HelperTools.Log;
+import com.CAM.HelperTools.Logging.Log;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;

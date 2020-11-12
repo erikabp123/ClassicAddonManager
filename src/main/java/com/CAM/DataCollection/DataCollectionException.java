@@ -1,7 +1,7 @@
 package com.CAM.DataCollection;
 
 import com.CAM.AddonManagement.Addon;
-import com.CAM.HelperTools.AddonSource;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
 
 public class DataCollectionException extends Exception {
 

@@ -4,12 +4,14 @@ import com.CAM.DataCollection.*;
 import com.CAM.DataCollection.Github.GitHubAPI;
 import com.CAM.DataCollection.Tukui.TukuiAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPI;
-import com.CAM.DataCollection.TwitchOwned.WowAce.WowAceScraper;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAPI;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
+import com.CAM.HelperTools.GameSpecific.GameVersion;
+import com.CAM.HelperTools.Logging.Log;
 
 import java.net.URL;
 
-import static com.CAM.HelperTools.AddonSource.*;
+import static com.CAM.HelperTools.GameSpecific.AddonSource.*;
 
 public class UrlInfo {
 

@@ -1,4 +1,4 @@
-package com.CAM.HelperTools;
+package com.CAM.HelperTools.Logging;
 
 import com.CAM.Settings.SessionOnlySettings;
 

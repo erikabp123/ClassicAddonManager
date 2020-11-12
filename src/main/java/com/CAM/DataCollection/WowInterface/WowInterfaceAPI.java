@@ -3,8 +3,7 @@ package com.CAM.DataCollection.WowInterface;
 import com.CAM.DataCollection.API;
 import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAddonResponse.WowInterfaceFile;
-import com.CAM.HelperTools.AddonSource;
-import com.gargoylesoftware.htmlunit.Page;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 

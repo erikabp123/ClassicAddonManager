@@ -1,12 +1,8 @@
 package com.CAM.DataCollection;
 
-import com.CAM.DataCollection.Cache.WebsiteCache;
-import com.CAM.HelperTools.AddonSource;
-import com.CAM.HelperTools.Log;
-import com.CAM.HelperTools.Tools;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.gargoylesoftware.htmlunit.*;
 
-import java.io.IOException;
 import java.util.Date;
 
 public abstract class API extends PageFetcher {
@@ -51,10 +47,6 @@ public abstract class API extends PageFetcher {
 
     public void setFetchedPage(Page fetchedPage){
         this.fetchedPage = fetchedPage;
-    }
-
-    public static String sanatizeInput(String input){
-        return Tools.sanatizeInput(input);
     }
 
     public abstract boolean isValidLink() throws DataCollectionException;

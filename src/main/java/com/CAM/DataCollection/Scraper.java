@@ -1,7 +1,7 @@
 package com.CAM.DataCollection;
 
-import com.CAM.HelperTools.AddonSource;
-import com.CAM.HelperTools.Log;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
+import com.CAM.HelperTools.Logging.Log;
 import com.CAM.HelperTools.Tools;
 import com.gargoylesoftware.htmlunit.*;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;

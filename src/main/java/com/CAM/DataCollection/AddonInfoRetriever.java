@@ -1,6 +1,6 @@
 package com.CAM.DataCollection;
 
-import com.CAM.HelperTools.AddonSource;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.gargoylesoftware.htmlunit.Page;
 
 import java.util.Date;

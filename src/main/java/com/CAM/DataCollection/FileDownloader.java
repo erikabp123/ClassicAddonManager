@@ -1,10 +1,6 @@
 package com.CAM.DataCollection;
 
-import com.CAM.AddonManagement.Addon;
-import com.CAM.GUI.Controller;
-import com.CAM.HelperTools.DownloadListener;
-import com.CAM.HelperTools.Log;
-import javafx.application.Platform;
+import com.CAM.HelperTools.IO.DownloadListener;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 

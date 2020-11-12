@@ -1,4 +1,4 @@
-package com.CAM.HelperTools;
+package com.CAM.HelperTools.IO;
 
 import com.CAM.Updating.VersionInfo;
 import com.google.gson.Gson;

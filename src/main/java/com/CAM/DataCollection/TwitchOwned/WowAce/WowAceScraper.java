@@ -3,9 +3,9 @@ package com.CAM.DataCollection.TwitchOwned.WowAce;
 import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.Scraper;
 import com.CAM.DataCollection.TwitchOwned.TwitchSite;
-import com.CAM.HelperTools.AddonSource;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.CAM.HelperTools.DateConverter;
-import com.CAM.HelperTools.Log;
+import com.CAM.HelperTools.Logging.Log;
 import com.gargoylesoftware.htmlunit.html.*;
 
 import java.util.Date;

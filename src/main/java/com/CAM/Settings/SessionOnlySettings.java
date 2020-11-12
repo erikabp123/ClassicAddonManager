@@ -1,6 +1,6 @@
 package com.CAM.Settings;
 
-import com.CAM.HelperTools.Log;
+import com.CAM.HelperTools.Logging.Log;
 
 public class SessionOnlySettings {
     private static boolean logging = false;

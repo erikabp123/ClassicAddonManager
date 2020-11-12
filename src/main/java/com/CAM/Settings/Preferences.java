@@ -1,15 +1,17 @@
 package com.CAM.Settings;
 
-import com.CAM.HelperTools.ReadWriteClassFiles;
+import com.CAM.HelperTools.IO.ReadWriteClassFiles;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Preferences {
 
     private boolean cfReleasesOnly = false;
-    private int maxCacheDuration = 60; //min
+    private int maxCacheDuration = 120; //min
+    private boolean checkForUpdatesOnLaunch = false;
 
-    private List<PreferencesChangeListener> listeners;
+    private List<PreferencesChangeListener> listeners = new ArrayList<>();
     private static Preferences preferences = null;
 
     public static Preferences getInstance() {
@@ -53,4 +55,11 @@ public class Preferences {
     }
 
 
+    public boolean isCheckForUpdatesOnLaunch() {
+        return checkForUpdatesOnLaunch;
+    }
+
+    public void setCheckForUpdatesOnLaunch(boolean checkForUpdatesOnLaunch) {
+        this.checkForUpdatesOnLaunch = checkForUpdatesOnLaunch;
+    }
 }

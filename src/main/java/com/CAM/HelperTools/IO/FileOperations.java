@@ -1,5 +1,6 @@
-package com.CAM.HelperTools;
+package com.CAM.HelperTools.IO;
 
+import com.CAM.HelperTools.Logging.Log;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;

@@ -41,10 +41,6 @@ public class DateConverter {
         return date;
     }
 
-    public static boolean isNewerDate(Date date1, Date date2){
-        return date1.compareTo(date2) > 0;
-    }
-
     public static Date convertFromGithub(String githubFormat){
         String processed = githubFormat.replace("\"", "");
         Date date = null;

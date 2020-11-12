@@ -1,11 +1,14 @@
 package com.CAM.DataCollection.WowInterface.WowInterfaceAddonResponse;
 
 import com.CAM.DataCollection.SearchedAddonRequest;
-import com.CAM.DataCollection.Tukui.TukuiAddonResponse.TukuiAddonResponse;
-import com.CAM.HelperTools.AddonSource;
+import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseGameVersionFile;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
+import com.CAM.HelperTools.GameSpecific.GameVersion;
+import com.CAM.HelperTools.GameSpecific.PatchNumber;
 
 import java.util.ArrayList;
-import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.List;
 
 public class WowInterfaceAddonResponse extends SearchedAddonRequest {
 
@@ -23,6 +26,7 @@ public class WowInterfaceAddonResponse extends SearchedAddonRequest {
     public ArrayList<String> UIDir;
     public ArrayList<String> UIIMG_Thumbs;
     public ArrayList<String> UIIMGs;
+    public String UIDonationLink;
 
     @Override
     public AddonSource getAddonSource() {
@@ -52,6 +56,59 @@ public class WowInterfaceAddonResponse extends SearchedAddonRequest {
     @Override
     public String getDescription() {
         return "";
+    }
+
+    @Override
+    public AddonSource getSource() {
+        return AddonSource.WOWINTERFACE;
+    }
+
+    @Override
+    public String getDonationLink() {
+        return UIDonationLink;
+    }
+
+    @Override
+    public List<String> getScreenshots() {
+        return UIIMGs;
+    }
+
+    @Override
+    public List<String> getSupportedPatches() {
+        List<String> supportedPatches = new ArrayList<>();
+        if(UICompatibility == null) return supportedPatches;
+
+        HashMap<GameVersion, PatchNumber> latestByGameVersion = new HashMap<>();
+        for(CompatabilityUI comp: UICompatibility){
+            PatchNumber patchNumber = new PatchNumber(comp.version);
+            GameVersion gameVersion = patchNumber.getGameVersion();
+            if(gameVersion == null){
+                continue;
+            }
+            if(latestByGameVersion.containsKey(gameVersion)) {
+                PatchNumber latestPatchNumber = latestByGameVersion.get(gameVersion);
+                PatchNumber latest = PatchNumber.getHighestPatchNumber(patchNumber, latestPatchNumber);
+                latestByGameVersion.put(gameVersion, latest);
+            } else {
+                latestByGameVersion.put(gameVersion, patchNumber);
+            }
+        }
+
+        if(latestByGameVersion.isEmpty()){
+            PatchNumber newest = null;
+            for(CompatabilityUI comp: UICompatibility){
+                PatchNumber patchNumber = new PatchNumber(comp.version);
+                if(newest == null) {
+                    newest = patchNumber;
+                    continue;
+                }
+                newest = PatchNumber.getHighestPatchNumber(patchNumber, newest);
+            }
+        } else {
+            for(PatchNumber pn: latestByGameVersion.values()) supportedPatches.add(pn.toString());
+        }
+
+        return supportedPatches;
     }
 }
 

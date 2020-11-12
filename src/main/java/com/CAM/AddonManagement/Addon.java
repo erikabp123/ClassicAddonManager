@@ -5,8 +5,10 @@ import com.CAM.DataCollection.Tukui.TukuiAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPISearcher;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAPI;
-import com.CAM.GUI.GUIDownloadListener;
 import com.CAM.HelperTools.*;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
+import com.CAM.HelperTools.GameSpecific.GameVersion;
+import com.CAM.HelperTools.Logging.Log;
 import javafx.scene.image.Image;
 
 import java.util.Date;
@@ -75,8 +77,8 @@ public class Addon implements Comparable<Addon> {
             }
             // Get the date of the last update as seen by API
             Date lastUpdateCheck = api.getLastUpdated();
-            // Check if scrape has seen a newer update
-            if(DateConverter.isNewerDate(lastUpdateCheck, lastUpdated)){
+            // Check if has seen a newer update
+            if(lastUpdateCheck.after(lastUpdated)){
                 return response;
             }
             // There are no new updates
@@ -209,6 +211,6 @@ public class Addon implements Comparable<Addon> {
     }
 
     public Image getWebsiteIcon(){
-        return new Image(this.getClass().getClassLoader().getResource(getAddonSource().getLogoName()).toExternalForm());
+        return getAddonSource().getWebsiteIcon();
     }
 }

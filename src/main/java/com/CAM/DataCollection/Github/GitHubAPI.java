@@ -2,11 +2,9 @@ package com.CAM.DataCollection.Github;
 
 import com.CAM.DataCollection.API;
 import com.CAM.DataCollection.DataCollectionException;
-import com.CAM.HelperTools.AddonSource;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.CAM.HelperTools.DateConverter;
-import com.CAM.HelperTools.Log;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebResponse;
+import com.CAM.HelperTools.Logging.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

@@ -3,12 +3,10 @@ package com.CAM.DataCollection.Tukui;
 import com.CAM.DataCollection.API;
 import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.Tukui.TukuiAddonResponse.TukuiAddonResponse;
-import com.CAM.HelperTools.AddonSource;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.CAM.HelperTools.DateConverter;
-import com.CAM.HelperTools.GameVersion;
+import com.CAM.HelperTools.GameSpecific.GameVersion;
 import com.CAM.HelperTools.UrlInfo;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 

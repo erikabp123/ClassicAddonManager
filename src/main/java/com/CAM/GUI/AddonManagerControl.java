@@ -2,6 +2,10 @@ package com.CAM.GUI;
 
 import com.CAM.AddonManagement.AddonManager;
 import com.CAM.HelperTools.*;
+import com.CAM.HelperTools.GameSpecific.GameVersion;
+import com.CAM.HelperTools.IO.FileOperations;
+import com.CAM.HelperTools.IO.ReadWriteClassFiles;
+import com.CAM.HelperTools.Logging.Log;
 
 import java.io.File;
 import java.util.ArrayList;

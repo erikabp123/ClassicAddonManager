@@ -1,12 +1,9 @@
 package com.CAM.Updating;
 
-import com.CAM.HelperTools.ReadWriteClassFiles;
-import com.google.gson.Gson;
-
-import java.io.*;
+import com.CAM.HelperTools.IO.ReadWriteClassFiles;
 
 public class VersionInfo {
-    public static final double CAM_VERSION = 0.90;
+    public static final double CAM_VERSION = 0.95;
     public static final double EXE_VERSION = 0.1;
     public static final double AUTOUPDATER_VERSION = 0.2;
 

@@ -8,6 +8,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
@@ -24,8 +25,16 @@ public class EditPreferencesController implements Initializable, WindowControlle
     private Preferences preferences;
 
     @FXML
+    private CheckBox updatesOnLaunch;
+
+    @FXML
+    private Slider cahceSlider;
+
+    @FXML
     private void saveAction(ActionEvent event){
         this.preferences.setCfReleasesOnly(cfReleases.isSelected());
+        this.preferences.setCheckForUpdatesOnLaunch(updatesOnLaunch.isSelected());
+        this.preferences.setMaxCacheDuration((int) cahceSlider.getValue());
         Preferences.savePreferencesFile();
         closeStage(event);
     }
@@ -39,6 +48,8 @@ public class EditPreferencesController implements Initializable, WindowControlle
     public void initDialog(Object[] args){
         this.preferences = Preferences.getInstance();
         this.cfReleases.setSelected(preferences.isCfReleasesOnly());
+        this.updatesOnLaunch.setSelected(preferences.isCheckForUpdatesOnLaunch());
+        this.cahceSlider.setValue(preferences.getMaxCacheDuration());
     }
 
     private void closeStage(ActionEvent event){

@@ -1,9 +1,14 @@
 package com.CAM.DataCollection.Tukui.TukuiAddonResponse;
 
 import com.CAM.DataCollection.SearchedAddonRequest;
-import com.CAM.HelperTools.AddonSource;
+import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseGameVersionFile;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
+import com.CAM.HelperTools.GameSpecific.GameVersion;
+import com.CAM.HelperTools.GameSpecific.PatchNumber;
 
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class TukuiAddonResponse extends SearchedAddonRequest {
     public String id;
@@ -50,5 +55,29 @@ public class TukuiAddonResponse extends SearchedAddonRequest {
     @Override
     public String getDescription() {
         return small_desc;
+    }
+
+    @Override
+    public AddonSource getSource() {
+        return AddonSource.TUKUI;
+    }
+
+    @Override
+    public String getDonationLink() {
+        return donate_url;
+    }
+
+    @Override
+    public List<String> getScreenshots() {
+        List<String> screenshots = new ArrayList<>();
+        screenshots.add(screenshot_url);
+        return screenshots;
+    }
+
+    @Override
+    public List<String> getSupportedPatches() {
+        List<String> patches = new ArrayList<>();
+        patches.add(patch);
+        return patches;
     }
 }

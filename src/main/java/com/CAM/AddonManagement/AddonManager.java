@@ -1,12 +1,15 @@
 package com.CAM.AddonManagement;
 
 import com.CAM.DataCollection.*;
-import com.CAM.DataCollection.Cache.WebsiteCache;
 import com.CAM.HelperTools.*;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
+import com.CAM.HelperTools.GameSpecific.GameVersion;
+import com.CAM.HelperTools.IO.FileOperations;
+import com.CAM.HelperTools.IO.ReadWriteClassFiles;
+import com.CAM.HelperTools.Logging.Log;
 import com.CAM.Settings.Preferences;
 import com.CAM.Settings.SessionOnlySettings;
 import net.lingala.zip4j.model.FileHeader;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.*;
 import java.util.*;

@@ -1,4 +1,6 @@
-package com.CAM.HelperTools;
+package com.CAM.HelperTools.GameSpecific;
+
+import javafx.scene.image.Image;
 
 public enum AddonSource {
     CURSEFORGE(true, "curse_logo_small.png"),
@@ -15,4 +17,5 @@ public enum AddonSource {
     }
     public boolean isSearchable() { return this.isSearchable; }
     public String getLogoName() { return this.logoName; }
+    public Image getWebsiteIcon() { return new Image(this.getClass().getClassLoader().getResource(getLogoName()).toExternalForm()); }
 }

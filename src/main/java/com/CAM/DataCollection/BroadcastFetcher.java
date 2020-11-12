@@ -1,8 +1,6 @@
 package com.CAM.DataCollection;
 
-import com.CAM.HelperTools.Log;
 import com.gargoylesoftware.htmlunit.*;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import java.io.IOException;
 

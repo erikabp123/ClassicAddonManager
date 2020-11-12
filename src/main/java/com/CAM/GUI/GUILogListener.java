@@ -1,6 +1,6 @@
 package com.CAM.GUI;
 
-import com.CAM.HelperTools.LogListener;
+import com.CAM.HelperTools.Logging.LogListener;
 import javafx.application.Platform;
 import javafx.scene.control.TextArea;
 

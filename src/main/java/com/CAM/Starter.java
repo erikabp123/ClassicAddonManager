@@ -1,12 +1,5 @@
 package com.CAM;
 
-import com.CAM.AddonManagement.AddonManager;
-import com.CAM.HelperTools.GameVersion;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
 public class Starter {
 
     public static boolean showWhatsNew = false;

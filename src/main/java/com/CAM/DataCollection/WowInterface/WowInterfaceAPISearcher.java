@@ -2,16 +2,14 @@ package com.CAM.DataCollection.WowInterface;
 
 import com.CAM.AddonManagement.Addon;
 import com.CAM.DataCollection.APISearcher;
-import com.CAM.DataCollection.Cache.WebsiteCache;
 import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.SearchedAddonRequest;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAddonResponse.WowInterfaceAddonResponse;
-import com.CAM.HelperTools.AddonSource;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class WowInterfaceAPISearcher extends APISearcher {
 

@@ -1,8 +1,6 @@
 package com.CAM.GUI;
 
-import com.CAM.AddonManagement.Addon;
-import com.CAM.HelperTools.DownloadListener;
-import com.CAM.HelperTools.TableViewStatus;
+import com.CAM.HelperTools.IO.DownloadListener;
 import javafx.application.Platform;
 import javafx.scene.control.ProgressBar;
 
