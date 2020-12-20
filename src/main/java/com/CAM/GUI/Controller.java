@@ -524,8 +524,11 @@ public class Controller implements Initializable {
     private void updateAction() {
         filterAddonsTextField.setText(null);
         Platform.runLater(() -> {
-            int lastIndex = installedAddonsTableView.getItems().size() - 1;
-            installedAddonsTableView.scrollTo(lastIndex);
+            if(Preferences.getInstance().isScrollToBottomOnUpdate()){
+                int lastIndex = installedAddonsTableView.getItems().size() - 1;
+                installedAddonsTableView.scrollTo(lastIndex);
+            }
+
             disableAll();
             searchTab.setDisable(true);
             debugTab.setDisable(true);
