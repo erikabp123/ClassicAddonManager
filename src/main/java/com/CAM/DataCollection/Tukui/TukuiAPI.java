@@ -9,7 +9,9 @@ import com.CAM.HelperTools.GameSpecific.GameVersion;
 import com.CAM.HelperTools.UrlInfo;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 public class TukuiAPI extends API {
@@ -23,10 +25,20 @@ public class TukuiAPI extends API {
         super(null, AddonSource.TUKUI);
         this.repoObject = null;
         this.addonNumber = addonNumber;
-        baseUrl = "https://www.tukui.org/api.php?" + gameVersion.getTukuiSpecificSuffix() + "=";
+        baseUrl = "https://www.tukui.org/api.php?" + gameVersion.getTukuiSuffix() + "=all";
+        String json = fetchJson(baseUrl);
         Gson gson = new Gson();
-        latestResponse = gson.fromJson(getRepoObject(), TukuiAddonResponse.class);
+        ArrayList<TukuiAddonResponse> responses = gson.fromJson(json, new TypeToken<ArrayList<TukuiAddonResponse>>(){}.getType());
+
+        latestResponse = getResponseById(responses);
         super.setUrl(latestResponse.getOrigin());
+    }
+
+    private TukuiAddonResponse getResponseById(ArrayList<TukuiAddonResponse> responses) throws DataCollectionException {
+        for(TukuiAddonResponse response: responses){
+            if(response.getProjectId() == addonNumber) return response;
+        }
+        throw new DataCollectionException(AddonSource.TUKUI, "Tukui project ID not found in response: (" + addonNumber + ")!");
     }
 
     public static int extractAddonNumber(String url) {

@@ -115,6 +115,7 @@ public class AddonManager {
         Date now = new Date();
         addon.setLastUpdateCheck(now);
         addon.setLastUpdated(now);
+        System.out.println(now);
         saveToFile();
         Log.log("Finished updating!");
     }
@@ -123,7 +124,9 @@ public class AddonManager {
         ArrayList<Exception> exceptions = new ArrayList<>();
         Log.log("Updating addons ...");
 
-        for (Addon addon : addonsWithUpdates.keySet()) {
+        ArrayList<Addon> sortedAddons = new ArrayList<>(addonsWithUpdates.keySet());
+        Collections.sort(sortedAddons);
+        for (Addon addon : sortedAddons) {
             try {
                 updateSpecificAddon(addon, addonsWithUpdates.get(addon));
             } catch (DataCollectionException e) {

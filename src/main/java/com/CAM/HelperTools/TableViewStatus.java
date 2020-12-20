@@ -48,8 +48,10 @@ public class TableViewStatus implements DownloadListener {
 
     @Override
     public void notify(double progress) {
-        this.progress.set(progress);
-        if(progress == 1.0) setDoneUpdating(true);
+        double curProgress = this.progress.get();
+        if (curProgress < 1.0 && progress > curProgress) this.progress.set(progress);
+        else return;
+        if(this.progress.get() >= 1.0) setDoneUpdating(true);
         changeListener.get().stateChanged(new ChangeEvent(this));
     }
 

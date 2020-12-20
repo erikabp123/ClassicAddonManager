@@ -32,7 +32,8 @@
                      </font>
                   </Label>
                   <CheckBox fx:id="updatesOnLaunch" layoutX="52.0" layoutY="26.0" mnemonicParsing="false" text="Check for updates on launch" />
-                  <AnchorPane layoutX="52.0" layoutY="60.0">
+                  <CheckBox fx:id="scrollOnUpdate" layoutX="52.0" layoutY="49.0" mnemonicParsing="false" text="Scroll to bottom of list when updating" />
+                  <AnchorPane layoutX="52.0" layoutY="77.0">
                      <children>
                         <Slider fx:id="cahceSlider" blockIncrement="30.0" layoutX="119.0" layoutY="3.0" majorTickUnit="120.0" max="720.0" min="120.0" prefHeight="38.0" prefWidth="198.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" />
                         <Label text="Cache Duration (min):" />

@@ -28,12 +28,16 @@ public class EditPreferencesController implements Initializable, WindowControlle
     private CheckBox updatesOnLaunch;
 
     @FXML
+    private CheckBox scrollOnUpdate;
+
+    @FXML
     private Slider cahceSlider;
 
     @FXML
     private void saveAction(ActionEvent event){
         this.preferences.setCfReleasesOnly(cfReleases.isSelected());
         this.preferences.setCheckForUpdatesOnLaunch(updatesOnLaunch.isSelected());
+        this.preferences.setScrollToBottomOnUpdate(scrollOnUpdate.isSelected());
         this.preferences.setMaxCacheDuration((int) cahceSlider.getValue());
         Preferences.savePreferencesFile();
         closeStage(event);
@@ -49,6 +53,7 @@ public class EditPreferencesController implements Initializable, WindowControlle
         this.preferences = Preferences.getInstance();
         this.cfReleases.setSelected(preferences.isCfReleasesOnly());
         this.updatesOnLaunch.setSelected(preferences.isCheckForUpdatesOnLaunch());
+        this.scrollOnUpdate.setSelected(preferences.isScrollToBottomOnUpdate());
         this.cahceSlider.setValue(preferences.getMaxCacheDuration());
     }
 

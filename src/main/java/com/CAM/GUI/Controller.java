@@ -118,7 +118,13 @@ public class Controller implements Initializable {
     private Text textManagedLabel;
 
     @FXML
-    public Text textOutputLogLabel;
+    private Label gameVersionLabel;
+
+    @FXML
+    private Tab managedTab;
+
+    @FXML
+    public Label textOutputLogLabel;
 
     @FXML
     public Text updatingVersionLabel;
@@ -136,6 +142,9 @@ public class Controller implements Initializable {
 
     @FXML
     public Button buttonEdit;
+
+    @FXML
+    public Button buttonRefresh;
 
     @FXML
     public Button buttonClearSelection;
@@ -159,6 +168,9 @@ public class Controller implements Initializable {
     private ChoiceBox managedVersionChoiceBox;
 
     //endregion
+
+    @FXML
+    private ImageView updateAllSpinner;
 
     //region ListViews
     @FXML
@@ -215,6 +227,9 @@ public class Controller implements Initializable {
 
     @FXML
     private Tab debugTab;
+
+    @FXML
+    private TabPane categoriesTabPane;
 
     //region Text Input/Output
     @FXML
@@ -509,9 +524,14 @@ public class Controller implements Initializable {
     private void updateAction() {
         filterAddonsTextField.setText(null);
         Platform.runLater(() -> {
+            int lastIndex = installedAddonsTableView.getItems().size() - 1;
+            installedAddonsTableView.scrollTo(lastIndex);
             disableAll();
             searchTab.setDisable(true);
             debugTab.setDisable(true);
+            updateAllSpinner.setImage(new Image(this.getClass().getClassLoader().getResource("processingAddon.gif").toExternalForm()));
+            updateAllSpinner.setVisible(true);
+            updateAllSpinner.setDisable(false);
         });
         Thread updateThread = new Thread(() -> {
             checkForAddonUpdates();
@@ -521,9 +541,12 @@ public class Controller implements Initializable {
             getAddonManager().updateAllAddons(updateTableViewMap.get());
 
             Platform.runLater(() -> {
+                installedAddonsTableView.refresh();
                 enableAll();
                 searchTab.setDisable(false);
                 debugTab.setDisable(false);
+                updateAllSpinner.setVisible(false);
+                updateAllSpinner.setDisable(true);
             });
 
         });
@@ -1461,6 +1484,7 @@ public class Controller implements Initializable {
         buttonAdd.setDisable(true);
         buttonUpdate.setDisable(true);
         buttonEdit.setDisable(true);
+        buttonRefresh.setDisable(true);
         textFieldURL.setDisable(true);
         checkboxReleases.setDisable(true);
         filterAddonsTextField.setDisable(true);
@@ -1474,6 +1498,7 @@ public class Controller implements Initializable {
         buttonAdd.setDisable(false);
         buttonUpdate.setDisable(false);
         buttonEdit.setDisable(false);
+        buttonRefresh.setDisable(false);
         textFieldURL.setDisable(false);
         checkboxReleases.setDisable(false);
         filterAddonsTextField.setDisable(false);
@@ -1496,6 +1521,7 @@ public class Controller implements Initializable {
     }
 
     public void hideForUpdate() {
+        disableAll();
         buttonUpdate.setDisable(true);
         buttonRemove.setDisable(true);
         buttonEdit.setDisable(true);
@@ -1504,7 +1530,6 @@ public class Controller implements Initializable {
         textFieldURL.setDisable(true);
         checkboxReleases.setDisable(true);
         menuBar.setDisable(true);
-        listViewAddons.setDisable(true);
         installedAddonsTableView.setDisable(true);
         textManagedLabel.setDisable(true);
         textManagedLabel.setVisible(false);
@@ -1515,17 +1540,39 @@ public class Controller implements Initializable {
         updatingVersionLabel.setDisable(false);
         updatingVersionLabel.setVisible(true);
 
+        categoriesTabPane.getSelectionModel().select(0);
+
+        debugTab.setDisable(true);
+        managedTab.setDisable(true);
+        gameVersionLabel.setDisable(true);
+
 
         imageViewUpdate.setImage(new Image(this.getClass().getClassLoader().getResource("gears_load.gif").toExternalForm()));
         imageViewUpdate.setDisable(false);
         imageViewUpdate.setVisible(true);
         progressBarUpdate.setVisible(true);
+        progressBarUpdate.setDisable(false);
         progressBarUpdateTotal.setVisible(true);
+        progressBarUpdateTotal.setDisable(false);
     }
     //endregion
 
     public void refreshAction(){
-        Thread refreshThread = new Thread(this::checkForAddonUpdates);
+        Platform.runLater(() -> {
+            hideForUpdate();
+
+            disableAll();
+            searchTab.setDisable(true);
+            debugTab.setDisable(true);
+        });
+        Thread refreshThread = new Thread(() -> {
+            checkForAddonUpdates();
+            Platform.runLater(() -> {
+                enableAll();
+                searchTab.setDisable(false);
+                debugTab.setDisable(false);
+            });
+        });
         refreshThread.start();
     }
 
@@ -1605,16 +1652,15 @@ public class Controller implements Initializable {
                                     setGraphic(null);
 
                                     Date lastUpdateCheck = item.getLastUpdateCheck();
-                                    String dateString = "Never updated!";
-                                    if(lastUpdateCheck != null) dateString = lastUpdateCheck.toString();
-                                    String text = "Checked: \n" + dateString;
+                                    String text = "Not installed!";
+                                    if(lastUpdateCheck != null) text = "up-to-date";
                                     setText(text);
                                 } else {
                                     updateButton.setDisable(true);
                                     updateButton.setVisible(false);
                                     setText(null);
                                     progressBar.setProgress(tableViewStatus.getProgress());
-                                    System.out.println(item.getName() + " progress: " + progressBar.getProgress());
+                                    //System.out.println(item.getName() + " progress: " + progressBar.getProgress());
                                     setGraphic(progressBar);
                                 }
                             } else {
@@ -1629,9 +1675,11 @@ public class Controller implements Initializable {
                             setGraphic(null);
 
                             Date lastUpdateCheck = item.getLastUpdateCheck();
-                            String dateString = "Never updated!";
-                            if(lastUpdateCheck != null) dateString = lastUpdateCheck.toString();
-                            String text = "Checked: \n" + dateString;
+                            String text = "Not installed!";
+                            if(lastUpdateCheck != null){
+                                if((new Date()).getTime() - lastUpdateCheck.getTime() > Preferences.getInstance().getMaxCacheDuration()*60000) text = "Not checked";
+                                else text = "up-to-date";
+                            }
                             setText(text);
                         }
                     } else {
@@ -1698,9 +1746,8 @@ public class Controller implements Initializable {
                 public void updateItem(Addon item, boolean empty) {
                     if (item != null) {
                         Date lastUpdateCheck = item.getLastUpdateCheck();
-                        String dateString = "Never updated!";
-                        if(lastUpdateCheck != null) dateString = lastUpdateCheck.toString();
-                        String text = "Checked: \n" + dateString;
+                        String text = "Not installed!";
+                        if(lastUpdateCheck != null) text = "Not checked";
                         setText(text);
                     } else {
                         setText(null);
@@ -1721,6 +1768,7 @@ public class Controller implements Initializable {
         listItems.setAll(addons);
         shownItems.setAll(listItems);
         installedAddonsTableView.setItems(shownItems);
+        updateListViewLabel();
         if (Preferences.getInstance().isCheckForUpdatesOnLaunch()) refreshAction();
     }
 
@@ -1802,6 +1850,7 @@ public class Controller implements Initializable {
         listItems.removeAll(addons);
         shownItems.removeAll(addons);
         installedAddonsTableView.setItems(shownItems);
+        updateListViewLabel();
     }
 
     public void addToTableView(List<Addon> addons) {
@@ -1809,6 +1858,7 @@ public class Controller implements Initializable {
         shownItems.addAll(addons);
         Collections.sort(shownItems);
         installedAddonsTableView.setItems(shownItems);
+        updateListViewLabel();
     }
 
 
@@ -1822,9 +1872,6 @@ public class Controller implements Initializable {
     }
 
     private void progressBarListen() {
-        DownloadListener downloadListenerAddon = new GUIDownloadListener(progressBarDownload);
-        FileDownloader.listen(downloadListenerAddon);
-
         DownloadListener downloadListenerUpdate = new GUIDownloadListener(progressBarUpdate, progressBarUpdateTotal);
         FileDownloader.listen(downloadListenerUpdate);
     }

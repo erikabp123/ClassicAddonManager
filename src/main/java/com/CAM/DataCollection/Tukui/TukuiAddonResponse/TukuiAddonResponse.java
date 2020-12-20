@@ -77,7 +77,8 @@ public class TukuiAddonResponse extends SearchedAddonRequest {
     @Override
     public List<String> getSupportedPatches() {
         List<String> patches = new ArrayList<>();
-        patches.add(patch);
+        if(patch == null || patch.equals("null")) patches.add("Unknown");
+        else patches.add(patch);
         return patches;
     }
 }

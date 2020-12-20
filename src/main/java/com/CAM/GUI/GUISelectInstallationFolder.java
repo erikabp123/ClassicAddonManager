@@ -392,7 +392,8 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
 
         while (!validPath) {
             UserInputResponse response = userInput.getUserInput(directoryChooserTitle);
-            input = response.getInput() + "\\";
+            input = response.getInput();
+            if(!response.getInput().endsWith("\\")) input = input + "\\";
             if (response.isAbort()) {
                 return null;
             }
@@ -443,8 +444,8 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
             Log.verbose(exeName + " not found!");
             return false;
         }
-        String version = FileOperations.getFileVersion(exePath);
 
+        String version = FileOperations.getFileVersion(exePath);
 
         if (!version.startsWith(prefix)) {
             Log.verbose("Invalid game version!");

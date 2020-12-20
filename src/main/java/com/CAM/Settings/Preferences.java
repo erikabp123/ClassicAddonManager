@@ -10,6 +10,7 @@ public class Preferences {
     private boolean cfReleasesOnly = false;
     private int maxCacheDuration = 120; //min
     private boolean checkForUpdatesOnLaunch = false;
+    private boolean scrollToBottomOnUpdate = false;
 
     private List<PreferencesChangeListener> listeners = new ArrayList<>();
     private static Preferences preferences = null;
@@ -61,5 +62,13 @@ public class Preferences {
 
     public void setCheckForUpdatesOnLaunch(boolean checkForUpdatesOnLaunch) {
         this.checkForUpdatesOnLaunch = checkForUpdatesOnLaunch;
+    }
+
+    public boolean isScrollToBottomOnUpdate() {
+        return scrollToBottomOnUpdate;
+    }
+
+    public void setScrollToBottomOnUpdate(boolean scrollToBottomOnUpdate) {
+        this.scrollToBottomOnUpdate = scrollToBottomOnUpdate;
     }
 }

@@ -16,10 +16,14 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
@@ -85,7 +89,7 @@
             <HBox prefHeight="28.0" prefWidth="935.0">
                <children>
                   <AnchorPane prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
-                  <Label text="Gameversion:">
+                  <Label fx:id="gameVersionLabel" text="Gameversion:">
                      <font>
                         <Font size="15.0" />
                      </font>
@@ -99,29 +103,18 @@
                      </HBox.margin>
                   </ChoiceBox>
                </children>
+               <VBox.margin>
+                  <Insets right="10.0" />
+               </VBox.margin>
             </HBox>
             <TabPane fx:id="categoriesTabPane" focusTraversable="false" side="LEFT" stylesheets="@tabPane.css">
                <tabs>
-                  <Tab closable="false" text="Manage Addons">
+                  <Tab fx:id="managedTab" closable="false" text="Manage Addons">
                      <content>
                       <AnchorPane maxHeight="-1.0" maxWidth="-1.0">
                            <children>
                               <StackPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <children>
-                                    <AnchorPane StackPane.alignment="CENTER">
-                                       <children>
-                                          <ImageView fx:id="imageViewUpdate" disable="true" fitHeight="150.0" fitWidth="200.0" layoutX="209.0" layoutY="40.8984375" pickOnBounds="true" preserveRatio="true" />
-                                          <Text fx:id="textConverting" disable="true" layoutX="218.0" layoutY="7.94921875" strokeType="OUTSIDE" strokeWidth="0.0" text="Converting Addons to new Format" visible="false" />
-                                          <Text fx:id="textConvertingProgress" disable="true" layoutX="292.0" layoutY="199.8984375" strokeType="OUTSIDE" strokeWidth="0.0" text="0/0" visible="false" />
-                                          <ProgressBar fx:id="progressBarUpdateTotal" layoutY="235.8984375" prefHeight="18.0" prefWidth="666.0" progress="0.0" visible="false" />
-                                          <ProgressBar fx:id="progressBarUpdate" layoutX="83.0" layoutY="264.8984375" prefHeight="18.0" prefWidth="500.0" progress="0.0" visible="false" />
-                                          <Text fx:id="updatingVersionLabel" disable="true" layoutX="164.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Updating addon manager..." visible="false">
-                                             <font>
-                                                <Font size="24.0" />
-                                             </font>
-                                          </Text>
-                                       </children>
-                                    </AnchorPane>
                                     <VBox StackPane.alignment="CENTER">
                                        <children>
                                           <VBox VBox.vgrow="ALWAYS">
@@ -156,7 +149,8 @@
                                                 <Button fx:id="buttonEdit" layoutX="152.0" mnemonicParsing="false" onAction="#editAction" prefHeight="32.0" prefWidth="125.0" text="Edit" />
                                                 <Button fx:id="buttonUpdate" layoutX="302.0" mnemonicParsing="false" onAction="#updateAction" prefHeight="32.0" prefWidth="189.0" text="Update All Addons" />
                                                 <ProgressBar fx:id="progressBarDownload" disable="true" layoutX="277.0" layoutY="14.0" prefHeight="18.0" prefWidth="380.0" progress="0.0" visible="false" />
-                                                <Button fx:id="buttonRefresh" layoutX="495.0" mnemonicParsing="false" onAction="#refreshAction" prefHeight="32.0" prefWidth="84.0" text="Refresh" />
+                                                <Button fx:id="buttonRefresh" layoutX="495.0" mnemonicParsing="false" onAction="#refreshAction" text="Check For Updates" />
+                                                <ImageView fx:id="updateAllSpinner" disable="true" fitHeight="32.0" fitWidth="32.0" layoutX="639.0" pickOnBounds="true" preserveRatio="true" visible="false" />
                                              </children>
                                              <VBox.margin>
                                                 <Insets bottom="10.0" top="10.0" />
@@ -164,6 +158,56 @@
                                           </AnchorPane>
                                        </children>
                                     </VBox>
+                                    <AnchorPane mouseTransparent="true">
+                                       <children>
+                                          <GridPane layoutX="57.0" layoutY="71.0" mouseTransparent="true" prefHeight="379.0" prefWidth="918.0" AnchorPane.bottomAnchor="111.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                            <columnConstraints>
+                                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                            </columnConstraints>
+                                            <rowConstraints>
+                                                <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                              <RowConstraints fillHeight="false" maxHeight="151.0" minHeight="10.0" prefHeight="151.0" vgrow="ALWAYS" />
+                                              <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                            </rowConstraints>
+                                             <children>
+                                                <ImageView fx:id="imageViewUpdate" disable="true" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" visible="false" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                                                   <image>
+                                                      <Image url="@gears_load.gif" />
+                                                   </image>
+                                                </ImageView>
+                                                <ProgressBar fx:id="progressBarUpdateTotal" disable="true" prefHeight="18.0" prefWidth="666.0" progress="0.0" visible="false" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowIndex="3" GridPane.valignment="TOP" />
+                                                <ProgressBar fx:id="progressBarUpdate" disable="true" prefHeight="18.0" prefWidth="500.0" progress="0.0" visible="false" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowIndex="2" GridPane.valignment="BOTTOM">
+                                                   <GridPane.margin>
+                                                      <Insets bottom="5.0" />
+                                                   </GridPane.margin>
+                                                </ProgressBar>
+                                                <Text fx:id="updatingVersionLabel" disable="true" strokeType="OUTSIDE" strokeWidth="0.0" text="Updating addon manager..." visible="false" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                                                   <font>
+                                                      <Font size="24.0" />
+                                                   </font>
+                                                </Text>
+                                                <GridPane mouseTransparent="true" GridPane.rowIndex="2">
+                                                  <columnConstraints>
+                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                  </columnConstraints>
+                                                  <rowConstraints>
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                  </rowConstraints>
+                                                   <children>
+                                                      <Text fx:id="textConverting" strokeType="OUTSIDE" strokeWidth="0.0" text="Converting Addons to new Format" visible="false" GridPane.halignment="RIGHT" GridPane.valignment="CENTER" />
+                                                      <Text fx:id="textConvertingProgress" disable="true" strokeType="OUTSIDE" strokeWidth="0.0" text="0/0" visible="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.valignment="CENTER">
+                                                         <GridPane.margin>
+                                                            <Insets left="5.0" right="5.0" />
+                                                         </GridPane.margin>
+                                                      </Text>
+                                                   </children>
+                                                </GridPane>
+                                             </children>
+                                          </GridPane>
+                                       </children>
+                                    </AnchorPane>
                                  </children>
                               </StackPane>
                            </children>
@@ -267,12 +311,20 @@
                   </Tab>
                   <Tab fx:id="debugTab" closable="false" text="Debug Info">
                     <content>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                        <VBox>
                            <children>
-                              <TextArea fx:id="textAreaOutputLog" editable="false" focusTraversable="false" layoutX="28.0" layoutY="70.0" prefHeight="265.0" prefWidth="392.0" wrapText="true" />
-                              <Text fx:id="textOutputLogLabel" layoutX="28.0" layoutY="27.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Output Log" textAlignment="CENTER" wrappingWidth="392.0" />
+                              <Label fx:id="textOutputLogLabel" alignment="CENTER" prefWidth="5000.0" text="Output Log" textAlignment="CENTER">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                              </Label>
+                              <TextArea fx:id="textAreaOutputLog" editable="false" focusTraversable="false" prefHeight="5000.0" prefWidth="920.0" wrapText="true">
+                                 <VBox.margin>
+                                    <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
+                                 </VBox.margin>
+                              </TextArea>
                            </children>
-                        </AnchorPane>
+                        </VBox>
                     </content>
                   </Tab>
                </tabs>

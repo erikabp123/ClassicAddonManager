@@ -73,14 +73,10 @@ public class FileDownloader {
         URL url = null;
         URLConnection urlConnection = null;
         InputStream source = null;
-        try {
-            url = new URL(stringUrl);
-            urlConnection = url.openConnection();
-            urlConnection.connect();
-            source = url.openStream();
-        } catch (IOException e) {
-            throw e;
-        }
+        url = new URL(stringUrl);
+        urlConnection = url.openConnection();
+        urlConnection.connect();
+        source = url.openStream();
 
         int fileSize = urlConnection.getContentLength();
         try {
@@ -99,18 +95,16 @@ public class FileDownloader {
                     notifyAllListeners(progress);
                     notifyAllLocalListeners(progress);
                 }
-                notifyAllListeners(1);
-                notifyAllLocalListeners(1);
 
                 output.close(); // don't swallow close Exception if copy completes normally
             } finally {
                 IOUtils.closeQuietly(output);
             }
 
-        } catch (IOException e) {
-            throw e;
         } finally {
             IOUtils.closeQuietly(source);
+            notifyAllListeners(1);
+            notifyAllLocalListeners(1);
         }
     }
 
