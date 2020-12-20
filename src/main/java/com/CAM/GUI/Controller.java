@@ -1559,8 +1559,6 @@ public class Controller implements Initializable {
 
     public void refreshAction(){
         Platform.runLater(() -> {
-            hideForUpdate();
-
             disableAll();
             searchTab.setDisable(true);
             debugTab.setDisable(true);
