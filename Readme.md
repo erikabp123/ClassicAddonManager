@@ -118,7 +118,7 @@ To change installation folder, simply press the 'File' menu at the top of the sc
 
 ## Built With
 
-* [HTMLUnit](http://htmlunit.sourceforge.net/) - Webscraping
+* [HTMLUnit](http://htmlunit.sourceforge.net/) - REST Services
 * [GSON](https://github.com/google/gson) - JSON Saving
 * [Zip4j](https://github.com/srikanth-lingala/zip4j) - Zip File Handling
 * [JavaFX](https://openjfx.io/) - GUI
