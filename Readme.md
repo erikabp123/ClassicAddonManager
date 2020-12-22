@@ -116,16 +116,6 @@ To change installation folder, simply press the 'File' menu at the top of the sc
     File -> Setup
 ```
 
-
-## How To Support
-
-If you like the program consider telling your friends about it!
-
-
-If you feel that still isn't enough...
-
-I have created a patreon where people who wish to make a donation may do so. This is NEVER expected, but I definetly appreciate it. [Patreon](https://www.patreon.com/ClassicAddonManager)
-
 ## Built With
 
 * [HTMLUnit](http://htmlunit.sourceforge.net/) - Webscraping
