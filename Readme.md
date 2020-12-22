@@ -1,5 +1,6 @@
 # Classic Addon Manager _(now also retail)_
 
+**DOWNLOAD:** [HERE](https://github.com/erikabp123/ClassicAddonManager/releases/latest) 
 
 This is a WIP addon manager, that despite the name **NOW SUPPORTS RETAIL, PTR** (classic & retail), **AND CLASSIC**. It manages your addons allowing  for easy updates from projects stored on Curseforge, Github, Tukui, and WowInterface. THIS IS ONLY FOR WINDOWS!
 
