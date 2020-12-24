@@ -555,7 +555,8 @@ class InstallationSearch {
     public void manualSelection() {
         String installLocation = specifyInstallLocation(gameVersion);
         if(installLocation == null) return;
-        searchSuccess(installLocation);
+        location.set(installLocation);
+        searchSuccess(location.get());
     }
 
     public void confirmFolder(GUISelectInstallationFolder context){
