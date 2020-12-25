@@ -341,54 +341,16 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
         String input = null;
         UserInput userInput = GUIUserInput.getBaseContext();
 
-        String title, header, content;
-        switch (gameVersion){
-            case RETAIL:
-                title = "Setup Install Path";
-                header = "Please provide the path to your WoW installation!";
-                content = "To proceed, Classic Addon Manager needs to know where WoW is installed. Do you wish to proceed?";
-                break;
-            case PTR_RETAIL:
-                title = "Setup Install Path";
-                header = "Please provide the path to your WoW PTR installation!";
-                content = "To proceed, Classic Addon Manager needs to know where WoW PTR is installed. Do you wish to proceed?";
-                break;
-            case CLASSIC:
-                title = "Setup Install Path";
-                header = "Please provide the path to your WoW Classic installation!";
-                content = "To proceed, Classic Addon Manager needs to know where WoW classic is installed. Do you wish to proceed?";
-                break;
-            case PTR_CLASSIC:
-                title = "Setup Install Path";
-                header = "Please provide the path to your WoW Classic PTR installation!";
-                content = "To proceed, Classic Addon Manager needs to know where WoW classic PTR is installed. Do you wish to proceed?";;
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + gameVersion);
-        }
+        String title = "Setup Install Path";
+        String header = "Please provide the path to your Wow " + gameVersion.getFormattedString() + " installation!";
+        String content = "To proceed, Classic Addon Manager needs to know where WoW " + gameVersion.getFormattedString() + " is installed. Do you wish to proceed?";
 
         boolean proceed = userInput.askToProceedPrompt(title, header, content);
         if (!proceed) {
             return null;
         }
 
-        String directoryChooserTitle;
-        switch (gameVersion){
-            case RETAIL:
-                directoryChooserTitle = "Navigate to the wow '_retail_' folder";
-                break;
-            case PTR_RETAIL:
-                directoryChooserTitle = "Navigate to the wow '_ptr_' folder";
-                break;
-            case CLASSIC:
-                directoryChooserTitle = "Navigate to the wow '_classic_' folder";
-                break;
-            case PTR_CLASSIC:
-                directoryChooserTitle = "Navigate to the wow '_classic_ptr_' folder";
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + gameVersion);
-        }
+        String directoryChooserTitle = "Navigate to the wow '" + gameVersion.getPath() + "' folder";
 
         while (!validPath) {
             UserInputResponse response = userInput.getUserInput(directoryChooserTitle);
