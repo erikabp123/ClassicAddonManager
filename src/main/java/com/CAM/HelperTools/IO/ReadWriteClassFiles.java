@@ -1,5 +1,6 @@
 package com.CAM.HelperTools.IO;
 
+import com.CAM.HelperTools.Logging.Log;
 import com.CAM.Updating.VersionInfo;
 import com.google.gson.Gson;
 
@@ -17,7 +18,7 @@ public class ReadWriteClassFiles {
             writer.flush();
             writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
     }
 
@@ -33,7 +34,7 @@ public class ReadWriteClassFiles {
             fileObject = gson.fromJson(reader, destinationObjectType.getClass());
             reader.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
         System.out.println(destinationObjectType.getClass());
         return fileObject;

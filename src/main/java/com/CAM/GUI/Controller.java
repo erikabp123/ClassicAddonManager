@@ -570,7 +570,7 @@ public class Controller implements Initializable {
             getAddonManager().updateToLatestFormat(progress -> Platform.runLater(() ->
                     textConvertingProgress.setText(progress + "/" + getAddonManager().getManagedAddons().size())));
         } catch (DataCollectionException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         } finally {
             Platform.runLater(() -> {
                 imageViewUpdate.setImage(null);
@@ -614,7 +614,7 @@ public class Controller implements Initializable {
         try {
             parent = fxmlLoader.load();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
         EditAddonController dialogController = fxmlLoader.getController();
         dialogController.createDialog(selectedAddon);
@@ -811,7 +811,7 @@ public class Controller implements Initializable {
             try {
                 Desktop.getDesktop().browse(new URI(url));
             } catch (IOException | URISyntaxException e) {
-                e.printStackTrace();
+                Log.printStackTrace(e);
             }
         }
     }
@@ -985,7 +985,7 @@ public class Controller implements Initializable {
 
     //region Adding
     private void handleAddScrapeException(DataCollectionException e) {
-        e.printStackTrace();
+        Log.printStackTrace(e);
         Platform.runLater(() -> {
             if (e.getType().equals(FailingHttpStatusCodeException.class)) {
                 FailingHttpStatusCodeException exception = (FailingHttpStatusCodeException) e.getException();
@@ -1025,7 +1025,7 @@ public class Controller implements Initializable {
     }
 
     private void handleAddSearchedScrapeException(DataCollectionException e) {
-        e.printStackTrace();
+        Log.printStackTrace(e);
         Platform.runLater(() -> {
             if (e.getType().equals(FailingHttpStatusCodeException.class)) {
                 FailingHttpStatusCodeException exception = (FailingHttpStatusCodeException) e.getException();
@@ -1053,7 +1053,7 @@ public class Controller implements Initializable {
     //region Updates
     private void handleUpdateScrapeException(DataCollectionException e) {
         Log.log("Classic Addon Manager encountered an issue and is stopping!");
-        e.printStackTrace();
+        Log.printStackTrace(e);
         if (e.getType().equals(FailingHttpStatusCodeException.class)) {
             FailingHttpStatusCodeException exception = (FailingHttpStatusCodeException) e.getException();
 
@@ -1164,7 +1164,7 @@ public class Controller implements Initializable {
     //region Unknown Errors
     private void handleUnknownException(Exception e) {
         Log.log("Classic Addon Manager encountered an issue and is stopping!");
-        e.printStackTrace();
+        Log.printStackTrace(e);
         Platform.runLater(() -> {
             String title = "Exception Dialog";
             String header = "Something went wrong!";
@@ -1442,9 +1442,9 @@ public class Controller implements Initializable {
 
             bufferedReader.close();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
 
         return sb.toString();

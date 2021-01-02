@@ -163,7 +163,7 @@ public class AddonManager {
                     try {
                         Thread.sleep(getSleepDelay());
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        Log.printStackTrace(e);
                     }
                 }
                 lastAddonSource = addonSource;
@@ -219,7 +219,7 @@ public class AddonManager {
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Log.printStackTrace(e);
                 }
             }
         }
@@ -417,7 +417,7 @@ public class AddonManager {
                 curPath = files[i].getCanonicalPath();
                 newPath = files[i].getParentFile().getParent() + "\\" + files[i].getName();
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.printStackTrace(e);
             }
             System.out.println("Moving: " + curPath + " to " + newPath);
             FileOperations.moveFile(curPath, newPath);

@@ -1,5 +1,6 @@
 package com.CAM.GUI;
 
+import com.CAM.HelperTools.Logging.Log;
 import com.CAM.HelperTools.UserInput;
 import com.CAM.HelperTools.UserInputResponse;
 import javafx.scene.control.Alert;
@@ -45,7 +46,7 @@ public class GUIUserInput implements UserInput {
         try {
             path = selectedDirectory.getCanonicalPath();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
         return new UserInputResponse(path, false);
     }

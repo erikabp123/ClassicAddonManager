@@ -1,4 +1,6 @@
 package com.CAM.HelperTools;
+import com.CAM.HelperTools.Logging.Log;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -16,7 +18,7 @@ public class DateConverter {
             dateFormat.setTimeZone(TimeZone.getTimeZone("America/Los_Angeles"));
             date = dateFormat.parse(cleaned);
         } catch (ParseException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
 
         return date;
@@ -35,7 +37,7 @@ public class DateConverter {
             dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
             date = dateFormat.parse(curseAPIFormat);
         } catch (ParseException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
 
         return date;
@@ -49,7 +51,7 @@ public class DateConverter {
             dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
             date = dateFormat.parse(processed);
         } catch (ParseException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
         return date;
     }
@@ -61,7 +63,7 @@ public class DateConverter {
             dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
             date = dateFormat.parse(tukuiFormat);
         } catch (ParseException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
         return date;
     }
@@ -72,7 +74,7 @@ public class DateConverter {
             SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yy hh:mm a", Locale.US);
             date = dateFormat.parse(wowinterfaceFormat);
         } catch (ParseException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
         return date;
     }

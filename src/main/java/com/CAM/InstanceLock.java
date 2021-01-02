@@ -1,5 +1,7 @@
 package com.CAM;
 
+import com.CAM.HelperTools.Logging.Log;
+
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
@@ -30,7 +32,7 @@ public class InstanceLock {
                 lock.release();
                 channel.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.printStackTrace(e);
             }
         }));
         return false;

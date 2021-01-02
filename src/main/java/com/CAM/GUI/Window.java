@@ -1,5 +1,6 @@
 package com.CAM.GUI;
 
+import com.CAM.HelperTools.Logging.Log;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -20,7 +21,7 @@ public class Window {
         try {
             parent = fxmlLoader.load();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
 
         Scene scene = new Scene(parent);

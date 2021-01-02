@@ -1,6 +1,7 @@
 package com.CAM.DataCollection;
 
 import com.CAM.HelperTools.IO.DownloadListener;
+import com.CAM.HelperTools.Logging.Log;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -60,9 +61,9 @@ public class FileDownloader {
             URL url = new URL(stringUrl);
             FileUtils.copyURLToFile(url, file);
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
 
     }
@@ -128,7 +129,7 @@ public class FileDownloader {
             try {
                 source = url.openStream();
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.printStackTrace(e);
             }
 
             try {
@@ -154,7 +155,7 @@ public class FileDownloader {
                 }
 
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.printStackTrace(e);
             } finally {
                 IOUtils.closeQuietly(source);
             }
@@ -175,7 +176,7 @@ public class FileDownloader {
                 urlConnection = url.openConnection();
                 urlConnection.connect();
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.printStackTrace(e);
             }
 
             fileSizes.put(stringUrl, new FileDownload(urlConnection.getContentLength(), url));

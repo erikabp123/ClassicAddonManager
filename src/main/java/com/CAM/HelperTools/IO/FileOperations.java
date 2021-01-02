@@ -10,6 +10,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class FileOperations {
             zipFile.extractAll(destination);
             return (List<FileHeader>) zipFile.getFileHeaders();
         } catch (ZipException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
         return new ArrayList<>();
     }
@@ -35,7 +36,7 @@ public class FileOperations {
         try {
             FileUtils.deleteDirectory(dir);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
         return true;
     }
@@ -71,7 +72,7 @@ public class FileOperations {
             int exitVal = pr.waitFor();
             Log.verbose("Exited with error code " + exitVal);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
         return version;
     }
@@ -119,14 +120,14 @@ public class FileOperations {
         try {
             newPath = new File(dir.getParent() + "\\" + newName).getCanonicalPath();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
         deleteDirectory(newPath);
         Path source = Paths.get(oldPath);
         try {
             Files.move(source, source.resolveSibling(newName));
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
         //dir.renameTo(newDir);
     }
@@ -137,7 +138,15 @@ public class FileOperations {
         try {
             FileUtils.moveDirectory(curDir, newDir);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
+        }
+    }
+
+    public synchronized static void writeToFile(String fileName, String contents){
+        try {
+            Files.write(Paths.get(fileName), contents.getBytes(), StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            Log.printStackTrace(e);
         }
     }
 

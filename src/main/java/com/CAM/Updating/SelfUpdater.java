@@ -25,7 +25,9 @@ public class SelfUpdater {
     public static final String REPO_LOCATION = "https://github.com/erikabp123/ClassicAddonManager";
     public static final String TEST_REPO_LOCATION = "https://github.com/erikabp123/CAM_TESTER";
     public static final String AUTOUPDATER_REPO_LOCATION = "https://github.com/erikabp123/AutoUpdater";
-    public static final String EXE_REPO_LOCATION = "";
+    public static final String EXE_REPO_LOCATION = "https://github.com/erikabp123/CAM_EXE";
+    public static boolean JAVA_INSTALLED = false;
+    public static final int MIN_JAVA_VERSION = 8;
     public static final int SLEEP_TIMER = 1000;
 
     public static String getRepoLocation(){
@@ -78,7 +80,7 @@ public class SelfUpdater {
         try {
             moveFile("downloads/AutoUpdater.jar", "system/AutoUpdater.jar");
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
     }
 
@@ -93,19 +95,20 @@ public class SelfUpdater {
             downloader.downloadFile(manifestLink, "VERSIONING");
             versionInfo = VersionInfo.readVersioningFile();
         }
-        CAMGithubAPI updaterScraper = new CAMGithubAPI(AUTOUPDATER_REPO_LOCATION);
         if(versionInfo.expectedCAM > VersionInfo.CAM_VERSION){
             String camLink = scraper.getReleaseJarDownload();
             filesToDownload.put(camLink, "ClassicAddonManager.jar");
             String changelogLink = scraper.getChangelogDownload();
             filesToDownload.put(changelogLink, "CHANGELOG.txt");
         }
+        CAMGithubAPI updaterScraper = new CAMGithubAPI(AUTOUPDATER_REPO_LOCATION);
         if(forceExtras || versionInfo.expectedAutoUpdate > VersionInfo.AUTOUPDATER_VERSION){
             String jarLink = updaterScraper.getReleaseJarDownload();
             filesToDownload.put(jarLink, "AutoUpdater.jar");
         }
+        CAMGithubAPI exeScraper = new CAMGithubAPI(EXE_REPO_LOCATION);
         if(forceExtras || versionInfo.expectedExe > VersionInfo.EXE_VERSION){
-            String exeLink = updaterScraper.getReleaseExeDownload();
+            String exeLink = exeScraper.getReleaseExeDownload();
             filesToDownload.put(exeLink, "Classic Addon Manager.exe");
         }
         return filesToDownload;
@@ -120,16 +123,23 @@ public class SelfUpdater {
 
     private static void launcherUpdateInstaller() {
 
+
         String curDir = System.getProperty("user.dir");
         String pathToElevate = curDir + "\\" + "system\\Elevate.exe";
         String pathToJava = curDir + "\\system\\jdk-12.0.2\\bin\\javaw.exe\" -jar";
         String pathToAutoUpdate = curDir + "\\system\\AutoUpdater.jar";
-        String fullCommand = "cmd /c start " + "\"" + pathToElevate + "\" \"" + pathToJava + " \"" + pathToAutoUpdate + "\" " + SLEEP_TIMER;
+        String[] commands = {"cmd.exe", "/c", "start " + " java -jar \"" + pathToAutoUpdate + "\" " + SLEEP_TIMER + " " + JAVA_INSTALLED};
+        String fullCommand = "cmd /c start " + "\"" + pathToElevate + "\" \"" + pathToJava + " \"" + pathToAutoUpdate + "\" " + SLEEP_TIMER + " " + JAVA_INSTALLED;
 
         try {
-            Runtime.getRuntime().exec(fullCommand);
+            if(JAVA_INSTALLED){
+                Runtime.getRuntime().exec(commands);
+            } else {
+                Runtime.getRuntime().exec(fullCommand);
+            }
+
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.printStackTrace(e);
         }
     }
 
