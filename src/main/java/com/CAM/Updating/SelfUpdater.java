@@ -122,8 +122,6 @@ public class SelfUpdater {
     }
 
     private static void launcherUpdateInstaller() {
-
-
         String curDir = System.getProperty("user.dir");
         String pathToElevate = curDir + "\\" + "system\\Elevate.exe";
         String pathToJava = curDir + "\\system\\jdk-12.0.2\\bin\\javaw.exe\" -jar";
@@ -133,8 +131,10 @@ public class SelfUpdater {
 
         try {
             if(JAVA_INSTALLED){
+                System.out.println("running java command");
                 Runtime.getRuntime().exec(commands);
             } else {
+                System.out.println("running with jdk");
                 Runtime.getRuntime().exec(fullCommand);
             }
 

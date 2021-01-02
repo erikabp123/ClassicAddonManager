@@ -3,8 +3,8 @@ package com.CAM.Updating;
 import com.CAM.HelperTools.IO.ReadWriteClassFiles;
 
 public class VersionInfo {
-    public static final double CAM_VERSION = 0.90;
-    public static final double EXE_VERSION = 0.1;
+    public static final double CAM_VERSION = 1.00;
+    public static final double EXE_VERSION = 2.0;
     public static final double AUTOUPDATER_VERSION = 0.3;
 
     public double expectedCAM;
