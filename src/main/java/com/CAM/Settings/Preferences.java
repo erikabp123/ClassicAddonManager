@@ -11,6 +11,7 @@ public class Preferences {
     private int maxCacheDuration = 120; //min
     private boolean checkForUpdatesOnLaunch = false;
     private boolean scrollToBottomOnUpdate = false;
+    private int downloadRetries = 1;
 
     private List<PreferencesChangeListener> listeners = new ArrayList<>();
     private static Preferences preferences = null;
@@ -70,5 +71,9 @@ public class Preferences {
 
     public void setScrollToBottomOnUpdate(boolean scrollToBottomOnUpdate) {
         this.scrollToBottomOnUpdate = scrollToBottomOnUpdate;
+    }
+
+    public int getDownloadRetries() {
+        return downloadRetries;
     }
 }

@@ -85,6 +85,7 @@ public class CurseForgeAPI extends API implements TwitchSite {
 
     @Override
     public String getDownloadLink() {
+        if(fileToUse.fileName.contains("DBM")) System.out.println(fileToUse.downloadUrl);
         return fileToUse.downloadUrl;
     }
 

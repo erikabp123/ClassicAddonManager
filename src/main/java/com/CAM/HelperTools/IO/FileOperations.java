@@ -1,5 +1,7 @@
 package com.CAM.HelperTools.IO;
 
+import com.CAM.AddonManagement.Addon;
+import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.HelperTools.Logging.Log;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -106,7 +108,7 @@ public class FileOperations {
             return true;
         };
         File[] tocFiles = fileFinder(directory, tocFilter);
-        if(tocFiles.length == 0){
+        if(tocFiles == null || tocFiles.length == 0){
             return null;
         }
         String tocName = tocFiles[0].getName().replace(".toc", "");
@@ -142,13 +144,6 @@ public class FileOperations {
         }
     }
 
-    public synchronized static void writeToFile(String fileName, String contents){
-        try {
-            Files.write(Paths.get(fileName), contents.getBytes(), StandardOpenOption.APPEND);
-        } catch (IOException e) {
-            Log.printStackTrace(e);
-        }
-    }
 
 
 }

@@ -9,6 +9,7 @@ import com.CAM.HelperTools.*;
 import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.CAM.HelperTools.GameSpecific.GameVersion;
 import com.CAM.HelperTools.Logging.Log;
+import com.CAM.Settings.Preferences;
 import javafx.scene.image.Image;
 
 import java.util.Date;
@@ -50,7 +51,7 @@ public class Addon implements Comparable<Addon> {
             FileDownloader downloader = new FileDownloader("downloads");
             downloader.listenLocal(tableViewStatus);
             String fileName = name + "_" + author + "_(" + api.getFileName() + ").zip";
-            downloader.downloadFileMonitored(downloadLink, fileName);
+            downloader.downloadFileMonitored(downloadLink, fileName, Preferences.getInstance().getDownloadRetries());
             lastUpdated = api.getLastUpdated();
             lastFileName = fileName;
             lastUpdateCheck = new Date();

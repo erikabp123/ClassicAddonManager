@@ -2,6 +2,8 @@ package com.CAM.DataCollection;
 
 import com.CAM.HelperTools.IO.DownloadListener;
 import com.CAM.HelperTools.Logging.Log;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -68,8 +70,7 @@ public class FileDownloader {
 
     }
 
-    public void downloadFileMonitored(String stringUrl, String fileName) throws IOException {
-
+    public void downloadFileMonitored(String stringUrl, String fileName, int retries) throws IOException, ZipException {
         File file = new File(downloadLocation + "/" + fileName);
         URL url = null;
         URLConnection urlConnection = null;
@@ -98,12 +99,18 @@ public class FileDownloader {
                 }
 
                 output.close(); // don't swallow close Exception if copy completes normally
+
             } finally {
                 IOUtils.closeQuietly(output);
             }
 
         } finally {
             IOUtils.closeQuietly(source);
+            ZipFile zipFile = new ZipFile(file);
+            if(!zipFile.isValidZipFile()) {
+                if(retries > 0) downloadFileMonitored(stringUrl, fileName, retries - 1);
+                else throw new IOException("Invalid zip file");
+            }
             notifyAllListeners(1);
             notifyAllLocalListeners(1);
         }

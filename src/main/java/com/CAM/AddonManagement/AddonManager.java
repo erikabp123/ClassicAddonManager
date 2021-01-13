@@ -351,7 +351,7 @@ public class AddonManager {
         Log.verbose("Successfully saved to managed.json!");
     }
 
-    public void install(Addon addon) {
+    public void install(Addon addon){
         // Uninstall old save for clean updating
         Log.verbose("Attempting install of addon " + addon.getName() + " ...");
         uninstall(addon);

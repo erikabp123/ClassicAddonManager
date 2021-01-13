@@ -3,9 +3,13 @@ package com.CAM.HelperTools.Logging;
 import com.CAM.HelperTools.IO.FileOperations;
 import com.CAM.Settings.SessionOnlySettings;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -46,7 +50,7 @@ public class Log {
         message = message + sw.toString() + "\n";
         message = message + "I------------------------------------------------------I\n\n";
 
-        FileOperations.writeToFile("errors.txt", message);
+        writeToFile("errors.txt", message);
         e.printStackTrace();
 
         try {
@@ -54,6 +58,16 @@ public class Log {
             sw.close();
         } catch (IOException ioException) {
             ioException.printStackTrace();
+        }
+    }
+
+    public synchronized static void writeToFile(String fileName, String contents){
+        try {
+            File errorFile = new File(fileName);
+            errorFile.createNewFile();
+            Files.write(Paths.get(fileName), contents.getBytes(), StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
