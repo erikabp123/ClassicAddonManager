@@ -360,6 +360,8 @@ public class AddonManager {
         List<FileHeader> headers = FileOperations.unzip(zipPath, installLocation);
         logInstallation(addon, headers);
 
+        System.out.println("zipPath is: " + zipPath);
+
         FileOperations.deleteFile(zipPath);
 
         Set<String> directoriesFullPaths = new HashSet<>();
@@ -529,7 +531,8 @@ public class AddonManager {
     //HELPER METHODS
 
     public String getInstallationLogPath(Addon addon) {
-        return getAddonFoldersLocation() + addon.getName() + ".json";
+        String escapedName = FileOperations.escapeInvalidFileChars(addon.getName());
+        return getAddonFoldersLocation() + escapedName + ".json";
     }
 
     private Set<String> getOnlyRootDirectories(List<FileHeader> headers) {

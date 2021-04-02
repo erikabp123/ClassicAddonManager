@@ -20,11 +20,12 @@ javafx {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile 'net.sourceforge.htmlunit:htmlunit:2.13'
+    compile 'net.sourceforge.htmlunit:htmlunit:2.48.0'
     compile group: 'com.google.code.gson', name: 'gson', version: '2.7'
     compile group: 'net.lingala.zip4j', name: 'zip4j', version: '1.2.4'
     compile group: 'org.controlsfx', name: 'controlsfx', version: '11.0.0'
     compile 'com.github.ben-manes.caffeine:caffeine:2.8.6'
+    compile 'com.google.api-client:google-api-client:1.31.2'
 }
 
 jar {

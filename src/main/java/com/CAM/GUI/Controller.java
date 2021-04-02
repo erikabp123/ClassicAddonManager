@@ -332,13 +332,11 @@ public class Controller implements Initializable {
     @FXML
     private void addSearchedAction() {
         Thread precheckThread = new Thread(() -> {
-            Platform.runLater(() -> {
-                disableAll();
-            });
+            Platform.runLater(this::disableAll);
 
             Object addon = searchedTableView.getSelectionModel().getSelectedItem();
             if(addon == null) {
-                Platform.runLater(() -> disableAll());
+                Platform.runLater(this::disableAll);
                 return;
             }
             Class addonSource = addon.getClass();
@@ -721,7 +719,7 @@ public class Controller implements Initializable {
 
         Thread importThread = new Thread(() -> {
             Gson gson = new Gson();
-            ArrayList<Addon> imported = null;
+            ArrayList<Addon> imported;
             try {
                 imported = gson.fromJson(CompressionUtil.decompress(textArea.getText()), new TypeToken<ArrayList<Addon>>() {
                 }.getType());
@@ -945,7 +943,6 @@ public class Controller implements Initializable {
             invalidAlert.setContentText(e.getMessage());
             invalidAlert.showAndWait();
         });
-        return;
     }
 
     private void showGithubLimitAlert() {
@@ -1019,7 +1016,6 @@ public class Controller implements Initializable {
 
             if (e.getType().equals(DataCollectionException.class)) {
                 showInvalidUrlAlert(e);
-                return;
             }
         });
     }
@@ -1044,14 +1040,13 @@ public class Controller implements Initializable {
 
             if (e.getType().equals(DataCollectionException.class)) {
                 showInvalidUrlAlert(e);
-                return;
             }
         });
     }
     //endregion
 
     //region Updates
-    private void handleUpdateScrapeException(DataCollectionException e) {
+    void handleUpdateScrapeException(DataCollectionException e) {
         Log.log("Classic Addon Manager encountered an issue and is stopping!");
         Log.printStackTrace(e);
         if (e.getType().equals(FailingHttpStatusCodeException.class)) {
@@ -1626,70 +1621,7 @@ public class Controller implements Initializable {
             updateButton.setDisable(true);
             updateButton.setVisible(false);
 
-            TableCell<Addon, Addon> cell = new TableCell<>() {
-                final ProgressBar progressBar = new ProgressBar(0);
-                @Override
-                public void updateItem(Addon item, boolean empty) {
-                    updateButton.setOnAction(event -> {
-                        try {
-                            updateTableViewMap.get().get(item).setQueuedForUpdate(true);
-                            updateItem(item, empty);
-                            getAddonManager().updateSpecificAddon(item, updateTableViewMap.get().get(item));
-                        } catch (DataCollectionException e) {
-                            handleUpdateScrapeException(e);
-                        }
-                    });
-                    if (item != null) {
-                        if(updateTableViewMap.get().containsKey(item)){
-                            TableViewStatus tableViewStatus = updateTableViewMap.get().get(item);
-                            tableViewStatus.setOnChangeListener(e -> Platform.runLater(() -> {
-                                progressBar.setProgress(tableViewStatus.getProgress());
-                                updateItem(item, empty);
-                            }));
-                            if(tableViewStatus.isQueuedForUpdate()){
-                                if(tableViewStatus.isDoneUpdating()){
-                                    updateButton.setDisable(true);
-                                    updateButton.setVisible(false);
-                                    setGraphic(null);
-
-                                    Date lastUpdateCheck = item.getLastUpdateCheck();
-                                    String text = "Not installed!";
-                                    if(lastUpdateCheck != null) text = "up-to-date";
-                                    setText(text);
-                                } else {
-                                    updateButton.setDisable(true);
-                                    updateButton.setVisible(false);
-                                    setText(null);
-                                    progressBar.setProgress(tableViewStatus.getProgress());
-                                    //System.out.println(item.getName() + " progress: " + progressBar.getProgress());
-                                    setGraphic(progressBar);
-                                }
-                            } else {
-                                updateButton.setDisable(false);
-                                updateButton.setVisible(true);
-                                setGraphic(updateButton);
-                                setText(null);
-                            }
-                        } else {
-                            updateButton.setDisable(true);
-                            updateButton.setVisible(false);
-                            setGraphic(null);
-
-                            Date lastUpdateCheck = item.getLastUpdateCheck();
-                            String text = "Not installed!";
-                            if(lastUpdateCheck != null){
-                                if((new Date()).getTime() - lastUpdateCheck.getTime() > Preferences.getInstance().getMaxCacheDuration()*60000) text = "Not checked";
-                                else text = "up-to-date";
-                            }
-                            setText(text);
-                        }
-                    } else {
-                        updateButton.setDisable(true);
-                        updateButton.setVisible(false);
-                        setGraphic(null);
-                    }
-                }
-            };
+            TableCell<Addon, Addon> cell = new UpdateAddonTableCell(updateTableViewMap);
             return cell;
         }));
     }

@@ -2,17 +2,19 @@ package com.CAM.HelperTools;
 
 import com.CAM.AddonManagement.Addon;
 import com.CAM.HelperTools.IO.DownloadListener;
+import com.google.api.client.googleapis.media.MediaHttpDownloader;
+import com.google.api.client.googleapis.media.MediaHttpDownloaderProgressListener;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TableCell;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class TableViewStatus implements DownloadListener {
-    private ProgressBar progressBar;
+public class TableViewStatus implements DownloadListener, MediaHttpDownloaderProgressListener {
     private Button updateButton;
     private AtomicBoolean queuedForUpdate;
     private AtomicBoolean doneUpdating;
@@ -21,17 +23,11 @@ public class TableViewStatus implements DownloadListener {
     private AtomicReference<ChangeListener> changeListener;
 
     public TableViewStatus(){
-        this.progressBar = new ProgressBar(0);
         this.updateButton = new Button("Update");
         this.queuedForUpdate = new AtomicBoolean(false);
         this.doneUpdating = new AtomicBoolean(false);
-        this.progress = new AtomicReference<Double>(0.0);
-        this.changeListener = new AtomicReference<ChangeListener>(null);
-    }
-
-
-    public ProgressBar getProgressBar() {
-        return progressBar;
+        this.progress = new AtomicReference<>(0.0);
+        this.changeListener = new AtomicReference<>(null);
     }
 
     public Button getUpdateButton() {
@@ -80,4 +76,19 @@ public class TableViewStatus implements DownloadListener {
         this.changeListener.set(changeListener);
     }
 
+    @Override
+    public void progressChanged(MediaHttpDownloader downloader) {
+        switch (downloader.getDownloadState()){
+            case MEDIA_IN_PROGRESS:
+                System.out.println("Progress: " + downloader.getProgress());
+                setProgress(downloader.getProgress());
+                if(changeListener.get() != null) changeListener.get().stateChanged(new ChangeEvent(this));
+                break;
+            case MEDIA_COMPLETE:
+                setProgress(1.0);
+                setDoneUpdating(true);
+                if(changeListener.get() != null) changeListener.get().stateChanged(new ChangeEvent(this));
+                break;
+        }
+    }
 }

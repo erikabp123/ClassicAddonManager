@@ -46,6 +46,7 @@ public class FileOperations {
     public static boolean deleteFile(String path){
         File file = new File(path);
         Log.verbose(path + " is valid file: " + file.exists());
+        file.deleteOnExit();
         return file.delete();
     }
 
@@ -63,7 +64,7 @@ public class FileOperations {
 
             BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 
-            String line = null;
+            String line;
             while ((line = input.readLine()) != null) {
                 if(!line.contains("Version")){
                     continue;
@@ -83,30 +84,24 @@ public class FileOperations {
 
         String[] parts = path.split("\\\\");
 
-        String frankenstein = "\"" + parts[0];
+        StringBuilder frankenstein = new StringBuilder("\"" + parts[0]);
 
         for(int i=1; i<parts.length; i++){
-            frankenstein = frankenstein + "\\\\" + parts[i];
+            frankenstein.append("\\\\").append(parts[i]);
         }
-        frankenstein = frankenstein + "\"";
+        frankenstein.append("\"");
 
-        return frankenstein;
+        return frankenstein.toString();
     }
 
     public static File[] fileFinder(String dirName, FileFilter fileFilter){
         File dir = new File(dirName);
-        File[] files = dir.listFiles(fileFilter);
-        return files;
+        return dir.listFiles(fileFilter);
     }
 
     public static String determineTOCName(String directory){
         Log.verbose("Determining TOC file name ...");
-        FileFilter tocFilter = pathname -> {
-            if(!pathname.getName().endsWith(".toc")){
-                return false;
-            }
-            return true;
-        };
+        FileFilter tocFilter = pathname -> pathname.getName().endsWith(".toc");
         File[] tocFiles = fileFinder(directory, tocFilter);
         if(tocFiles == null || tocFiles.length == 0){
             return null;
@@ -142,6 +137,10 @@ public class FileOperations {
         } catch (IOException e) {
             Log.printStackTrace(e);
         }
+    }
+
+    public static String escapeInvalidFileChars(String name) {
+        return name.replaceAll("[\\\\/:*?\"<>|]", "");
     }
 
 

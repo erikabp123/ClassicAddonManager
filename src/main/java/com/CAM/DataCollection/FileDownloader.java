@@ -2,15 +2,20 @@ package com.CAM.DataCollection;
 
 import com.CAM.HelperTools.IO.DownloadListener;
 import com.CAM.HelperTools.Logging.Log;
+import com.CAM.HelperTools.TableViewStatus;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.googleapis.media.MediaHttpDownloader;
+import com.google.api.client.googleapis.media.MediaHttpDownloaderProgressListener;
+import com.google.api.client.http.*;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.util.BackOff;
+import com.google.api.client.util.ExponentialBackOff;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -62,8 +67,6 @@ public class FileDownloader {
         try {
             URL url = new URL(stringUrl);
             FileUtils.copyURLToFile(url, file);
-        } catch (MalformedURLException e) {
-            Log.printStackTrace(e);
         } catch (IOException e) {
             Log.printStackTrace(e);
         }
@@ -72,9 +75,9 @@ public class FileDownloader {
 
     public void downloadFileMonitored(String stringUrl, String fileName, int retries) throws IOException, ZipException {
         File file = new File(downloadLocation + "/" + fileName);
-        URL url = null;
-        URLConnection urlConnection = null;
-        InputStream source = null;
+        URL url;
+        URLConnection urlConnection;
+        InputStream source;
         url = new URL(stringUrl);
         urlConnection = url.openConnection();
         urlConnection.connect();
@@ -89,7 +92,7 @@ public class FileDownloader {
 
                 final byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
                 long count = 0;
-                int n = 0;
+                int n;
                 while (EOF != (n = source.read(buffer))) {
                     output.write(buffer, 0, n);
                     count += n;
@@ -146,7 +149,7 @@ public class FileDownloader {
 
                     final byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
                     long count = 0;
-                    int n = 0;
+                    int n;
                     while (EOF != (n = source.read(buffer))) {
                         output.write(buffer, 0, n);
                         count += n;
@@ -192,6 +195,23 @@ public class FileDownloader {
     }
 
 
+    public void googleDownloadFile(String url, String fileName, TableViewStatus tableViewStatus) throws IOException {
+        new File(downloadLocation + "/" + fileName);
+        OutputStream out = new FileOutputStream(downloadLocation + "/" + fileName);
+
+        HttpTransport transport = new NetHttpTransport();
+        HttpRequestInitializer httpRequestInitializer = request -> {
+            BackOff backOff = new ExponentialBackOff();
+            request.setUnsuccessfulResponseHandler(new HttpBackOffUnsuccessfulResponseHandler(backOff));
+            request.setIOExceptionHandler(new HttpBackOffIOExceptionHandler(backOff));
+        };
+
+        MediaHttpDownloader downloader = new MediaHttpDownloader(transport, httpRequestInitializer);
+        downloader.setProgressListener(tableViewStatus);
+        GenericUrl requestUrl = new GenericUrl(url);
+        downloader.setDirectDownloadEnabled(true);
+        downloader.download(requestUrl, out);
+    }
 
     private class FileDownload {
         int fileSize;

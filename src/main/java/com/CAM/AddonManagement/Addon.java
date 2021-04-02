@@ -44,6 +44,7 @@ public class Addon implements Comparable<Addon> {
         return new Addon(name, author, origin, branch, releases);
     }
 
+    /*
     public void fetchUpdate(API api, TableViewStatus tableViewStatus) throws DataCollectionException {
         try {
             Log.verbose("Attempting to fetch update ...");
@@ -59,6 +60,31 @@ public class Addon implements Comparable<Addon> {
             e.setAddon(this);
             throw e;
         } catch (Exception e) {
+            DataCollectionException exception = new DataCollectionException(getAddonSource(), e);
+            exception.setAddon(this);
+            throw exception;
+        }
+        Log.verbose("Successfully fetched new update!");
+    }
+
+     */
+
+
+    public void fetchUpdate(API api, TableViewStatus tableViewStatus) throws DataCollectionException {
+        try {
+            Log.verbose("Attempting to fetch update ...");
+            FileDownloader downloader = new FileDownloader("downloads");
+            downloader.listenLocal(tableViewStatus);
+            String fileName = api.getFileName();
+            downloader.googleDownloadFile(api.getDownloadLink(), fileName, tableViewStatus);
+            lastUpdated = api.getLastUpdated();
+            lastFileName = fileName;
+            lastUpdateCheck = new Date();
+        } catch (DataCollectionException e){
+            e.setAddon(this);
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
             DataCollectionException exception = new DataCollectionException(getAddonSource(), e);
             exception.setAddon(this);
             throw exception;
@@ -114,7 +140,7 @@ public class Addon implements Comparable<Addon> {
             return false;
         }
 
-        int projectId = 0;
+        int projectId;
 
         switch (getAddonSource()){
             case CURSEFORGE:
