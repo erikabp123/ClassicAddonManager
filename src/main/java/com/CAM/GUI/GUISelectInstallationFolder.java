@@ -275,7 +275,7 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
         else{
             if(args[0] != null && args[0].getClass().equals(ArgumentPasser.class)) setClosedButtonClicked((ArgumentPasser) args[0]);
             initFromPrevious();
-        };
+        }
 
     }
 
@@ -362,7 +362,7 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
             validPath = verifyInstallLocation(input, gameVersion);
             if(!validPath) showInvalidFolderAlert(gameVersion);
         }
-        return input + "Interface\\AddOns";
+        return input;
     }
 
     private static void showInvalidFolderAlert(GameVersion gameVersion) {

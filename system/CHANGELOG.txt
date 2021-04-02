@@ -1,3 +1,6 @@
+v1.01
+    - Fixed bug where selecting install location manually would lead to addons being installed in the wrong subfolder
+
 v1.00
     - Fixed issue with manual install location selection
     - Made the program check for existing Java installations of version 8 or higher
