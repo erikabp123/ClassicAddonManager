@@ -149,6 +149,7 @@ public class Addon implements Comparable<Addon> {
                 if(response == null){
                     System.out.println("request user input");
                 }
+                System.out.println(toString());
                 projectId = response.id;
                 break;
             case TUKUI:
@@ -239,5 +240,10 @@ public class Addon implements Comparable<Addon> {
 
     public Image getWebsiteIcon(){
         return getAddonSource().getWebsiteIcon();
+    }
+
+    @Override
+    public String toString(){
+        return getName() + " by " + getAuthor();
     }
 }

@@ -24,6 +24,13 @@ public class DataCollectionException extends Exception {
         this.source = source;
     }
 
+    public DataCollectionException(AddonSource source, Exception e, String message){
+        super();
+        this.exception = e;
+        this.source = source;
+        this.message = message;
+    }
+
     public DataCollectionException(Addon addon, Exception e){
         super();
         this.exception = e;
@@ -58,7 +65,7 @@ public class DataCollectionException extends Exception {
 
     @Override
     public void printStackTrace(){
-        if(this.exception.getClass() == DataCollectionException.class) {
+        if(this.exception.getClass() != DataCollectionException.class) {
             exception.printStackTrace();
         }
         super.printStackTrace();

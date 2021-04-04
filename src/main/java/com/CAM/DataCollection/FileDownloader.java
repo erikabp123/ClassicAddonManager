@@ -19,6 +19,8 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -196,7 +198,7 @@ public class FileDownloader {
 
 
     public void googleDownloadFile(String url, String fileName, TableViewStatus tableViewStatus) throws IOException {
-        new File(downloadLocation + "/" + fileName);
+        Files.createDirectories(Paths.get(downloadLocation + "/"));
         OutputStream out = new FileOutputStream(downloadLocation + "/" + fileName);
 
         HttpTransport transport = new NetHttpTransport();
@@ -211,6 +213,7 @@ public class FileDownloader {
         GenericUrl requestUrl = new GenericUrl(url);
         downloader.setDirectDownloadEnabled(true);
         downloader.download(requestUrl, out);
+        out.close();
     }
 
     private class FileDownload {

@@ -4,6 +4,9 @@ v1.01
     - Changed the system for downloading files, should be faster and hopefully deals with failed downloads and abnormal HTTP/IO problems more cleanly
     - Fixed a bug where API reseponses from Curseforge with no "gameflavor" specification were causing failed update checking
     - Updated the DataCollectionException and Log functionality to properly present all relevant information in case of exceptions
+    - Updated the auto-conversion that figures out projectIDs based on URLS. Performs a progressive search now, leading to much better odds of detecting the right projectID
+    - Fixed a bug where a missing downloads folder would cause a FileNotFoundException
+    - Added a Chrome based User-Agent to HTMLUnit
 
 v1.00
     - Fixed issue with manual install location selection

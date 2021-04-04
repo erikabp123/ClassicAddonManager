@@ -3,6 +3,7 @@ package com.CAM.DataCollection;
 import com.CAM.DataCollection.Cache.WebsiteCache;
 import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.CAM.HelperTools.Logging.Log;
+import com.CAM.Settings.SessionOnlySettings;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -22,14 +23,17 @@ public abstract class PageFetcher {
         client.getOptions().setJavaScriptEnabled(false);
         client.getOptions().setCssEnabled(false);
         client.getOptions().setUseInsecureSSL(true);
+        client.addRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36");
 
         Page page;
 
         try {
             page = client.getPage(url);
         } catch (FailingHttpStatusCodeException e){
+            Log.verbose("Url at: " + url + " failed!");
             Log.verbose("fetch resulted in " + e.getStatusCode());
-            throw new DataCollectionException(getAddonSource(), e);
+            throw new DataCollectionException(getAddonSource(), e, "Url at: " + url + " failed with code " + e.getStatusCode()
+                    + ". Status message was: " + e.getStatusMessage());
         } catch (IOException e) {
             throw new DataCollectionException(getAddonSource(), e);
         }

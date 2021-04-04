@@ -40,7 +40,21 @@ public class CurseForgeAPISearcher extends APISearcher {
                 return castResponse;
             }
         }
-        return null;
+
+        return findCorrespondingAddon(addon, 0);
+    }
+
+    public CurseAddonResponse findCorrespondingAddon(Addon addon, int index) throws DataCollectionException {
+        if(index >= addon.getName().length()) return null;
+        ArrayList<SearchedAddonRequest> addons = search(addon.getName().substring(0, index));
+        for(SearchedAddonRequest response : addons){
+            CurseAddonResponse castResponse = (CurseAddonResponse) response;
+            if(addon.getOrigin().startsWith(castResponse.websiteUrl)) {
+                return castResponse;
+            }
+        }
+
+        return findCorrespondingAddon(addon, index+1);
     }
 
     private static String encodeValue(String value) {

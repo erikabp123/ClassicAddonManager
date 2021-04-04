@@ -50,7 +50,7 @@ public class Log {
         message = message + "Error recorded at: " + new Date().toString() + "\n";
         if(e.getClass() == DataCollectionException.class){
             DataCollectionException dataCollectionException = (DataCollectionException) e;
-            message = message + "Addon: " + dataCollectionException.getAddon() + "\n";
+            message = message + "Addon: " + dataCollectionException.getAddon().toString() + "\n";
             message = message + "Source: " + dataCollectionException.getSource() + "\n";
             message = message + "Message: " + dataCollectionException.getMessage() + "\n";
         }
