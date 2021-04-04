@@ -59,6 +59,9 @@ public class CurseForgeAPI extends API implements TwitchSite {
     private CurseFile determineLatestFileByFlavor(String flavor){
         CurseFile latestFile = null;
         for(CurseFile file : response.latestFiles){
+            if(file.gameVersionFlavor == null){
+                continue;
+            }
             if(!file.gameVersionFlavor.equals(flavor)){
                 continue;
             }

@@ -25,6 +25,7 @@ public class Main extends Application {
         stage.setTitle("WoW Classic Addon Manager");
         Scene scene = new Scene(loader.load());
         scene.getStylesheets().add(getClass().getClassLoader().getResource("bootstrap3.css").toExternalForm());
+        //scene.getStylesheets().add(getClass().getClassLoader().getResource("invertedBootstrap3.css").toExternalForm());
         stage.setScene(scene);
 
         GUIUserInput.initBaseContext(primaryStage);
@@ -49,9 +50,6 @@ public class Main extends Application {
         } else {
             amc = load(managers);
         }
-
-
-       //TODO: add support to transition from Addonmanager V2 to new V3 system
 
         if(managers.keySet().isEmpty()){
             return;

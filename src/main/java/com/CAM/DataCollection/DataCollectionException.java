@@ -2,6 +2,7 @@ package com.CAM.DataCollection;
 
 import com.CAM.AddonManagement.Addon;
 import com.CAM.HelperTools.GameSpecific.AddonSource;
+import org.apache.commons.lang3.ArrayUtils;
 
 public class DataCollectionException extends Exception {
 
@@ -53,6 +54,14 @@ public class DataCollectionException extends Exception {
 
     public void setAddon(Addon addon) {
         this.addon = addon;
+    }
+
+    @Override
+    public void printStackTrace(){
+        if(this.exception.getClass() == DataCollectionException.class) {
+            exception.printStackTrace();
+        }
+        super.printStackTrace();
     }
 
     @Override

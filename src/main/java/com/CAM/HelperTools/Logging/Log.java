@@ -1,5 +1,6 @@
 package com.CAM.HelperTools.Logging;
 
+import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.HelperTools.IO.FileOperations;
 import com.CAM.Settings.SessionOnlySettings;
 
@@ -47,6 +48,12 @@ public class Log {
         e.printStackTrace(pw);
         String message = "I------------------------------------------------------I\n";
         message = message + "Error recorded at: " + new Date().toString() + "\n";
+        if(e.getClass() == DataCollectionException.class){
+            DataCollectionException dataCollectionException = (DataCollectionException) e;
+            message = message + "Addon: " + dataCollectionException.getAddon() + "\n";
+            message = message + "Source: " + dataCollectionException.getSource() + "\n";
+            message = message + "Message: " + dataCollectionException.getMessage() + "\n";
+        }
         message = message + sw.toString() + "\n";
         message = message + "I------------------------------------------------------I\n\n";
 
