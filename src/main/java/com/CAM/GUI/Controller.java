@@ -1393,14 +1393,15 @@ public class Controller implements Initializable {
             }
 
 
-
             String[] messageParts = broadcast.split("messageId: ");
 
-            boolean broadcastIgnored = Preferences.getInstance().isBroadcastIgnored(Integer.parseInt(messageParts[1]));
+            Preferences preferences = Preferences.getInstance();
+
+            int messageId = Integer.parseInt(messageParts[1]);
+            boolean broadcastIgnored = preferences.isBroadcastIgnored(messageId);
             if(broadcastIgnored) return;
 
             String finalBroadcast = messageParts[0];
-
 
             Platform.runLater(() -> {
 
@@ -1416,11 +1417,15 @@ public class Controller implements Initializable {
                     protected Node createDetailsButton() {
                         CheckBox optOut = new CheckBox();
                         optOut.setText("Don't show this message again");
-                        optOut.setOnAction(e -> System.out.println("test"));
+                        optOut.setOnAction(e -> {
+                            if(optOut.isSelected()) preferences.ignoreBroadcast(messageId);
+                            else preferences.unIgnoreBroadcast(messageId);
+                            Preferences.savePreferencesFile();
+                        });
                         return optOut;
                     }
                 });
-                alert.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+                alert.getDialogPane().getButtonTypes().addAll(ButtonType.OK);
                 // Fool the dialog into thinking there is some expandable content
                 // a Group won't take up any space if it has no children
                 alert.getDialogPane().setExpandableContent(new Group());
@@ -1449,39 +1454,6 @@ public class Controller implements Initializable {
     }
 
 
-    public static Alert createAlertWithOptOut(Alert.AlertType type, String title, String headerText,
-                                              String message, String optOutMessage, Consumer<Boolean> optOutAction,
-                                              ButtonType... buttonTypes) {
-        Alert alert = new Alert(type);
-        // Need to force the alert to layout in order to grab the graphic,
-        // as we are replacing the dialog pane with a custom pane
-        alert.getDialogPane().applyCss();
-        Node graphic = alert.getDialogPane().getGraphic();
-        // Create a new dialog pane that has a checkbox instead of the hide/show details button
-        // Use the supplied callback for the action of the checkbox
-        alert.setDialogPane(new DialogPane() {
-            @Override
-            protected Node createDetailsButton() {
-                CheckBox optOut = new CheckBox();
-                optOut.setText(optOutMessage);
-                optOut.setOnAction(e -> optOutAction.accept(optOut.isSelected()));
-                return optOut;
-            }
-        });
-        alert.getDialogPane().getButtonTypes().addAll(buttonTypes);
-        alert.getDialogPane().setContentText(message);
-        // Fool the dialog into thinking there is some expandable content
-        // a Group won't take up any space if it has no children
-        alert.getDialogPane().setExpandableContent(new Group());
-        alert.getDialogPane().setExpanded(true);
-        // Reset the dialog graphic using the default style
-        alert.getDialogPane().setGraphic(graphic);
-        alert.setTitle(title);
-        alert.setHeaderText(headerText);
-        return alert;
-    }
-
-
     private String getBroadCastMessage() throws IOException {
         BroadcastFetcher fetcher = new BroadcastFetcher();
         return fetcher.fetchBroadcastMessage();
@@ -1502,8 +1474,6 @@ public class Controller implements Initializable {
             }
 
             bufferedReader.close();
-        } catch (FileNotFoundException e) {
-            Log.printStackTrace(e);
         } catch (IOException e) {
             Log.printStackTrace(e);
         }

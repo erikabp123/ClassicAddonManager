@@ -88,4 +88,8 @@ public class Preferences {
     public void ignoreBroadcast(int messageId){
         ignoredMessageIds.add(messageId);
     }
+
+    public void unIgnoreBroadcast(int messageId) {
+        ignoredMessageIds.remove(messageId);
+    }
 }

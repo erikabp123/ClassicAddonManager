@@ -1,6 +1,8 @@
 v1.04
     - Fixed bug where missing gameflavor from curseforge was causing errors when trying to update
     - Fixed bug where having a version of java 1.8-1.11 would cause the auto-updater to incorrectly use the installed version of java instead of the bundled one (failing to properly update)
+    - Added "Do not show this message again" option to filter out already seen emergency broadcasts
+    - Updated EmergencyBroadcasts to include messageId
 
 v1.03
     - Fixed bug where selecting install location manually would lead to addons being installed in the wrong subfolder
