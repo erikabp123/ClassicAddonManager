@@ -1,8 +1,8 @@
 
-Version 1.03 is out, this should hopefully fix a lot of the bugs that people have been experiencing.
+Version 1.04 is out, this should hopefully fix a lot of the bugs that people have been experiencing.
 
 IF YOU ARE HAVING TROUBLE UPDATING:
 There seems to be an issue with the auto-updating feature where it does not sucessfully apply the update after downloading it. If this is the case for you, try looking in your downloads folder for a file called "ClassicAddonManager.jar" and move that into your "system" folder, overwriting when prompted.
-If you do not have this file in your downloads folder, you can download the latest version of the manager at the github page and manually update. I will look into fixing this for the next update.
+If you do not have this file in your downloads folder, you can download the latest version of the manager at the github page and manually update. This bug was introduced with v1.0 and should be fixed as of v1.04.
 
-messageId: 0
+messageId: 1
