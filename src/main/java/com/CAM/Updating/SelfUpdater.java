@@ -27,7 +27,7 @@ public class SelfUpdater {
     public static final String AUTOUPDATER_REPO_LOCATION = "https://github.com/erikabp123/AutoUpdater";
     public static final String EXE_REPO_LOCATION = "https://github.com/erikabp123/CAM_EXE";
     public static boolean JAVA_INSTALLED = false;
-    public static final int MIN_JAVA_VERSION = 8;
+    public static final int MIN_JAVA_VERSION = 12;
     public static final int SLEEP_TIMER = 1000;
 
     public static String getRepoLocation(){

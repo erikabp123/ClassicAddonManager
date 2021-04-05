@@ -41,7 +41,7 @@ public class CurseAddonResponse extends SearchedAddonRequest {
 
     public boolean isGameVersionSupported(GameVersion gameVersion){
         for(CurseFile file : latestFiles){
-            if(file.gameVersionFlavor.equals(gameVersion.getCurseFlavor())){
+            if(file.gameVersionFlavor != null && file.gameVersionFlavor.equals(gameVersion.getCurseFlavor())){
                 return true;
             }
         }
