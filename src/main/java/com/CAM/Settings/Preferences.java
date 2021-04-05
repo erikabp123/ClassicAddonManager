@@ -3,7 +3,9 @@ package com.CAM.Settings;
 import com.CAM.HelperTools.IO.ReadWriteClassFiles;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Preferences {
 
@@ -12,9 +14,11 @@ public class Preferences {
     private boolean checkForUpdatesOnLaunch = false;
     private boolean scrollToBottomOnUpdate = false;
     private int downloadRetries = 1;
+    private Set<Integer> ignoredMessageIds = new HashSet<>();
 
     private List<PreferencesChangeListener> listeners = new ArrayList<>();
     private static Preferences preferences = null;
+
 
     public static Preferences getInstance() {
         if(preferences == null) preferences = readPreferencesFile();
@@ -75,5 +79,13 @@ public class Preferences {
 
     public int getDownloadRetries() {
         return downloadRetries;
+    }
+
+    public boolean isBroadcastIgnored(int messageId) {
+        return ignoredMessageIds.contains(messageId);
+    }
+
+    public void ignoreBroadcast(int messageId){
+        ignoredMessageIds.add(messageId);
     }
 }

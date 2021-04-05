@@ -39,9 +39,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Orientation;
+import javafx.scene.*;
 import javafx.scene.Cursor;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
@@ -72,6 +71,7 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public class Controller implements Initializable {
 
@@ -1392,9 +1392,41 @@ public class Controller implements Initializable {
                 return;
             }
 
-            String finalBroadcast = broadcast;
+
+
+            String[] messageParts = broadcast.split("messageId: ");
+
+            boolean broadcastIgnored = Preferences.getInstance().isBroadcastIgnored(Integer.parseInt(messageParts[1]));
+            if(broadcastIgnored) return;
+
+            String finalBroadcast = messageParts[0];
+
+
             Platform.runLater(() -> {
+
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                // Need to force the alert to layout in order to grab the graphic,
+                // as we are replacing the dialog pane with a custom pane
+                alert.getDialogPane().applyCss();
+                Node graphic = alert.getDialogPane().getGraphic();
+                // Create a new dialog pane that has a checkbox instead of the hide/show details button
+                // Use the supplied callback for the action of the checkbox
+                alert.setDialogPane(new DialogPane() {
+                    @Override
+                    protected Node createDetailsButton() {
+                        CheckBox optOut = new CheckBox();
+                        optOut.setText("Don't show this message again");
+                        optOut.setOnAction(e -> System.out.println("test"));
+                        return optOut;
+                    }
+                });
+                alert.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+                // Fool the dialog into thinking there is some expandable content
+                // a Group won't take up any space if it has no children
+                alert.getDialogPane().setExpandableContent(new Group());
+                alert.getDialogPane().setExpanded(true);
+                // Reset the dialog graphic using the default style
+                alert.getDialogPane().setGraphic(graphic);
                 alert.setTitle("Status Update");
                 alert.setHeaderText("IMPORTANT INFORMATION!");
                 alert.setContentText(null);
@@ -1415,6 +1447,40 @@ public class Controller implements Initializable {
 
         whatsNewThread.start();
     }
+
+
+    public static Alert createAlertWithOptOut(Alert.AlertType type, String title, String headerText,
+                                              String message, String optOutMessage, Consumer<Boolean> optOutAction,
+                                              ButtonType... buttonTypes) {
+        Alert alert = new Alert(type);
+        // Need to force the alert to layout in order to grab the graphic,
+        // as we are replacing the dialog pane with a custom pane
+        alert.getDialogPane().applyCss();
+        Node graphic = alert.getDialogPane().getGraphic();
+        // Create a new dialog pane that has a checkbox instead of the hide/show details button
+        // Use the supplied callback for the action of the checkbox
+        alert.setDialogPane(new DialogPane() {
+            @Override
+            protected Node createDetailsButton() {
+                CheckBox optOut = new CheckBox();
+                optOut.setText(optOutMessage);
+                optOut.setOnAction(e -> optOutAction.accept(optOut.isSelected()));
+                return optOut;
+            }
+        });
+        alert.getDialogPane().getButtonTypes().addAll(buttonTypes);
+        alert.getDialogPane().setContentText(message);
+        // Fool the dialog into thinking there is some expandable content
+        // a Group won't take up any space if it has no children
+        alert.getDialogPane().setExpandableContent(new Group());
+        alert.getDialogPane().setExpanded(true);
+        // Reset the dialog graphic using the default style
+        alert.getDialogPane().setGraphic(graphic);
+        alert.setTitle(title);
+        alert.setHeaderText(headerText);
+        return alert;
+    }
+
 
     private String getBroadCastMessage() throws IOException {
         BroadcastFetcher fetcher = new BroadcastFetcher();
