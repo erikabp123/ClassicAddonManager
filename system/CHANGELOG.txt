@@ -1,3 +1,6 @@
+v1.05
+    - Fixed bug where addons stored on curseForge with no "gameFlavor" would cause an error when updating/installing. It now picks the latest file it can, that matches as many of the criteria as possible. Prioritising correct gameFlavor and non-alternative files, as well as any user settings.
+
 v1.04
     - Fixed bug where missing gameflavor from curseforge was causing errors when trying to update
     - Fixed bug where having a version of java 1.8-1.11 would cause the auto-updater to incorrectly use the installed version of java instead of the bundled one (failing to properly update)

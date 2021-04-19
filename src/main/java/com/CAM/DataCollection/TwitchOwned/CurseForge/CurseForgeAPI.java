@@ -41,7 +41,8 @@ public class CurseForgeAPI extends API implements TwitchSite {
 
     private CurseFile determineFileToUse(){
         if(isGameVersionSupported()) return latestGameVersionFiles.get(gameVersion);
-        return latestGameVersionFiles.get(latestGameVersionFiles.keySet().iterator().next());
+        if(latestGameVersionFiles.isEmpty()) return determineLatestFileWithoutFlavor();
+        return latestGameVersionFiles.get(latestGameVersionFiles.keySet().iterator().next()); // return first element
     }
 
     @Override
@@ -84,6 +85,36 @@ public class CurseForgeAPI extends API implements TwitchSite {
             }
         }
         return latestFile;
+    }
+
+    private CurseFile determineLatestFileWithoutFlavor(){
+        CurseFile latestReleaseFile = null;
+        CurseFile latestFile = null;
+        for(CurseFile file : response.latestFiles){
+            if(latestFile == null){
+                latestFile = file;
+                latestReleaseFile = file;
+                continue;
+            }
+            Date curFileDate = DateConverter.convertFromCurseAPI(latestFile.fileDate);
+            Date fileDate = DateConverter.convertFromCurseAPI(file.fileDate);
+            if(fileDate.after(curFileDate)){
+                if(!latestFile.isAlternate && file.isAlternate){
+                    continue;
+                }
+                latestFile = file;
+            } else if(latestFile.isAlternate && !file.isAlternate){
+                latestFile = file;
+            }
+            if(latestFile.releaseType == 1) {
+                latestReleaseFile = latestFile;
+                continue;
+            }
+
+        }
+        return (Preferences.getInstance().isCfReleasesOnly() && latestReleaseFile != null)
+                ? latestReleaseFile
+                : latestFile;
     }
 
     @Override
