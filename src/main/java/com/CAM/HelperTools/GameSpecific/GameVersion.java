@@ -7,6 +7,12 @@ public enum GameVersion {
             "wow_classic",
             "classic-addons",
             "Classic"),
+    TBC("_classic_",
+            "WowClassic.exe",
+            "2.5",
+            "wow_burning_crusade",
+            "classic-tbc-addons",
+            "TBC"),
     RETAIL("_retail_",
             "Wow.exe",
             "9.",
@@ -40,12 +46,36 @@ public enum GameVersion {
         this.tukuiSuffix = tukuiSuffix;
         this.formattedString = formattedString;
     }
-    public String getPath() { return this.path; }
-    public String getExeName() { return this.exeName; }
-    public String getPrefix() { return this.prefix; }
-    public String getCurseFlavor() { return this.curseFlavor; }
-    public String getTukuiSuffix() { return this.tukuiSuffix; }
-    public String getTukuiSpecificSuffix(){ return this.tukuiSuffix.substring(0, tukuiSuffix.length()-1); }
-    public String getFormattedString() { return this.formattedString; };
-    public static GameVersion[] downloadableVersions(){ return new GameVersion[]{ RETAIL, CLASSIC }; }
+
+    public String getPath() {
+        return this.path;
+    }
+
+    public String getExeName() {
+        return this.exeName;
+    }
+
+    public String getPrefix() {
+        return this.prefix;
+    }
+
+    public String getCurseFlavor() {
+        return this.curseFlavor;
+    }
+
+    public String getTukuiSuffix() {
+        return this.tukuiSuffix;
+    }
+
+    public String getTukuiSpecificSuffix() {
+        return this.tukuiSuffix.substring(0, tukuiSuffix.length() - 1);
+    }
+
+    public String getFormattedString() {
+        return this.formattedString;
+    }
+
+    public static GameVersion[] downloadableVersions() {
+        return new GameVersion[]{RETAIL, CLASSIC, TBC};
+    }
 }

@@ -1,20 +1,15 @@
 package com.CAM.GUI;
 
-import com.CAM.AddonManagement.Addon;
 import com.CAM.Settings.Preferences;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Slider;
-import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Date;
 import java.util.ResourceBundle;
 
 public class EditPreferencesController implements Initializable, WindowController {
@@ -34,11 +29,15 @@ public class EditPreferencesController implements Initializable, WindowControlle
     private Slider cahceSlider;
 
     @FXML
-    private void saveAction(ActionEvent event){
+    private Slider autoCompletionSlider;
+
+    @FXML
+    private void saveAction(ActionEvent event) {
         this.preferences.setCfReleasesOnly(cfReleases.isSelected());
         this.preferences.setCheckForUpdatesOnLaunch(updatesOnLaunch.isSelected());
         this.preferences.setScrollToBottomOnUpdate(scrollOnUpdate.isSelected());
         this.preferences.setMaxCacheDuration((int) cahceSlider.getValue());
+        this.preferences.setAutoCompletionDelay((long) autoCompletionSlider.getValue());
         Preferences.savePreferencesFile();
         closeStage(event);
     }
@@ -55,6 +54,7 @@ public class EditPreferencesController implements Initializable, WindowControlle
         this.updatesOnLaunch.setSelected(preferences.isCheckForUpdatesOnLaunch());
         this.scrollOnUpdate.setSelected(preferences.isScrollToBottomOnUpdate());
         this.cahceSlider.setValue(preferences.getMaxCacheDuration());
+        this.autoCompletionSlider.setValue(preferences.getAutoCompletionDelay());
     }
 
     private void closeStage(ActionEvent event){

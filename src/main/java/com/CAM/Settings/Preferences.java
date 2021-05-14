@@ -1,5 +1,6 @@
 package com.CAM.Settings;
 
+import com.CAM.GUI.AutoCompletion;
 import com.CAM.HelperTools.IO.ReadWriteClassFiles;
 
 import java.util.ArrayList;
@@ -13,15 +14,16 @@ public class Preferences {
     private int maxCacheDuration = 120; //min
     private boolean checkForUpdatesOnLaunch = false;
     private boolean scrollToBottomOnUpdate = false;
-    private int downloadRetries = 1;
-    private Set<Integer> ignoredMessageIds = new HashSet<>();
+    private final int downloadRetries = 1;
+    private final Set<Integer> ignoredMessageIds = new HashSet<>();
+    private long autoCompletionDelay = 350;
 
-    private List<PreferencesChangeListener> listeners = new ArrayList<>();
+    private final List<PreferencesChangeListener> listeners = new ArrayList<>();
     private static Preferences preferences = null;
 
 
     public static Preferences getInstance() {
-        if(preferences == null) preferences = readPreferencesFile();
+        if (preferences == null) preferences = readPreferencesFile();
         return preferences;
     }
 
@@ -85,11 +87,20 @@ public class Preferences {
         return ignoredMessageIds.contains(messageId);
     }
 
-    public void ignoreBroadcast(int messageId){
+    public void ignoreBroadcast(int messageId) {
         ignoredMessageIds.add(messageId);
     }
 
     public void unIgnoreBroadcast(int messageId) {
         ignoredMessageIds.remove(messageId);
+    }
+
+    public void setAutoCompletionDelay(long delay) {
+        this.autoCompletionDelay = delay;
+        AutoCompletion.setDelay(delay);
+    }
+
+    public long getAutoCompletionDelay() {
+        return autoCompletionDelay;
     }
 }

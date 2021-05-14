@@ -1,10 +1,12 @@
 package com.CAM.GUI;
 
 import com.CAM.AddonManagement.AddonManager;
-import com.CAM.HelperTools.*;
+import com.CAM.HelperTools.ArgumentPasser;
 import com.CAM.HelperTools.GameSpecific.GameVersion;
 import com.CAM.HelperTools.IO.FileOperations;
 import com.CAM.HelperTools.Logging.Log;
+import com.CAM.HelperTools.UserInput;
+import com.CAM.HelperTools.UserInputResponse;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -35,6 +37,9 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
     private ImageView retailLocationImageView;
 
     @FXML
+    private ImageView tbcLocationImageView;
+
+    @FXML
     private ImageView retailPtrLocationImageView;
 
     @FXML
@@ -45,6 +50,9 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
 
     @FXML
     private TextField retailLocationTextField;
+
+    @FXML
+    private TextField tbcLocationTextField;
 
     @FXML
     private TextField retailPtrLocationTextField;
@@ -62,6 +70,9 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
     private Button cancelRetailSearchButton;
 
     @FXML
+    private Button cancelTbcSearchButton;
+
+    @FXML
     private Button cancelRetailPtrSearchButton;
 
     @FXML
@@ -74,6 +85,9 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
     private Button retailLocationConfirmButton;
 
     @FXML
+    private Button tbcLocationConfirmButton;
+
+    @FXML
     private Button retailPtrLocationConfirmButton;
 
     @FXML
@@ -84,6 +98,9 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
 
     @FXML
     private Button retailManualSelectionButton;
+
+    @FXML
+    private Button tbcManualSelectionButton;
 
     @FXML
     private Button retailPtrManualSelectionButton;
@@ -105,13 +122,18 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
     }
 
     @FXML
-    private void classicConfirmSelectionAction(){
+    private void classicConfirmSelectionAction() {
         searches.get(GameVersion.CLASSIC).confirmFolder(this);
     }
 
     @FXML
-    private void classicPtrConfirmSelectionAction(){
+    private void classicPtrConfirmSelectionAction() {
         searches.get(GameVersion.PTR_CLASSIC).confirmFolder(this);
+    }
+
+    @FXML
+    private void tbcConfirmSelectionAction() {
+        searches.get(GameVersion.TBC).confirmFolder(this);
     }
 
 
@@ -134,13 +156,18 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
     }
 
     @FXML
-    private void classicManualSelectionAction(){
+    private void classicManualSelectionAction() {
         searches.get(GameVersion.CLASSIC).manualSelection();
     }
 
     @FXML
-    private void classicPtrManualSelectionAction(){
+    private void classicPtrManualSelectionAction() {
         searches.get(GameVersion.PTR_CLASSIC).manualSelection();
+    }
+
+    @FXML
+    private void tbcManualSelectionAction() {
+        searches.get(GameVersion.TBC).manualSelection();
     }
 
     @FXML
@@ -164,19 +191,24 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
     }
 
     @FXML
+    private void cancelTbcAction() {
+        searches.get(GameVersion.TBC).cancelSearch();
+    }
+
+    @FXML
     private void saveAction(ActionEvent event) {
-        if(firstTimeSetup){
-            for(GameVersion gv: searches.keySet()){
+        if (firstTimeSetup) {
+            for (GameVersion gv : searches.keySet()) {
                 InstallationSearch search = searches.get(gv);
-                if(!search.isConfirmed()) continue;
+                if (!search.isConfirmed()) continue;
                 AddonManager manager = AddonManager.initializeFromScanUI(gv, search.getLocation());
                 managers.put(gv, manager);
             }
         } else {
             for(GameVersion gv: searches.keySet()){
                 InstallationSearch search = searches.get(gv);
-                if(!search.isConfirmed()) continue;
-                if(amc.getManagers().keySet().contains(gv)){
+                if (!search.isConfirmed()) continue;
+                if (amc.getManagers().containsKey(gv)) {
                     String location = search.getLocation() + "Interface\\AddOns\\";
                     amc.getManagers().get(gv).setInstallLocation(location);
                     continue;
@@ -259,6 +291,14 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
                         classicPtrLocationConfirmButton,
                         classicPtrManualSelectionButton);
                 break;
+            case TBC:
+                search = new InstallationSearch(gameVersion,
+                        tbcLocationTextField,
+                        tbcLocationImageView,
+                        cancelTbcSearchButton,
+                        tbcLocationConfirmButton,
+                        tbcManualSelectionButton);
+                break;
         }
         return search;
     }
@@ -322,6 +362,7 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
         cancelSearchButtons.add(cancelRetailPtrSearchButton);
         cancelSearchButtons.add(cancelClassicSearchButton);
         cancelSearchButtons.add(cancelClassicPtrSearchButton);
+        cancelSearchButtons.add(cancelTbcSearchButton);
 
         for(Button button: cancelSearchButtons){
             ImageView view = new ImageView(imageFailure);
@@ -428,21 +469,21 @@ public class GUISelectInstallationFolder implements Initializable, WindowControl
 
 class InstallationSearch {
 
-    private TextField locationTextField;
-    private ImageView searchingImageView;
-    private Button cancelSearchButton;
-    private Button confirmSearchButton;
-    private Button manualSelectionButton;
-    private AtomicReference<String> location;
-    private GameVersion gameVersion;
-    private AtomicBoolean skip;
-    private AtomicBoolean confirmed;
+    private final TextField locationTextField;
+    private final ImageView searchingImageView;
+    private final Button cancelSearchButton;
+    private final Button confirmSearchButton;
+    private final Button manualSelectionButton;
+    private final AtomicReference<String> location;
+    private final GameVersion gameVersion;
+    private final AtomicBoolean skip;
+    private final AtomicBoolean confirmed;
 
     Image imageProcessing = new Image(this.getClass().getClassLoader().getResource("processingAddon.gif").toExternalForm());
     Image imageSuccess = new Image(this.getClass().getClassLoader().getResource("success.png").toExternalForm());
 
     public InstallationSearch(GameVersion gameVersion, TextField locationTextField, ImageView searchingImageView,
-                              Button cancelSearchButton, Button confirmSearchButton, Button manualSelectionButton){
+                              Button cancelSearchButton, Button confirmSearchButton, Button manualSelectionButton) {
         this.gameVersion = gameVersion;
         this.locationTextField = locationTextField;
         this.searchingImageView = searchingImageView;

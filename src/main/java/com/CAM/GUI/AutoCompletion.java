@@ -49,6 +49,14 @@ public class AutoCompletion {
         return bindings.get(textField);
     }
 
+    public static void setDelay(long delay) {
+        final AutoCompletion instance = getInstance();
+        for (TextField textField : instance.bindings.keySet()) {
+            Binding binding = instance.bindings.get(textField);
+            binding.getTextFieldBinding().setDelay(delay);
+        }
+    }
+
 }
 
 class Binding {

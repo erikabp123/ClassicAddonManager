@@ -1410,12 +1410,8 @@ public class Controller implements Initializable {
             Platform.runLater(() -> {
 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                // Need to force the alert to layout in order to grab the graphic,
-                // as we are replacing the dialog pane with a custom pane
                 alert.getDialogPane().applyCss();
                 Node graphic = alert.getDialogPane().getGraphic();
-                // Create a new dialog pane that has a checkbox instead of the hide/show details button
-                // Use the supplied callback for the action of the checkbox
                 alert.setDialogPane(new DialogPane() {
                     @Override
                     protected Node createDetailsButton() {
@@ -1430,11 +1426,8 @@ public class Controller implements Initializable {
                     }
                 });
                 alert.getDialogPane().getButtonTypes().addAll(ButtonType.OK);
-                // Fool the dialog into thinking there is some expandable content
-                // a Group won't take up any space if it has no children
                 alert.getDialogPane().setExpandableContent(new Group());
                 alert.getDialogPane().setExpanded(true);
-                // Reset the dialog graphic using the default style
                 alert.getDialogPane().setGraphic(graphic);
                 alert.setTitle("Status Update");
                 alert.setHeaderText("IMPORTANT INFORMATION!");
@@ -1826,6 +1819,8 @@ public class Controller implements Initializable {
         AddonNameCache addonNameCache = AddonNameCache.getInstance();
         AutoCompletion autoCompletion = AutoCompletion.getInstance();
         Binding binding = autoCompletion.addNewBinding(searchAllSourcesTextField);
+
+        AutoCompletion.setDelay(Preferences.getInstance().getAutoCompletionDelay());
         autoCompletion.updateSuggestions(searchAllSourcesTextField, addonNameCache.getCachedAddonNames());
 
         binding.getTextFieldBinding().setMinWidth(searchAllSourcesTextField.getPrefWidth());
