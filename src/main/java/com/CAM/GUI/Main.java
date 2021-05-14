@@ -2,8 +2,8 @@ package com.CAM.GUI;
 
 import com.CAM.AddonManagement.AddonManager;
 import com.CAM.HelperTools.ArgumentPasser;
-import com.CAM.HelperTools.IO.FileOperations;
 import com.CAM.HelperTools.GameSpecific.GameVersion;
+import com.CAM.HelperTools.IO.FileOperations;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -74,6 +74,7 @@ public class Main extends Application {
         updateThread.start();
 
         stage.show();
+        controller.setupAutoCompletionListener();
     }
 
     public static AddonManagerControl load(HashMap<GameVersion, AddonManager> managers){

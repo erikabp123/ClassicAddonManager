@@ -1,22 +1,24 @@
 package com.CAM.AddonManagement;
 
-import com.CAM.DataCollection.*;
+import com.CAM.DataCollection.API;
+import com.CAM.DataCollection.DataCollectionException;
+import com.CAM.DataCollection.FileDownloader;
 import com.CAM.DataCollection.Tukui.TukuiAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPISearcher;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAPI;
-import com.CAM.HelperTools.*;
 import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.CAM.HelperTools.GameSpecific.GameVersion;
 import com.CAM.HelperTools.Logging.Log;
-import com.CAM.Settings.Preferences;
+import com.CAM.HelperTools.TableViewStatus;
+import com.CAM.HelperTools.UrlInfo;
 import javafx.scene.image.Image;
 
 import java.util.Date;
 
 public class Addon implements Comparable<Addon> {
-    private String name;
-    private String author;
+    private final String name;
+    private final String author;
     private String origin;
     private Date lastUpdated;
     private String lastFileName;
@@ -25,7 +27,7 @@ public class Addon implements Comparable<Addon> {
     private Date lastUpdateCheck;
     private int projectId;
 
-    public Addon(String name, String author, String origin, String branch, boolean releases){
+    public Addon(String name, String author, String origin, String branch, boolean releases) {
         this.name = name;
         this.author = author;
         this.origin = origin;
@@ -33,42 +35,25 @@ public class Addon implements Comparable<Addon> {
         this.releases = releases;
     }
 
-    public Addon(String name, String author, String origin, int projectId){
+    public Addon(String name, String author, String origin, int projectId) {
         this.name = name;
         this.author = author;
         this.origin = origin;
         this.projectId = projectId;
     }
 
-    public Addon export(){
-        return new Addon(name, author, origin, branch, releases);
+    public Addon(String name, String author, String origin, String branch, boolean releases, int projectId) {
+        this.name = name;
+        this.author = author;
+        this.origin = origin;
+        this.branch = branch;
+        this.releases = releases;
+        this.projectId = projectId;
     }
 
-    /*
-    public void fetchUpdate(API api, TableViewStatus tableViewStatus) throws DataCollectionException {
-        try {
-            Log.verbose("Attempting to fetch update ...");
-            String downloadLink = api.getDownloadLink();
-            FileDownloader downloader = new FileDownloader("downloads");
-            downloader.listenLocal(tableViewStatus);
-            String fileName = name + "_" + author + "_(" + api.getFileName() + ").zip";
-            downloader.downloadFileMonitored(downloadLink, fileName, Preferences.getInstance().getDownloadRetries());
-            lastUpdated = api.getLastUpdated();
-            lastFileName = fileName;
-            lastUpdateCheck = new Date();
-        } catch (DataCollectionException e){
-            e.setAddon(this);
-            throw e;
-        } catch (Exception e) {
-            DataCollectionException exception = new DataCollectionException(getAddonSource(), e);
-            exception.setAddon(this);
-            throw exception;
-        }
-        Log.verbose("Successfully fetched new update!");
+    public Addon export() {
+        return new Addon(name, author, origin, branch, releases, projectId);
     }
-
-     */
-
 
     public void fetchUpdate(API api, TableViewStatus tableViewStatus) throws DataCollectionException {
         try {
@@ -149,7 +134,7 @@ public class Addon implements Comparable<Addon> {
                 if(response == null){
                     System.out.println("request user input");
                 }
-                System.out.println(toString());
+                System.out.println(this);
                 projectId = response.id;
                 break;
             case TUKUI:

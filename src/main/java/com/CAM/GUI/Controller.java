@@ -1,6 +1,9 @@
 package com.CAM.GUI;
 
-import com.CAM.AddonManagement.*;
+import com.CAM.AddonManagement.Addon;
+import com.CAM.AddonManagement.AddonManager;
+import com.CAM.AddonManagement.AddonRequest;
+import com.CAM.AddonManagement.UpdateProgressListener;
 import com.CAM.DataCollection.*;
 import com.CAM.DataCollection.Github.GitHubAPI;
 import com.CAM.DataCollection.Tukui.TukuiAPISearcher;
@@ -12,11 +15,14 @@ import com.CAM.DataCollection.TwitchOwned.TwitchSite;
 import com.CAM.DataCollection.TwitchOwned.WowAce.WowAceScraper;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAPISearcher;
 import com.CAM.DataCollection.WowInterface.WowInterfaceAddonResponse.WowInterfaceAddonResponse;
-import com.CAM.HelperTools.*;
+import com.CAM.HelperTools.CompressionUtil;
 import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.CAM.HelperTools.GameSpecific.GameVersion;
 import com.CAM.HelperTools.IO.DownloadListener;
 import com.CAM.HelperTools.Logging.Log;
+import com.CAM.HelperTools.TableViewStatus;
+import com.CAM.HelperTools.UrlInfo;
+import com.CAM.Settings.AddonNameCache;
 import com.CAM.Settings.Preferences;
 import com.CAM.Settings.SessionOnlySettings;
 import com.CAM.Starter;
@@ -26,21 +32,16 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Orientation;
-import javafx.scene.*;
 import javafx.scene.Cursor;
+import javafx.scene.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
@@ -52,12 +53,13 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -67,11 +69,11 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class Controller implements Initializable {
 
@@ -424,6 +426,11 @@ public class Controller implements Initializable {
         results.addAll(wowInterfaceAPISearcher.search(userQuery));
 
         Collections.sort(results);
+
+        Set<String> names = results.stream()
+                .map(SearchedAddonRequest::getName)
+                .collect(Collectors.toSet());
+        AddonNameCache.getInstance().addAddonNamesToCache(names);
 
         Platform.runLater(() -> {
             addSearchResults.setAll(results);
@@ -1333,10 +1340,7 @@ public class Controller implements Initializable {
         if (request.releases) {
             return true;
         }
-        if (!request.branch.equals("")) {
-            return true;
-        }
-        return false;
+        return !request.branch.equals("");
     }
 
     //================================================================================
@@ -1809,10 +1813,33 @@ public class Controller implements Initializable {
         searchedTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             SearchedAddonRequest searchedAddonRequest = (SearchedAddonRequest) newValue;
             String text = "";
-            if(searchedAddonRequest != null) text = searchedAddonRequest.getDescription();
+            if (searchedAddonRequest != null) text = searchedAddonRequest.getDescription();
             selectedSearchedAddonTextArea.setText(text);
         });
 
+    }
+
+
+    public void setupAutoCompletionListener() {
+        final int paddingOffsets = 77;
+
+        AddonNameCache addonNameCache = AddonNameCache.getInstance();
+        AutoCompletion autoCompletion = AutoCompletion.getInstance();
+        Binding binding = autoCompletion.addNewBinding(searchAllSourcesTextField);
+        autoCompletion.updateSuggestions(searchAllSourcesTextField, addonNameCache.getCachedAddonNames());
+
+        binding.getTextFieldBinding().setMinWidth(searchAllSourcesTextField.getPrefWidth());
+        Scene scene = Stage.getWindows().stream().filter(javafx.stage.Window::isShowing).collect(Collectors.toList()).get(0).getScene();
+
+        scene.widthProperty().addListener((observable, oldValue, newValue) -> {
+            binding.getTextFieldBinding().setMinWidth(newValue.doubleValue() - paddingOffsets); // checking width of textField is cleaner but for some reason doesnt work with window maximizing and shrinking
+            binding.getTextFieldBinding().setMaxWidth(newValue.doubleValue() - paddingOffsets);
+        });
+
+        addonNameCache.addListener(observable -> {
+            AddonNameCache updatedCache = (AddonNameCache) observable;
+            autoCompletion.updateSuggestions(searchAllSourcesTextField, updatedCache.getCachedAddonNames());
+        });
     }
 
     public void removeFromTableView(List<Addon> addons) {

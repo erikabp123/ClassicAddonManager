@@ -73,16 +73,13 @@ public class UpdateAddonTableCell extends TableCell<Addon, Addon> {
             return;
         }
 
-        if(item.getName().contains("WIM")) System.out.println("made it here (1)");
         // Addon in cell has update available
         TableViewStatus tableViewStatus = updateTableViewMap.get().get(item);
         tableViewStatus.setOnChangeListener(e -> Platform.runLater(() -> {
-            if(item.getName().contains("WIM")) System.out.println("made it here (2)");
             progressBar.setProgress(tableViewStatus.getProgress());
             updateItem(item, empty);
         }));
 
-        if(item.getName().contains("WIM")) System.out.println("made it here (3)");
         // Addon in cell is not in list of addons that should be updating right now
         if(!tableViewStatus.isQueuedForUpdate()){
             updateButton.setDisable(false);

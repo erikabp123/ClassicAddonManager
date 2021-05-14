@@ -1,7 +1,6 @@
 package com.CAM.HelperTools.IO;
 
 import com.CAM.HelperTools.Logging.Log;
-import com.CAM.Updating.VersionInfo;
 import com.google.gson.Gson;
 
 import java.io.*;
@@ -36,7 +35,6 @@ public class ReadWriteClassFiles {
         } catch (IOException e) {
             Log.printStackTrace(e);
         }
-        System.out.println(destinationObjectType.getClass());
         return fileObject;
     }
 

@@ -1,4 +1,6 @@
 v1.05
+    - Added AutoCompletion to addon searching, it will attempt to learn by storing unique addon names for later suggestions
+    - Fixed bug with exporting addon list
     - Fixed bug where addons stored on curseForge with no "gameFlavor" would cause an error when updating/installing. It now picks the latest file it can, that matches as many of the criteria as possible. Prioritising correct gameFlavor and non-alternative files, as well as any user settings.
 
 v1.04

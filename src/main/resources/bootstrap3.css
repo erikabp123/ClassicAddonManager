@@ -932,3 +932,9 @@ VBox > .split-menu-button.last > .arrow-button {
 .slider:vertical .track {
 	-fx-pref-width: 5;
 }
+
+.auto-complete-popup {
+	-fx-translate-y: -20 !important;
+	-fx-background-radius: 5 !important;
+	-fx-border-radius: 5 !important;
+}
