@@ -1,4 +1,6 @@
 v1.05
+    - Added function to automatically convert addon list to TBC
+    - Added support for TBC prepatch client
     - Added an option in preferences to change the delay before auto completion displays
     - Added Auto Completion to addon searching, it will attempt to learn by storing each unique addon name it sees while searching in order to display it for later suggestions
     - Fixed bug with exporting addon list

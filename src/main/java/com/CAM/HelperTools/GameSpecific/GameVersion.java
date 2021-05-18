@@ -1,7 +1,7 @@
 package com.CAM.HelperTools.GameSpecific;
 
 public enum GameVersion {
-    CLASSIC("_classic_",
+    CLASSIC("_classic_era_",
             "WowClassic.exe",
             "1.13",
             "wow_classic",
@@ -9,7 +9,7 @@ public enum GameVersion {
             "Classic"),
     TBC("_classic_",
             "WowClassic.exe",
-            "2.5",
+            "1.13",
             "wow_burning_crusade",
             "classic-tbc-addons",
             "TBC"),

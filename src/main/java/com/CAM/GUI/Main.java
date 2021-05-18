@@ -4,12 +4,14 @@ import com.CAM.AddonManagement.AddonManager;
 import com.CAM.HelperTools.ArgumentPasser;
 import com.CAM.HelperTools.GameSpecific.GameVersion;
 import com.CAM.HelperTools.IO.FileOperations;
+import com.CAM.Patches.TbcPatch;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.util.HashMap;
 
 
@@ -51,20 +53,25 @@ public class Main extends Application {
             amc = load(managers);
         }
 
-        if(managers.keySet().isEmpty()){
+        if (managers.keySet().isEmpty()) {
             return;
         }
+
         Controller controller = loader.getController();
+
+        runPatches(amc);
+
         controller.setAddonManagerControl(amc);
         controller.updateActiveManager(amc.getActiveManager().getGameVersion());
         controller.setupTableView();
         controller.setupSearchedAddonsTableView();
         controller.setupListeners();
 
-        if(updateInstallLocation){
+        if (updateInstallLocation) {
             ArgumentPasser argumentPasser = new ArgumentPasser();
             AddonManagerControl.selectInstallations(argumentPasser);
-            if(argumentPasser.getReturnArguments() != null && argumentPasser.getReturnArguments()[0].equals("Cancelled")) return;
+            if (argumentPasser.getReturnArguments() != null && argumentPasser.getReturnArguments()[0].equals("Cancelled"))
+                return;
         }
 
 
@@ -73,17 +80,29 @@ public class Main extends Application {
         Thread updateThread = new Thread(() -> controller.checkForUpdate());
         updateThread.start();
 
+
         stage.show();
         controller.setupAutoCompletionListener();
     }
 
-    public static AddonManagerControl load(HashMap<GameVersion, AddonManager> managers){
-        AddonManagerControl amc = AddonManagerControl.loadFromFile();
-        if(amc == null) return null;
+    private void runPatches(AddonManagerControl amc) {
+        File file = new File("system/patches/PATCHED_TbcPatch");
+        boolean shouldRunPatch = amc.getManagedGames().contains(GameVersion.CLASSIC)
+                && !amc.getManagedGames().contains(GameVersion.TBC)
+                && !file.exists()
+                && !amc.getManagers().get(GameVersion.CLASSIC).getInstallLocation().contains(GameVersion.CLASSIC.getPath());
+        if (!shouldRunPatch) return;
+        TbcPatch tbcPatch = new TbcPatch(amc);
+        tbcPatch.promptUserChoice();
+    }
 
-        for(GameVersion gv: GameVersion.values()){
+    public static AddonManagerControl load(HashMap<GameVersion, AddonManager> managers) {
+        AddonManagerControl amc = AddonManagerControl.loadFromFile();
+        if (amc == null) return null;
+
+        for (GameVersion gv : GameVersion.values()) {
             AddonManager manager = AddonManager.loadManagerFromFile(gv);
-            if(manager == null) continue;
+            if (manager == null) continue;
             managers.put(gv, manager);
         }
         return amc;

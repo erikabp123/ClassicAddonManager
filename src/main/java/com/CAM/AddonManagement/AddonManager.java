@@ -1,17 +1,21 @@
 package com.CAM.AddonManagement;
 
-import com.CAM.DataCollection.*;
-import com.CAM.HelperTools.*;
+import com.CAM.DataCollection.API;
+import com.CAM.DataCollection.DataCollectionException;
+import com.CAM.DataCollection.SearchedAddonRequest;
 import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.CAM.HelperTools.GameSpecific.GameVersion;
 import com.CAM.HelperTools.IO.FileOperations;
 import com.CAM.HelperTools.IO.ReadWriteClassFiles;
 import com.CAM.HelperTools.Logging.Log;
+import com.CAM.HelperTools.TableViewStatus;
+import com.CAM.HelperTools.UrlInfo;
 import com.CAM.Settings.Preferences;
 import com.CAM.Settings.SessionOnlySettings;
 import net.lingala.zip4j.model.FileHeader;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class AddonManager {
@@ -21,7 +25,7 @@ public class AddonManager {
 
 
     private String version = "3.0";
-    private List<Addon> managedAddons;
+    private final List<Addon> managedAddons;
     private String installLocation;
     private GameVersion gameVersion;
 
@@ -287,6 +291,12 @@ public class AddonManager {
         return newAddon;
     }
 
+    public void forceAddNewAddon(Addon addon) {
+        managedAddons.add(addon);
+        Collections.sort(managedAddons);
+        saveToFile();
+    }
+
     public boolean removeAddon(Addon addon) {
         Log.log("Attempting to remove addon ...");
 
@@ -294,6 +304,18 @@ public class AddonManager {
             Log.log("Addon " + addon.getName() + " was not found!");
             return false;
         }
+
+        uninstall(addon);
+        managedAddons.remove(addon);
+
+        saveToFile();
+
+        Log.log("Successfully removed addon!");
+        return true;
+    }
+
+    public boolean forceRemoveAddon(Addon addon) {
+        Log.log("Attempting to remove addon ...");
 
         uninstall(addon);
         managedAddons.remove(addon);
@@ -502,6 +524,7 @@ public class AddonManager {
         FileOperations.deleteFile(getInstallationLogPath(addon));
         Log.verbose("Finished uninstall!");
     }
+
 
     public Set<String> readInstallationLog(Addon addon) {
         Log.verbose("Looking for addon installation log ...");
