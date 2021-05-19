@@ -1,3 +1,6 @@
+v1.06
+    - Fixed bug with detecting TBC installations
+
 v1.05
     - Added function to automatically convert addon list to TBC
     - Added support for TBC prepatch client

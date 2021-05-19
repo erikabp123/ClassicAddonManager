@@ -9,7 +9,7 @@ public enum GameVersion {
             "Classic"),
     TBC("_classic_",
             "WowClassic.exe",
-            "1.13",
+            "2.5",
             "wow_burning_crusade",
             "classic-tbc-addons",
             "TBC"),
