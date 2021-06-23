@@ -1,3 +1,7 @@
+v1.07
+    - Fixed bug with logging causing a NullPointer
+    - Fixed searching bug with Curseforge
+
 v1.06
     - Fixed bug with detecting TBC installations
 

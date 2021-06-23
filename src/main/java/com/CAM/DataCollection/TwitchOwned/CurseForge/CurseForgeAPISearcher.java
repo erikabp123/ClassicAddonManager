@@ -19,14 +19,16 @@ public class CurseForgeAPISearcher extends APISearcher {
 
     private static final int pageSize = 100;
 
-    private String baseUrl = "https://addons-ecs.forgesvc.net/api/v2/addon/search?categoryId=0&gameId=1&pageSize=" + pageSize + "&searchFilter=";
+    //private String baseUrl = "https://addons-ecs.forgesvc.net/api/v2/addon/search?categoryId=0&gameId=1&pageSize=" + pageSize + "&searchFilter=";
+    private final String baseUrl = "https://addons-ecs.forgesvc.net/api/v2/addon/search?categoryId=0&gameId=1&searchFilter=";
 
     public ArrayList<SearchedAddonRequest> search(String searchFilter) throws DataCollectionException {
         Log.verbose("Performing Curse search ...");
         String url = baseUrl;
         String json = fetchJson(url + encodeValue(searchFilter));
         Gson gson = new Gson();
-        ArrayList<CurseAddonResponse> unfiltered = gson.fromJson(json, new TypeToken<ArrayList<CurseAddonResponse>>(){}.getType());
+        ArrayList<CurseAddonResponse> unfiltered = gson.fromJson(json, new TypeToken<ArrayList<CurseAddonResponse>>() {
+        }.getType());
         ArrayList<SearchedAddonRequest> filtered = filterResponse(unfiltered, searchFilter);
         Log.verbose("Finished Curse search!");
         return filtered;
