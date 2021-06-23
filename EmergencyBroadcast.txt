@@ -1,4 +1,4 @@
 
-Curseforge have changed their API for searching meaning the search functionality will not work until I find a workaround. The API used for updating does not seem to have changed so it should still work as usual.
+The issue with Curseforge searching should be resolved now. You should be able to search again.
 
-messageId: 3
+messageId: 4
