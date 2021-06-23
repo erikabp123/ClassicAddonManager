@@ -1,7 +1,6 @@
 package com.CAM.HelperTools.Logging;
 
 import com.CAM.DataCollection.DataCollectionException;
-import com.CAM.HelperTools.IO.FileOperations;
 import com.CAM.Settings.SessionOnlySettings;
 
 import java.io.File;
@@ -16,7 +15,7 @@ import java.util.Date;
 
 public class Log {
 
-    private static ArrayList<LogListener> listeners = new ArrayList<>();
+    private static final ArrayList<LogListener> listeners = new ArrayList<>();
 
     public static void log(String text){
         System.out.println(text);
@@ -47,14 +46,14 @@ public class Log {
 
         e.printStackTrace(pw);
         String message = "I------------------------------------------------------I\n";
-        message = message + "Error recorded at: " + new Date().toString() + "\n";
+        message = message + "Error recorded at: " + new Date() + "\n";
         if(e.getClass() == DataCollectionException.class){
             DataCollectionException dataCollectionException = (DataCollectionException) e;
-            message = message + "Addon: " + dataCollectionException.getAddon().toString() + "\n";
+            message = message + "Addon: " + dataCollectionException.getAddon() + "\n";
             message = message + "Source: " + dataCollectionException.getSource() + "\n";
             message = message + "Message: " + dataCollectionException.getMessage() + "\n";
         }
-        message = message + sw.toString() + "\n";
+        message = message + sw + "\n";
         message = message + "I------------------------------------------------------I\n\n";
 
         writeToFile("errors.txt", message);

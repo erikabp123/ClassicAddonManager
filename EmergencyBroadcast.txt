@@ -1,6 +1,4 @@
 
-Version 1.06 is out.
+Curseforge have changed their API for searching meaning the search functionality will not work until I find a workaround. The API used for updating does not seem to have changed so it should still work as usual.
 
-Please report any issues with TBC/CLASSIC addons and I will fix them ASAP.
-
-messageId: 2
+messageId: 3
