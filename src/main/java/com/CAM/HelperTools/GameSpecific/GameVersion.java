@@ -3,7 +3,7 @@ package com.CAM.HelperTools.GameSpecific;
 public enum GameVersion {
     CLASSIC("_classic_era_",
             "WowClassic.exe",
-            "1.13",
+            "1.14",
             "wow_classic",
             "classic-addons",
             "Classic"),
@@ -27,7 +27,7 @@ public enum GameVersion {
             "Retail PTR"),
     PTR_CLASSIC("_classic_ptr_",
             "WowClassicT.exe",
-            "1.13",
+            "1.14",
             "wow_classic",
             "classic-addons",
             "Classic PTR");
