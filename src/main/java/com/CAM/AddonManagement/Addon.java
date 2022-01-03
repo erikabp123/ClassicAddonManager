@@ -61,7 +61,13 @@ public class Addon implements Comparable<Addon> {
             FileDownloader downloader = new FileDownloader("downloads");
             downloader.listenLocal(tableViewStatus);
             String fileName = api.getFileName();
-            downloader.googleDownloadFile(api.getDownloadLink(), fileName, tableViewStatus);
+
+            if (api.getAddonSource() == AddonSource.GITHUB) {
+                downloader.downloadFileMonitored(api.getDownloadLink(), fileName, 3);
+            } else {
+                downloader.googleDownloadFile(api.getDownloadLink(), fileName, tableViewStatus);
+            }
+
             lastUpdated = api.getLastUpdated();
             lastFileName = fileName;
             lastUpdateCheck = new Date();

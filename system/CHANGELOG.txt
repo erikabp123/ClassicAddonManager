@@ -1,3 +1,6 @@
+v1.09
+    - Reverted to old downloading method for github addons, fixing a 401 error.
+
 v1.08
     - Updated setup for Classic Era to look for 1.14 instead of 1.13 wow client
 
