@@ -17,6 +17,7 @@ import javafx.scene.image.Image;
 import java.util.Date;
 
 public class Addon implements Comparable<Addon> {
+    public static final Date NO_FILE_PLACEHOLDER_DATE = new Date(0);
     private final String name;
     private final String author;
     private String origin;
@@ -89,16 +90,19 @@ public class Addon implements Comparable<Addon> {
             API api = getAPI(true, gameVersion);
             response = new UpdateResponse(api, true);
 
-            // Check if addon has ever been updated through this program
-            if(lastUpdated == null){
-                return response;
-            }
             // Get the date of the last update as seen by API
             Date lastUpdateCheck = api.getLastUpdated();
-            // Check if has seen a newer update
-            if(lastUpdateCheck.after(lastUpdated)){
+
+            if (lastUpdateCheck.equals(NO_FILE_PLACEHOLDER_DATE)) {
+                response.setUpdateAvailable(false);
                 return response;
             }
+
+            // Check if has seen a newer update
+            if (lastUpdated == null || lastUpdateCheck.after(lastUpdated)) {
+                return response;
+            }
+
             // There are no new updates
             response.setUpdateAvailable(false);
         } catch (DataCollectionException e){

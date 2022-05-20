@@ -1,4 +1,4 @@
 
-The issue with Curseforge searching should be resolved now. You should be able to search again.
+Curseforge has blocked access to the API this manager uses. While I look into possible fixes I have disabled errors for Curseforge so you can still update and search for addons hosted on other sites, like WowInterface, Tukui, and Github (manually).
 
-messageId: 4
+messageId: 5

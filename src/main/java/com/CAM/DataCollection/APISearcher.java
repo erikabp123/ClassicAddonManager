@@ -12,6 +12,8 @@ public abstract class APISearcher extends PageFetcher {
     public ArrayList<SearchedAddonRequest> filterResponse(ArrayList<? extends SearchedAddonRequest> unfilteredResponse, String searchFilter) {
         ArrayList<SearchedAddonRequest> filteredResponse = new ArrayList<>();
 
+        if (unfilteredResponse == null) return filteredResponse;
+
         for (SearchedAddonRequest response : unfilteredResponse) {
             response.setSearchFilter(searchFilter);
             double weight = response.getWeight();

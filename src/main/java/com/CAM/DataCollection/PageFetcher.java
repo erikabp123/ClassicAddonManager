@@ -3,7 +3,6 @@ package com.CAM.DataCollection;
 import com.CAM.DataCollection.Cache.WebsiteCache;
 import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.CAM.HelperTools.Logging.Log;
-import com.CAM.Settings.SessionOnlySettings;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -12,9 +11,11 @@ import java.io.IOException;
 
 public abstract class PageFetcher {
 
+    public static final String CURSEFORGE_BASE_SITE = "addons-ecs.forgesvc.net";
+
     protected String fetchJson(String url) throws DataCollectionException {
         String cachedValue = WebsiteCache.getCacheValue(url);
-        if(cachedValue != null){
+        if (cachedValue != null) {
             System.out.println("Using cached value of: " + url);
             return cachedValue;
         }
@@ -32,6 +33,7 @@ public abstract class PageFetcher {
         } catch (FailingHttpStatusCodeException e){
             Log.verbose("Url at: " + url + " failed!");
             Log.verbose("fetch resulted in " + e.getStatusCode());
+            if (url.contains(CURSEFORGE_BASE_SITE)) return "";
             throw new DataCollectionException(getAddonSource(), e, "Url at: " + url + " failed with code " + e.getStatusCode()
                     + ". Status message was: " + e.getStatusMessage());
         } catch (IOException e) {

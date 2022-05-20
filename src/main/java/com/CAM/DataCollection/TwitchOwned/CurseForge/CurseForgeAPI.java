@@ -5,25 +5,23 @@ import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseAddonResponse;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseAddonReponse.CurseFile;
 import com.CAM.DataCollection.TwitchOwned.TwitchSite;
-import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.CAM.HelperTools.DateConverter;
+import com.CAM.HelperTools.GameSpecific.AddonSource;
 import com.CAM.HelperTools.GameSpecific.GameVersion;
 import com.CAM.Settings.Preferences;
 import com.google.gson.Gson;
-import org.checkerframework.checker.units.qual.C;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
 public class CurseForgeAPI extends API implements TwitchSite {
 
     private final String addonBaseUrl = "https://addons-ecs.forgesvc.net/api/v2/addon/";
-    private int projectID;
-    private CurseAddonResponse response;
-    private CurseFile fileToUse;
-    private GameVersion gameVersion;
-    private HashMap<GameVersion, CurseFile> latestGameVersionFiles;
+    private final int projectID;
+    private final CurseAddonResponse response;
+    private final CurseFile fileToUse;
+    private final GameVersion gameVersion;
+    private final HashMap<GameVersion, CurseFile> latestGameVersionFiles;
 
     public CurseForgeAPI(int projectID, GameVersion gameVersion) throws DataCollectionException {
         super(null, AddonSource.CURSEFORGE);
@@ -31,9 +29,9 @@ public class CurseForgeAPI extends API implements TwitchSite {
         this.projectID = projectID;
         response = fetchAddonInfo();
         this.latestGameVersionFiles = new HashMap<>();
-        for(GameVersion gv: GameVersion.values()){
+        for (GameVersion gv : GameVersion.values()) {
             CurseFile latestFileByFlavor = determineLatestFileByFlavor(gv.getCurseFlavor());
-            if(latestFileByFlavor == null) continue;
+            if (latestFileByFlavor == null) continue;
             latestGameVersionFiles.put(gv, latestFileByFlavor);
         }
         fileToUse = determineFileToUse();
@@ -57,16 +55,18 @@ public class CurseForgeAPI extends API implements TwitchSite {
         return gson.fromJson(jsonResponse, CurseAddonResponse.class);
     }
 
-    private CurseFile determineLatestFileByFlavor(String flavor){
+    private CurseFile determineLatestFileByFlavor(String flavor) {
+        if (response == null) return null;
+
         CurseFile latestFile = null;
-        for(CurseFile file : response.latestFiles){
-            if(file.gameVersionFlavor == null){
+        for (CurseFile file : response.latestFiles) {
+            if (file.gameVersionFlavor == null) {
                 continue;
             }
-            if(!file.gameVersionFlavor.equals(flavor)){
+            if (!file.gameVersionFlavor.equals(flavor)) {
                 continue;
             }
-            if(latestFile == null){
+            if (latestFile == null) {
                 latestFile = file;
                 continue;
             }
@@ -87,11 +87,13 @@ public class CurseForgeAPI extends API implements TwitchSite {
         return latestFile;
     }
 
-    private CurseFile determineLatestFileWithoutFlavor(){
+    private CurseFile determineLatestFileWithoutFlavor() {
+        if (response == null) return null;
+
         CurseFile latestReleaseFile = null;
         CurseFile latestFile = null;
-        for(CurseFile file : response.latestFiles){
-            if(latestFile == null){
+        for (CurseFile file : response.latestFiles) {
+            if (latestFile == null) {
                 latestFile = file;
                 latestReleaseFile = file;
                 continue;
@@ -119,12 +121,12 @@ public class CurseForgeAPI extends API implements TwitchSite {
 
     @Override
     public String getDownloadLink() {
-        if(fileToUse.fileName.contains("DBM")) System.out.println(fileToUse.downloadUrl);
         return fileToUse.downloadUrl;
     }
 
     @Override
     public Date getLastUpdated() {
+        if (fileToUse == null) return new Date(0);
         return DateConverter.convertFromCurseAPI(fileToUse.fileDate);
     }
 

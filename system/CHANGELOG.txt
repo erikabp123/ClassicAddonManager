@@ -1,3 +1,6 @@
+v1.11
+    - Handle error response from curseforge (does not present error to user instead hides as curseforge currently requires an API key and the manager does not support this)
+
 v1.09
     - Reverted to old downloading method for github addons, fixing a 401 error.
 
