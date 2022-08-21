@@ -1,7 +1,5 @@
 package com.CAM.HelperTools.IO;
 
-import com.CAM.AddonManagement.Addon;
-import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.HelperTools.Logging.Log;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -12,7 +10,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,10 +100,18 @@ public class FileOperations {
         Log.verbose("Determining TOC file name ...");
         FileFilter tocFilter = pathname -> pathname.getName().endsWith(".toc");
         File[] tocFiles = fileFinder(directory, tocFilter);
-        if(tocFiles == null || tocFiles.length == 0){
+        if (tocFiles == null || tocFiles.length == 0) {
             return null;
         }
-        String tocName = tocFiles[0].getName().replace(".toc", "");
+        String shortestTocName = tocFiles[0].getName();
+        for (int i = 1; i < tocFiles.length; i++) {
+            String name = tocFiles[i].getName();
+            int length = name.length();
+            if (length < shortestTocName.length()) {
+                shortestTocName = name;
+            }
+        }
+        String tocName = shortestTocName.replace(".toc", "");
         Log.verbose("TOC with name " + tocName + "!");
         return tocName;
     }
