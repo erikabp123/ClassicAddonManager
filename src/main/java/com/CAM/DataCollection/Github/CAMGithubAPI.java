@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 
 public class CAMGithubAPI extends GitHubAPI {
     public CAMGithubAPI(String repo) throws DataCollectionException {
-        super(repo, null, true, true);
+        super(repo, null, true, true, null);
     }
 
     public String getReleaseJarDownload() throws DataCollectionException {

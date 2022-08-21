@@ -3,27 +3,35 @@ package com.CAM.DataCollection.Github;
 import com.CAM.DataCollection.API;
 import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.HelperTools.GameSpecific.AddonSource;
-import com.CAM.HelperTools.DateConverter;
-import com.CAM.HelperTools.Logging.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
+import static com.CAM.HelperTools.DateConverter.convertFromGithub;
+import static com.CAM.HelperTools.Logging.Log.log;
+import static java.text.MessageFormat.format;
 
 public class GitHubAPI extends API {
 
+    private String textToMatch;
     private String branch;
     private boolean releases;
     private JsonArray repoArray;
 
-    public GitHubAPI(String url, String branch, boolean releases, boolean updatingAddon) throws DataCollectionException {
+    public GitHubAPI(String url, String branch, boolean releases, boolean updatingAddon, String textToMatch) throws DataCollectionException {
         super(url, AddonSource.GITHUB);
         this.branch = branch;
         this.releases = releases;
         this.repoArray = null;
-        if(!updatingAddon && !isValidLink()){
+        if (textToMatch != null) {
+            this.textToMatch = textToMatch.toLowerCase();
+        }
+        if (!updatingAddon && !isValidLink()) {
             throw new DataCollectionException(getAddonSource(), "Invalid Github URL!");
         }
     }
@@ -40,7 +48,14 @@ public class GitHubAPI extends API {
         JsonArray jsonArray = getRepoArray();
         String downloadLink;
         try {
-            downloadLink = ((JsonObject) ((JsonArray) ((JsonObject) jsonArray.get(0)).get("assets")).get(0)).get("browser_download_url").getAsString();
+            JsonObject newestReleaseContainingText = getLatestReleaseContainingText(jsonArray);
+
+            boolean noAssets = ((JsonArray) (newestReleaseContainingText).get("assets")).size() == 0;
+            if (noAssets) {
+                downloadLink = (newestReleaseContainingText).get("zipball_url").getAsString();
+            } else {
+                downloadLink = ((JsonObject) ((JsonArray) (newestReleaseContainingText).get("assets")).get(0)).get("browser_download_url").getAsString();
+            }
         } catch (IndexOutOfBoundsException e){
             throw  new DataCollectionException(getAddonSource(), e);
         }
@@ -55,7 +70,7 @@ public class GitHubAPI extends API {
 
     @Override
     public Date getLastUpdated() throws DataCollectionException {
-        if(releases){
+        if (releases) {
             return getReleasesUpdated();
         }
         return getBranchUpdated();
@@ -63,9 +78,32 @@ public class GitHubAPI extends API {
 
     private Date getReleasesUpdated() throws DataCollectionException {
         JsonArray jsonArray = getRepoArray();
-        String githubDate = ((JsonObject) jsonArray.get(0)).get("published_at").getAsString();
-        Date date = DateConverter.convertFromGithub(githubDate);
-        return date;
+        JsonObject newestReleaseContainingText = getLatestReleaseContainingText(jsonArray);
+        String githubDate = newestReleaseContainingText.get("published_at").getAsString();
+        return convertFromGithub(githubDate);
+    }
+
+    private JsonObject getLatestReleaseContainingText(JsonArray jsonArray) {
+        if (textToMatch == null) return (JsonObject) jsonArray.get(0);
+
+        List<JsonObject> matchesTags = new ArrayList<>();
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JsonObject jsonObject = (JsonObject) jsonArray.get(i);
+            boolean matchesName = jsonObject.get("name").getAsString().toLowerCase().contains(textToMatch);
+            if (matchesName) {
+                return jsonObject;
+            }
+
+            boolean matchesTag = jsonObject.get("name").getAsString().toLowerCase().contains(textToMatch);
+            if (matchesTag) {
+                matchesTags.add(jsonObject);
+            }
+        }
+        if (!matchesTags.isEmpty()) {
+            return matchesTags.get(0);
+        }
+        log(format("Unable to find any releases containing text {0} in release name or release tag, falling back to latest release!", textToMatch));
+        return (JsonObject) jsonArray.get(0);
     }
 
     private Date getBranchUpdated() throws DataCollectionException {
@@ -75,8 +113,7 @@ public class GitHubAPI extends API {
         String url = prefix + repoInfo[3] + "/" + repoInfo[4] + suffix;
         JsonObject jsonObject = getJsonObject(fetchJson(url));
         String githubDate = jsonObject.getAsJsonObject("commit").getAsJsonObject("commit").getAsJsonObject("author").get("date").toString();
-        Date date = DateConverter.convertFromGithub(githubDate);
-        return date;
+        return convertFromGithub(githubDate);
     }
 
     private JsonArray getJsonArray(String json){
@@ -89,8 +126,7 @@ public class GitHubAPI extends API {
 
     public String getTag() throws DataCollectionException {
         JsonArray jsonArray = getRepoArray();
-        String tag = ((JsonObject) jsonArray.get(0)).get("tag_name").getAsString();
-        return tag;
+        return ((JsonObject) jsonArray.get(0)).get("tag_name").getAsString();
     }
 
     public JsonArray getRepoArray() throws DataCollectionException {
@@ -107,25 +143,23 @@ public class GitHubAPI extends API {
 
     @Override
     public String getName() {
-        String name = getUrl().split("/")[4];
-        return name;
+        return getUrl().split("/")[4];
     }
 
     @Override
     public String getAuthor() {
-        String author = getUrl().split("/")[3];
-        return author;
+        return getUrl().split("/")[3];
     }
 
     @Override
     public String getFileName() {
-        String fileName = getName() + "-" + getBranch();
-        return fileName;
+        String suffix = isReleases() ? "release" : getBranch();
+        return getName() + "-" + suffix;
     }
 
     public static ArrayList<String> getBranches(String repo) throws DataCollectionException {
         ArrayList<String> branches = new ArrayList<>();
-        GitHubAPI scraper = new GitHubAPI(repo, null, false, false);
+        GitHubAPI scraper = new GitHubAPI(repo, null, false, false, null);
         String author = scraper.getAuthor();
         String name = scraper.getName();
         String branchesApi = "https://api.github.com/repos/" + author + "/" + name + "/branches";
@@ -154,7 +188,7 @@ public class GitHubAPI extends API {
             return false;
         }
         if(releases && getRepoArray().size() == 0){
-            Log.log("The provided link does not have any releases!");
+            log("The provided link does not have any releases!");
             throw new DataCollectionException(getAddonSource(), "The provided link does not have any releases!");
         }
         return true;
@@ -169,10 +203,7 @@ public class GitHubAPI extends API {
         String name = getName();
         String api = "https://api.github.com/repos/" + author + "/" + name + "/" + suffix;
         String response = fetchJson(api);
-        if(response == null){
-            return false;
-        }
-        return true;
+        return response != null;
     }
 
     public boolean isReleases() {

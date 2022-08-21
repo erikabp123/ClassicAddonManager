@@ -1,6 +1,7 @@
 package com.CAM.HelperTools;
 
-import com.CAM.DataCollection.*;
+import com.CAM.DataCollection.API;
+import com.CAM.DataCollection.DataCollectionException;
 import com.CAM.DataCollection.Github.GitHubAPI;
 import com.CAM.DataCollection.Tukui.TukuiAPI;
 import com.CAM.DataCollection.TwitchOwned.CurseForge.CurseForgeAPI;
@@ -69,10 +70,7 @@ public class UrlInfo {
         if(!origin.startsWith(wowAcePrefix)){
             return false;
         }
-        if(origin.length() == prefixLength){
-            return false;
-        }
-        return true;
+        return origin.length() != prefixLength;
     }
 
     public static boolean isValidCurseForgeUrl(String origin){
@@ -84,10 +82,7 @@ public class UrlInfo {
         if(!origin.startsWith(curseforgePrefix)){
             return false;
         }
-        if(origin.length() == prefixLength){
-            return false;
-        }
-        return true;
+        return origin.length() != prefixLength;
     }
 
     public static boolean isValidGithubUrl(String origin) {
@@ -99,10 +94,7 @@ public class UrlInfo {
             return false;
         }
         String[] parts = origin.split("/");
-        if(parts.length < 4){
-            return false;
-        }
-        return true;
+        return parts.length >= 4;
     }
 
     public static boolean isValidWowInterfaceUrl(String origin) {
@@ -110,10 +102,7 @@ public class UrlInfo {
         if(!isValidURL(origin)){
             return false;
         }
-        if(!origin.startsWith(wowinterfacePrefix)){
-            return false;
-        }
-        return true;
+        return origin.startsWith(wowinterfacePrefix);
     }
 
     public static boolean isValidTukuiUrl(String origin) {
@@ -121,10 +110,7 @@ public class UrlInfo {
         if(!isValidURL(origin)){
             return false;
         }
-        if (!correctPrefix) {
-            return false;
-        }
-        return true;
+        return correctPrefix;
     }
 
     public static boolean isValidURL(String url) {
@@ -198,12 +184,12 @@ public class UrlInfo {
         return null;
     }
 
-    public static API getCorrespondingAPI(GameVersion gameVersion, AddonSource addonSource, String origin, boolean updatingAddon, String branch, boolean releases, int projectId) throws DataCollectionException {
-        switch (addonSource){
+    public static API getCorrespondingAPI(GameVersion gameVersion, AddonSource addonSource, String origin, boolean updatingAddon, String branch, boolean releases, int projectId, String textToMatch) throws DataCollectionException {
+        switch (addonSource) {
             case CURSEFORGE:
                 return new CurseForgeAPI(projectId, gameVersion);
             case GITHUB:
-                return new GitHubAPI(origin, branch, releases, updatingAddon);
+                return new GitHubAPI(origin, branch, releases, updatingAddon, textToMatch);
             case WOWINTERFACE:
                 return new WowInterfaceAPI(projectId);
             case TUKUI:

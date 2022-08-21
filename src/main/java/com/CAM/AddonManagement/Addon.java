@@ -24,16 +24,18 @@ public class Addon implements Comparable<Addon> {
     private Date lastUpdated;
     private String lastFileName;
     private String branch;
+    private String textToMatch;
     private boolean releases;
     private Date lastUpdateCheck;
     private int projectId;
 
-    public Addon(String name, String author, String origin, String branch, boolean releases) {
+    public Addon(String name, String author, String origin, String branch, boolean releases, String textToMatch) {
         this.name = name;
         this.author = author;
         this.origin = origin;
         this.branch = branch;
         this.releases = releases;
+        this.textToMatch = textToMatch;
     }
 
     public Addon(String name, String author, String origin, int projectId) {
@@ -115,7 +117,7 @@ public class Addon implements Comparable<Addon> {
 
     public API getAPI(boolean updatingAddon, GameVersion gameVersion) throws DataCollectionException {
         try {
-           return UrlInfo.getCorrespondingAPI(gameVersion, getAddonSource(), origin, updatingAddon, branch, releases, projectId);
+            return UrlInfo.getCorrespondingAPI(gameVersion, getAddonSource(), origin, updatingAddon, branch, releases, projectId, textToMatch);
         } catch (DataCollectionException e){
             e.setAddon(this);
             throw e;

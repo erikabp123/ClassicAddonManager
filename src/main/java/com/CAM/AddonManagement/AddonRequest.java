@@ -4,5 +4,6 @@ public class AddonRequest {
     public String origin;
     public String branch;
     public boolean releases;
+    public String textToMatch;
 
 }

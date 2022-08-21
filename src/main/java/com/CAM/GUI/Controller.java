@@ -236,6 +236,8 @@ public class Controller implements Initializable {
     //region Text Input/Output
     @FXML
     private TextField textFieldURL;
+    @FXML
+    private TextField textFieldReleaseText;
 
     @FXML
     private TextArea textAreaOutputLog;
@@ -1033,16 +1035,14 @@ public class Controller implements Initializable {
             if (e.getType().equals(FailingHttpStatusCodeException.class)) {
                 FailingHttpStatusCodeException exception = (FailingHttpStatusCodeException) e.getException();
 
-                switch (exception.getStatusCode()) {
-                    case 503:
-                        e.setMessage("The API responded with an internal server error! \n" +
-                                "This is likely due to the API being down or experiencing issues. Try waiting 15-20 min!");
-                        showInvalidUrlAlert(e);
-                        return;
-                    default:
-                        handleUnknownException(e);
-                        return;
+                if (exception.getStatusCode() == 503) {
+                    e.setMessage("The API responded with an internal server error! \n" +
+                            "This is likely due to the API being down or experiencing issues. Try waiting 15-20 min!");
+                    showInvalidUrlAlert(e);
+                    return;
                 }
+                handleUnknownException(e);
+                return;
             }
 
             if (e.getType().equals(DataCollectionException.class)) {
@@ -1185,11 +1185,16 @@ public class Controller implements Initializable {
             try {
                 String origin = textFieldURL.getText();
                 boolean releases = checkboxReleases.isSelected();
+                String textToMatch = textFieldReleaseText.getText();
+                if (textToMatch.isBlank()) {
+                    textToMatch = null;
+                }
 
                 AddonRequest request = new AddonRequest();
                 request.origin = origin;
                 request.branch = branch;
                 request.releases = releases;
+                request.textToMatch = textToMatch;
 
                 if (!isValidRequest(request)) {
                     return;

@@ -1,3 +1,7 @@
+v1.12
+    - Added text field to github addons to specifiy which release version to use, based on matching some text. i.e. you can say BCC and it will try to pick the newest release with that text in either the name or a tag.
+    - Fixed an issue with github addons when using releases, where if the release didn't have any assets uploaded by the author it would fail. It will now use the source code zipball as a backup.
+
 v1.11
     - Handle error response from curseforge (does not present error to user instead hides as curseforge currently requires an API key and the manager does not support this)
 

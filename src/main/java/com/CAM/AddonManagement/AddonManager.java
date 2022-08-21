@@ -253,11 +253,11 @@ public class AddonManager {
             return null;
         }
 
-        API api = UrlInfo.getCorrespondingAPI(gameVersion, urlInfo.addonSource, trimmedOrigin, false, request.branch, request.releases, -1);
+        API api = UrlInfo.getCorrespondingAPI(gameVersion, urlInfo.addonSource, trimmedOrigin, false, request.branch, request.releases, -1, request.textToMatch);
 
         String name = api.getName();
         String author = api.getAuthor();
-        Addon newAddon = new Addon(name, author, trimmedOrigin, request.branch, request.releases);
+        Addon newAddon = new Addon(name, author, trimmedOrigin, request.branch, request.releases, request.textToMatch);
 
         managedAddons.add(newAddon);
         Collections.sort(managedAddons);
